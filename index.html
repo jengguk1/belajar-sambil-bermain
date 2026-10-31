@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0B2A4A">
+<title>Daftar / Masuk - Belajar Sambil Bermain SDN Tamberu 1</title>
+<link rel="preconnect" href="https://dyxmilgvaymkbzgjtvln.supabase.co" crossorigin>
+<script>
+(function () {
+  var KUNCI = 'lib_supabase_v2';
+  var SUMBER = [
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js',
+    'https://fastly.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js',
+    'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js',
+    'https://gcore.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js'
+  ];
+  var banner = null;
+  function tampilBanner(teks, tombol, aksi) {
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.style.cssText = 'position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:99999;background:#F5C542;color:#0B2A4A;font:800 0.85rem Trebuchet MS,sans-serif;padding:9px 16px;border-radius:999px;border:2px solid #7A5A12;box-shadow:0 6px 16px rgba(0,0,0,.4);text-align:center;max-width:90vw;';
+      document.body.appendChild(banner);
+    }
+    banner.textContent = teks + ' ';
+    if (tombol) {
+      var b = document.createElement('button');
+      b.textContent = tombol;
+      b.style.cssText = 'margin-left:6px;padding:4px 10px;border-radius:999px;border:2px solid #0B2A4A;background:#fff;color:#0B2A4A;font:800 0.8rem Trebuchet MS,sans-serif;cursor:pointer;';
+      b.onclick = aksi;
+      banner.appendChild(b);
+    }
+  }
+  function hapusBanner() { if (banner && banner.parentNode) banner.parentNode.removeChild(banner); banner = null; }
+  function libSiap() { return !!(window.supabase && typeof window.supabase.createClient === 'function'); }
+  function jalankanKode(kode) {
+    var s = document.createElement('script');
+    s.text = kode;
+    document.head.appendChild(s);
+    return libSiap();
+  }
+  function ambil(url, ms) {
+    return new Promise(function (ok, gagal) {
+      var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var t = setTimeout(function () { if (ctrl) ctrl.abort(); gagal(new Error('waktu habis')); }, ms);
+      fetch(url, { signal: ctrl ? ctrl.signal : undefined, cache: 'force-cache' })
+        .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.text(); })
+        .then(function (txt) { clearTimeout(t); ok(txt); }, function (e) { clearTimeout(t); gagal(e); });
+    });
+  }
+  function siapkanLib() {
+    try {
+      var simpan = localStorage.getItem(KUNCI);
+      if (simpan) { if (jalankanKode(simpan)) return Promise.resolve(); localStorage.removeItem(KUNCI); }
+    } catch (e) {}
+    var i = 0;
+    function coba() {
+      if (i >= SUMBER.length) return Promise.reject(new Error('semua sumber gagal'));
+      var url = SUMBER[i++];
+      return ambil(url, 9000).then(function (txt) {
+        if (txt.length < 50000 || txt.indexOf('createClient') < 0) throw new Error('isi tidak valid');
+        if (!jalankanKode(txt)) throw new Error('library tidak aktif');
+        try { localStorage.setItem(KUNCI, txt); } catch (e) {}
+      }).catch(function () { return coba(); });
+    }
+    return coba();
+  }
+  window.mulaiAplikasi = function () {
+    var el = document.getElementById('kode-app');
+    function jalan() { var s = document.createElement('script'); s.text = el.textContent; document.head.appendChild(s); hapusBanner(); }
+    if (libSiap()) { jalan(); return; }
+    tampilBanner('Menyiapkan aplikasi...');
+    siapkanLib().then(jalan, function () {
+      tampilBanner('Koneksi lambat atau terputus.', 'Coba Lagi', function () { window.mulaiAplikasi(); });
+    });
+  };
+})();
+</script>
+<style>
+  :root {
+    --navy: #0B2A4A;
+    --navy-light: #123a63;
+    --gold: #F5C542;
+    --gold-dark: #C9932A;
+    --cream: #FFF8E7;
+    --green: #2E9E5B;
+    --red: #C43D3D;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; width: 100%; }
+  body {
+    font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
+    background: radial-gradient(circle at top, var(--navy-light) 0%, var(--navy) 65%, #061a2e 100%);
+    padding: env(safe-area-inset-top, 0px) 16px calc(env(safe-area-inset-bottom, 0px) + 24px);
+    display: flex;
+    justify-content: center;
+  }
+  .wrap { width: 100%; max-width: 460px; padding-top: 24px; }
+  .brand {
+    text-align: center;
+    color: var(--cream);
+    margin-bottom: 18px;
+  }
+  .brand .title {
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: var(--gold);
+  }
+  .brand .sub {
+    font-size: 0.85rem;
+    opacity: 0.85;
+    margin-top: 2px;
+  }
+  .tabs {
+    display: flex;
+    background: rgba(255,255,255,0.08);
+    border-radius: 999px;
+    padding: 4px;
+    margin-bottom: 18px;
+  }
+  .tab-btn {
+    all: unset;
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    border-radius: 999px;
+    color: var(--cream);
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .tab-btn.active {
+    background: var(--gold);
+    color: var(--navy);
+  }
+  .card {
+    background: var(--cream);
+    border: 3px solid var(--gold-dark);
+    border-radius: 20px;
+    padding: 20px 18px;
+  }
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 5px;
+  }
+  .field input, .field select {
+    width: 100%;
+    padding: 11px 12px;
+    border: 2px solid #DCC98A;
+    border-radius: 10px;
+    font-size: 1rem;
+    background: white;
+    color: var(--navy);
+  }
+  .pw-wrap { position: relative; }
+  .pw-wrap input { padding-right: 60px; }
+  .pw-toggle {
+    all: unset;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: var(--navy);
+    cursor: pointer;
+    padding: 4px 6px;
+  }
+  .btn-main {
+    all: unset;
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 13px;
+    font-weight: 800;
+    font-size: 1.02rem;
+    color: var(--navy);
+    background: linear-gradient(180deg, #FFE28A 0%, var(--gold) 55%, var(--gold-dark) 100%);
+    border-radius: 999px;
+    border: 2.5px solid #7A5A12;
+    cursor: pointer;
+    margin-top: 6px;
+  }
+  .btn-main:active { transform: translateY(2px); }
+  .btn-main[disabled] { opacity: 0.6; pointer-events: none; }
+  .msg {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    display: none;
+  }
+  .msg.show { display: block; }
+  .msg.ok { background: #E4F7EA; color: var(--green); border: 1.5px solid var(--green); }
+  .msg.err { background: #FBE7E7; color: var(--red); border: 1.5px solid var(--red); }
+  .msg.info { background: #FFF3CF; color: #7A5A12; border: 1.5px solid var(--gold-dark); }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .welcome { text-align: center; }
+  .welcome .nama { font-size: 1.2rem; font-weight: 900; color: var(--navy); margin: 8px 0 2px; }
+  .welcome .role-tag {
+    display: inline-block;
+    background: var(--navy);
+    color: var(--cream);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  .link-beranda {
+    all: unset;
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 13px;
+    font-weight: 800;
+    color: var(--cream);
+    background: linear-gradient(180deg, var(--navy-light) 0%, var(--navy) 100%);
+    border-radius: 999px;
+    border: 2.5px solid #06162a;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+
+  .admin-section { margin-top: 20px; text-align: left; }
+  .admin-section h3 {
+    color: var(--navy);
+    font-size: 1rem;
+    margin-bottom: 10px;
+    border-top: 2px dashed #DCC98A;
+    padding-top: 14px;
+  }
+  .user-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: white;
+    border: 1.5px solid #DCC98A;
+    border-radius: 10px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+  }
+  .user-row .top-line { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .user-row .info { color: var(--navy); line-height: 1.35; }
+  .user-row .info b { display: block; }
+  .user-row .actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .user-row .kelas-row { display: flex; gap: 6px; align-items: center; }
+  .mini-select {
+    flex: 1;
+    padding: 6px 8px;
+    border: 1.5px solid #DCC98A;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    color: var(--navy);
+    background: white;
+  }
+  .mini-btn {
+    all: unset;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .mini-btn.approve { background: var(--green); color: white; }
+  .mini-btn.reject { background: var(--red); color: white; }
+  .mini-btn.kick { background: #888; color: white; }
+  .empty-note { color: #7A6A45; font-size: 0.85rem; font-style: italic; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">
+    <div class="title">Belajar Sambil Bermain</div>
+    <div class="sub">SDN Tamberu 1 &middot; Kab. Pamekasan</div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab-btn active" data-tab="daftar">Daftar</button>
+    <button class="tab-btn" data-tab="masuk">Masuk</button>
+  </div>
+
+  <div class="card">
+
+    <!-- PANEL DAFTAR -->
+    <div class="panel active" id="panel-daftar">
+      <div class="field">
+        <label>Nama</label>
+        <input type="text" id="d-nama" placeholder="Nama lengkap anak">
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="d-email" placeholder="email@contoh.com">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="d-pass" placeholder="Minimal 6 karakter">
+          <button class="pw-toggle" onclick="togglePw('d-pass', this)">Lihat</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Konfirmasi Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="d-pass2" placeholder="Ulangi password">
+          <button class="pw-toggle" onclick="togglePw('d-pass2', this)">Lihat</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Kelas</label>
+        <select id="d-kelas">
+          <option value="">Memuat daftar kelas...</option>
+        </select>
+      </div>
+      <button class="btn-main" id="btn-daftar" onclick="daftar()">Daftar Akun</button>
+      <div class="msg" id="msg-daftar"></div>
+    </div>
+
+    <!-- PANEL MASUK -->
+    <div class="panel" id="panel-masuk">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="m-email" placeholder="email@contoh.com">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="m-pass" placeholder="Password">
+          <button class="pw-toggle" onclick="togglePw('m-pass', this)">Lihat</button>
+        </div>
+      </div>
+      <button class="btn-main" id="btn-masuk" onclick="masuk()">Masuk</button>
+      <div class="msg" id="msg-masuk"></div>
+
+      <div id="area-welcome" style="display:none;">
+        <div class="welcome">
+          <div class="role-tag" id="w-role"></div>
+          <div class="nama" id="w-nama"></div>
+          <div id="w-status-msg"></div>
+          <button class="link-beranda" id="btn-lanjut" style="display:none;" onclick="window.location.href='beranda.html'">Lanjut ke Beranda &rarr;</button>
+        </div>
+        <div class="admin-section" id="admin-section" style="display:none;">
+          <h3>Menunggu Persetujuan</h3>
+          <div id="list-pending"><span class="empty-note">Memuat...</span></div>
+          <h3>Akun Aktif</h3>
+          <div id="list-approved"><span class="empty-note">Memuat...</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script type="text/plain" id="kode-app">
+const SUPABASE_URL = "https://dyxmilgvaymkbzgjtvln.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5eG1pbGd2YXlta2J6Z2p0dmxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4NDI0NTAsImV4cCI6MjEwNTQxODQ1MH0.FbzeXaVS2WIhbd1U3RMoqvYxieD-_x-o7PYmS4zmrcE";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Kalau sesi login masih ada (belum logout & belum ganti perangkat), langsung ke Beranda
+(async function cekSesiAwal() {
+  const { data } = await sb.auth.getSession();
+  if (data.session) {
+    window.location.href = 'beranda.html';
+  }
+})();
+
+// Tab switching
+document.getElementById('tabs').addEventListener('click', (e) => {
+  const btn = e.target.closest('.tab-btn');
+  if (!btn) return;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const tab = btn.dataset.tab;
+  document.getElementById('panel-daftar').classList.toggle('active', tab === 'daftar');
+  document.getElementById('panel-masuk').classList.toggle('active', tab === 'masuk');
+});
+
+function togglePw(id, btn) {
+  const el = document.getElementById(id);
+  if (el.type === 'password') {
+    el.type = 'text';
+    btn.textContent = 'Sembunyi';
+  } else {
+    el.type = 'password';
+    btn.textContent = 'Lihat';
+  }
+}
+
+function showMsg(id, text, kind) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'msg show ' + kind;
+}
+
+// Muat daftar kelas untuk dropdown
+let kelasList = [];
+async function muatKelas() {
+  const sel = document.getElementById('d-kelas');
+  try {
+    const { data, error } = await sb.from('kelas').select('*').order('tingkat', { ascending: true });
+    if (error) throw error;
+    kelasList = data || [];
+    if (kelasList.length === 0) {
+      sel.innerHTML = '<option value="">Belum ada data kelas</option>';
+      return;
+    }
+    sel.innerHTML = kelasList.map(k => `<option value="${k.id}">${k.nama_kelas}</option>`).join('');
+  } catch (e) {
+    sel.innerHTML = '<option value="">Gagal memuat kelas</option>';
+  }
+}
+muatKelas();
+
+// DAFTAR
+async function daftar() {
+  const nama = document.getElementById('d-nama').value.trim();
+  const email = document.getElementById('d-email').value.trim();
+  const pass = document.getElementById('d-pass').value;
+  const pass2 = document.getElementById('d-pass2').value;
+  const idKelas = document.getElementById('d-kelas').value;
+  const btn = document.getElementById('btn-daftar');
+
+  if (!nama || !email || !pass || !pass2 || !idKelas) {
+    showMsg('msg-daftar', 'Semua kolom wajib diisi, termasuk pilih kelas.', 'err');
+    return;
+  }
+  if (pass.length < 6) {
+    showMsg('msg-daftar', 'Password minimal 6 karakter.', 'err');
+    return;
+  }
+  if (pass !== pass2) {
+    showMsg('msg-daftar', 'Konfirmasi password tidak sama.', 'err');
+    return;
+  }
+
+  btn.setAttribute('disabled', 'true');
+  btn.textContent = 'Memproses...';
+
+  try {
+    const { data, error } = await sb.auth.signUp({ email, password: pass });
+    if (error) {
+      if (error.message.toLowerCase().includes('already') || error.message.toLowerCase().includes('registered')) {
+        throw new Error('Email ini sudah terdaftar. Silakan masuk lewat tab "Masuk".');
+      }
+      throw error;
+    }
+    const uid = data.user && data.user.id;
+    if (!uid) throw new Error('Pendaftaran gagal, coba lagi.');
+
+    const { error: errProfil } = await sb.from('profil').insert({
+      id: uid,
+      nama: nama,
+      email: email,
+      id_kelas: idKelas
+    });
+    if (errProfil) {
+      if (errProfil.message.toLowerCase().includes('duplicate')) {
+        throw new Error('Email ini sudah terdaftar sebelumnya.');
+      }
+      throw errProfil;
+    }
+
+    showMsg('msg-daftar', 'Akun berhasil dibuat! Menunggu persetujuan admin sebelum bisa dipakai. Silakan pindah ke tab "Masuk".', 'ok');
+    document.getElementById('d-nama').value = '';
+    document.getElementById('d-email').value = '';
+    document.getElementById('d-pass').value = '';
+    document.getElementById('d-pass2').value = '';
+  } catch (e) {
+    showMsg('msg-daftar', e.message || 'Terjadi kesalahan.', 'err');
+  } finally {
+    btn.removeAttribute('disabled');
+    btn.textContent = 'Daftar Akun';
+  }
+}
+
+// MASUK
+async function masuk() {
+  const email = document.getElementById('m-email').value.trim();
+  const pass = document.getElementById('m-pass').value;
+  const btn = document.getElementById('btn-masuk');
+
+  if (!email || !pass) {
+    showMsg('msg-masuk', 'Email dan password wajib diisi.', 'err');
+    return;
+  }
+
+  btn.setAttribute('disabled', 'true');
+  btn.textContent = 'Memproses...';
+  document.getElementById('area-welcome').style.display = 'none';
+
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+    if (error) throw new Error('Email atau password salah.');
+
+    const uid = data.user.id;
+    const { data: profilData, error: errProfil } = await sb.from('profil').select('*').eq('id', uid).single();
+    if (errProfil) throw new Error('Profil tidak ditemukan. Hubungi admin.');
+
+    document.getElementById('msg-masuk').classList.remove('show');
+    document.getElementById('area-welcome').style.display = 'block';
+    document.getElementById('w-nama').textContent = profilData.nama;
+    document.getElementById('w-role').textContent = profilData.role === 'admin' ? 'ADMIN' : 'SISWA';
+
+    const statusEl = document.getElementById('w-status-msg');
+    const btnLanjut = document.getElementById('btn-lanjut');
+    if (profilData.status === 'approved') {
+      statusEl.innerHTML = '<p style="color:var(--green);font-weight:700;margin-bottom:6px;">Akun aktif ✓</p>';
+      btnLanjut.style.display = 'block';
+    } else if (profilData.status === 'pending') {
+      statusEl.innerHTML = '<p style="color:#7A5A12;font-weight:700;margin-bottom:6px;">Menunggu persetujuan admin</p>';
+      btnLanjut.style.display = 'none';
+    } else {
+      statusEl.innerHTML = '<p style="color:var(--red);font-weight:700;margin-bottom:6px;">Pendaftaran ditolak admin</p>';
+      btnLanjut.style.display = 'none';
+    }
+
+    if (profilData.role === 'admin') {
+      document.getElementById('admin-section').style.display = 'block';
+      muatAdminPanel();
+    }
+  } catch (e) {
+    showMsg('msg-masuk', e.message || 'Terjadi kesalahan.', 'err');
+  } finally {
+    btn.removeAttribute('disabled');
+    btn.textContent = 'Masuk';
+  }
+}
+
+// PANEL ADMIN
+async function muatAdminPanel() {
+  const pendingEl = document.getElementById('list-pending');
+  const approvedEl = document.getElementById('list-approved');
+  try {
+    const { data, error } = await sb.from('profil').select('*, kelas(nama_kelas)').order('dibuat_pada', { ascending: false });
+    if (error) throw error;
+
+    const pending = data.filter(p => p.status === 'pending' && p.role !== 'admin');
+    const approved = data.filter(p => p.status === 'approved' && p.role !== 'admin');
+
+    const buatOpsiKelas = (idKelasSekarang) => kelasList.map(k =>
+      `<option value="${k.id}" ${k.id === idKelasSekarang ? 'selected' : ''}>${k.nama_kelas}</option>`
+    ).join('');
+
+    pendingEl.innerHTML = pending.length === 0
+      ? '<span class="empty-note">Tidak ada akun menunggu.</span>'
+      : pending.map(p => `
+        <div class="user-row">
+          <div class="top-line">
+            <div class="info"><b>${p.nama}</b>${p.email} &middot; ${p.kelas ? p.kelas.nama_kelas : '-'}</div>
+            <div class="actions">
+              <button class="mini-btn approve" onclick="ubahStatus('${p.id}','approved')">Setujui</button>
+              <button class="mini-btn reject" onclick="ubahStatus('${p.id}','ditolak')">Tolak</button>
+            </div>
+          </div>
+          <div class="kelas-row">
+            <select class="mini-select" id="kelas-sel-${p.id}">${buatOpsiKelas(p.id_kelas)}</select>
+            <button class="mini-btn kick" onclick="ubahKelasUser('${p.id}')">Ubah Kelas</button>
+          </div>
+        </div>`).join('');
+
+    approvedEl.innerHTML = approved.length === 0
+      ? '<span class="empty-note">Belum ada akun aktif.</span>'
+      : approved.map(p => `
+        <div class="user-row">
+          <div class="top-line">
+            <div class="info"><b>${p.nama}</b>${p.email} &middot; ${p.kelas ? p.kelas.nama_kelas : '-'}</div>
+            <div class="actions">
+              <button class="mini-btn kick" onclick="ubahStatus('${p.id}','pending')">Cabut Akses</button>
+            </div>
+          </div>
+          <div class="kelas-row">
+            <select class="mini-select" id="kelas-sel-${p.id}">${buatOpsiKelas(p.id_kelas)}</select>
+            <button class="mini-btn kick" onclick="ubahKelasUser('${p.id}')">Ubah Kelas</button>
+          </div>
+        </div>`).join('');
+  } catch (e) {
+    pendingEl.innerHTML = '<span class="empty-note">Gagal memuat: ' + (e.message || e) + '</span>';
+    approvedEl.innerHTML = '';
+  }
+}
+
+async function ubahKelasUser(id) {
+  const sel = document.getElementById('kelas-sel-' + id);
+  const idKelasBaru = sel.value;
+  try {
+    const { error } = await sb.from('profil').update({ id_kelas: idKelasBaru }).eq('id', id);
+    if (error) throw error;
+    muatAdminPanel();
+  } catch (e) {
+    alert('Gagal mengubah kelas: ' + (e.message || e));
+  }
+}
+
+async function ubahStatus(id, status) {
+  try {
+    const { error } = await sb.from('profil').update({ status }).eq('id', id);
+    if (error) throw error;
+    muatAdminPanel();
+  } catch (e) {
+    alert('Gagal mengubah status: ' + (e.message || e));
+  }
+}
+</script>
+<script>mulaiAplikasi();</script>
+</body>
+</html>

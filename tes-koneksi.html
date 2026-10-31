@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0B2A4A">
+<title>Tes Koneksi - Belajar Sambil Bermain</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 16px 14px 40px; background: #0B2A4A; color: #fff; font-family: 'Trebuchet MS', Arial, sans-serif; line-height: 1.45; }
+  h1 { margin: 4px 0 6px; font-size: 1.35rem; color: #F5C542; }
+  .langkah { background: rgba(255,255,255,.08); border-radius: 12px; padding: 10px 14px; font-size: .9rem; margin-bottom: 10px; }
+  .langkah ol { margin: 4px 0 0 18px; padding: 0; }
+  #info { font-size: .85rem; margin: 6px 0 10px; padding: 8px 12px; border-radius: 10px; background: rgba(255,255,255,.08); }
+  #info.peringatan { background: #7a2a1a; color: #fff; font-weight: 700; }
+  button { font: 800 1rem 'Trebuchet MS', Arial, sans-serif; padding: 12px 18px; border-radius: 14px; border: 3px solid #7A5A12; background: linear-gradient(#FFE08A, #F5C542); color: #0B2A4A; margin: 4px 6px 4px 0; cursor: pointer; }
+  button:disabled { opacity: .55; }
+  .grup { margin-top: 14px; font-weight: 800; color: #F5C542; font-size: .85rem; letter-spacing: .03em; text-transform: uppercase; }
+  .baris { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,.08); border-radius: 10px; padding: 8px 10px; margin-top: 6px; font-size: .88rem; }
+  .baris .ikon { width: 22px; text-align: center; font-size: 1.05rem; }
+  .baris .nama { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  .baris .ket { font-size: .78rem; opacity: .85; text-align: right; }
+  .ok .ket { color: #8CF0A5; } .gagal .ket { color: #FFA8A0; }
+  #ringkas { margin-top: 16px; background: #F8F1DC; color: #0B2A4A; border-radius: 14px; padding: 12px 14px; display: none; }
+  #ringkas h2 { margin: 0 0 6px; font-size: 1.05rem; }
+  #ringkas ul { margin: 0; padding-left: 20px; font-size: .92rem; }
+  #ringkas li { margin-bottom: 5px; }
+  .kecil { font-size: .78rem; opacity: .8; margin-top: 12px; }
+</style>
+</head>
+<body>
+<h1>Tes Koneksi</h1>
+<div class="langkah">
+  <b>Cara memakai:</b>
+  <ol>
+    <li>Buka halaman ini saat masih memakai <b>Wi-Fi</b>.</li>
+    <li><b>Matikan Wi-Fi</b>, pastikan paket data hidup.</li>
+    <li>Tekan <b>Mulai Tes</b>. Jangan muat ulang halaman.</li>
+  </ol>
+</div>
+<div id="info"></div>
+<button id="mulai">Mulai Tes</button>
+<button id="salin" disabled>Salin Hasil</button>
+<div id="hasil"></div>
+<div id="ringkas"><h2>Kesimpulan</h2><ul id="daftarRingkas"></ul></div>
+<p class="kecil">Tes ini hanya memeriksa apakah alamat bisa dijangkau (tanpa mengunduh isi halaman), jadi pemakaian datanya sangat kecil.</p>
+
+<script>
+(function () {
+  var BATAS = parseInt((location.search.match(/batas=(\d+)/) || [])[1], 10) || 8000;
+  var TES = [
+    { g: 'Alamat game saat ini', k: 'w',  n: 'workers.dev lama (masraji03)', u: 'https://belajar-sambil-bermain.masraji03.workers.dev/' },
+    { g: 'Alamat game saat ini', k: 'w',  n: 'workers.dev baru (jengguk92)', u: 'https://weathered-queen-f90c.jengguk92.workers.dev/' },
+    { g: 'Cloudflare umum',      k: 'cf', n: 'cloudflare.com', u: 'https://www.cloudflare.com/cdn-cgi/trace' },
+    { g: 'Hosting gratis alternatif', k: 'alt', n: 'github.io (GitHub Pages)', u: 'https://tes-koneksi-aji.github.io/' },
+    { g: 'Hosting gratis alternatif', k: 'alt', n: 'netlify.app', u: 'https://tes-koneksi-aji.netlify.app/' },
+    { g: 'Hosting gratis alternatif', k: 'alt', n: 'vercel.app', u: 'https://tes-koneksi-aji.vercel.app/' },
+    { g: 'Hosting gratis alternatif', k: 'alt', n: 'web.app (Firebase)', u: 'https://tes-koneksi-aji.web.app/' },
+    { g: 'Yang dipakai game', k: 'sup', n: 'Supabase (login dan skor)', u: 'https://dyxmilgvaymkbzgjtvln.supabase.co/rest/v1/' },
+    { g: 'Yang dipakai game', k: 'lib', n: 'jsDelivr (library)', u: 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js' },
+    { g: 'Yang dipakai game', k: 'lib', n: 'jsDelivr fastly (library)', u: 'https://fastly.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js' },
+    { g: 'Yang dipakai game', k: 'lib', n: 'unpkg (library)', u: 'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js' },
+    { g: 'Pembanding',        k: 'g',  n: 'Google', u: 'https://www.google.com/generate_204' }
+  ];
+  var elHasil = document.getElementById('hasil'), elInfo = document.getElementById('info');
+  var btnMulai = document.getElementById('mulai'), btnSalin = document.getElementById('salin');
+  var elRingkas = document.getElementById('ringkas'), daftarRingkas = document.getElementById('daftarRingkas');
+  var terakhir = '';
+
+  function infoKoneksi() {
+    var c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    var teks = 'Jenis koneksi terdeteksi: ' + (c ? (c.type || c.effectiveType || 'tidak diketahui') : 'tidak diketahui');
+    elInfo.className = '';
+    if (c && c.type === 'wifi') { teks += ' - sepertinya MASIH Wi-Fi. Matikan Wi-Fi dulu agar hasilnya sesuai paket data.'; elInfo.className = 'peringatan'; }
+    elInfo.textContent = teks;
+    return teks;
+  }
+  infoKoneksi();
+  if (navigator.connection && navigator.connection.addEventListener) navigator.connection.addEventListener('change', infoKoneksi);
+
+  function gambar() {
+    elHasil.innerHTML = '';
+    var grupSekarang = null;
+    TES.forEach(function (t, i) {
+      if (t.g !== grupSekarang) { grupSekarang = t.g; var h = document.createElement('div'); h.className = 'grup'; h.textContent = t.g; elHasil.appendChild(h); }
+      var b = document.createElement('div'); b.className = 'baris'; b.id = 'tes' + i;
+      b.innerHTML = '<span class="ikon">⏳</span><span class="nama"></span><span class="ket">menunggu...</span>';
+      b.querySelector('.nama').textContent = t.n;
+      elHasil.appendChild(b);
+    });
+  }
+
+  function uji(t) {
+    return new Promise(function (selesai) {
+      var ctrl = new AbortController(), mulai = performance.now(), sudah = false;
+      var timer = setTimeout(function () { if (sudah) return; sudah = true; ctrl.abort(); selesai({ ok: false, jenis: 'timeout', ms: BATAS }); }, BATAS);
+      fetch(t.u, { mode: 'no-cors', cache: 'no-store', signal: ctrl.signal }).then(function () {
+        if (sudah) return; sudah = true; clearTimeout(timer);
+        var ms = Math.round(performance.now() - mulai); ctrl.abort(); selesai({ ok: true, ms: ms });
+      }, function () {
+        if (sudah) return; sudah = true; clearTimeout(timer);
+        selesai({ ok: false, jenis: 'putus', ms: Math.round(performance.now() - mulai) });
+      });
+    });
+  }
+
+  function tulisBaris(i, r) {
+    var b = document.getElementById('tes' + i);
+    b.className = 'baris ' + (r.ok ? 'ok' : 'gagal');
+    b.querySelector('.ikon').textContent = r.ok ? '✅' : '❌';
+    b.querySelector('.ket').textContent = r.ok ? ('terbuka · ' + r.ms + ' ms') : (r.jenis === 'timeout' ? 'tidak menjawab (macet)' : 'sambungan diputus/gagal');
+  }
+
+  function kesimpulan(hasil) {
+    var per = function (k) { return hasil.filter(function (x) { return x.t.k === k; }); };
+    var semuaOk = function (a) { return a.length > 0 && a.every(function (x) { return x.r.ok; }); };
+    var semuaGagal = function (a) { return a.length > 0 && a.every(function (x) { return !x.r.ok; }); };
+    var w = per('w'), cf = per('cf'), alt = per('alt'), sup = per('sup'), lib = per('lib'), g = per('g');
+    var out = [];
+    if (semuaOk(g) === false && semuaGagal(g)) out.push('⚠️ Google pun gagal: kemungkinan paket data/sinyal sedang bermasalah atau tidak ada kuota. Ulangi tes setelah koneksi normal, hasil di bawah belum bisa dipercaya.');
+    if (semuaGagal(w)) out.push('❌ Semua alamat workers.dev gagal dijangkau di jaringan ini, sedangkan alamat lain terbuka: kemungkinan besar jenis alamatnya yang diblokir, bukan file game.');
+    else if (semuaOk(w)) out.push('✅ workers.dev terbuka sekarang. Kalau game masih gagal dibuka, kemungkinan gangguan sementara.');
+    else out.push('⚠️ workers.dev hanya sebagian yang terbuka (hasil tidak konsisten), ulangi tes sekali lagi.');
+    if (semuaGagal(cf)) out.push('❌ Cloudflare umum (cloudflare.com) juga gagal: hosting di Cloudflare, termasuk domain sendiri, kemungkinan ikut bermasalah di jaringan ini.');
+    else if (semuaGagal(w) && semuaOk(cf)) out.push('✅ Cloudflare umum terbuka, hanya workers.dev yang gagal: domain sendiri yang dihubungkan ke Cloudflare berpeluang besar berhasil.');
+    var altOk = alt.filter(function (x) { return x.r.ok; }).map(function (x) { return x.t.n; });
+    if (altOk.length) out.push('✅ Hosting gratis lain yang terbuka: ' + altOk.join(', ') + '.');
+    else out.push('❌ Tidak ada hosting gratis alternatif (github.io, netlify, vercel, web.app) yang terbuka.');
+    if (semuaOk(sup)) out.push('✅ Supabase terbuka: login dan skor bisa jalan.');
+    else out.push('❌ Supabase gagal: login dan skor tidak akan jalan walau situs berhasil dibuka. Perlu jalan lain (misalnya perantara pada domain sendiri).');
+    var libOk = lib.filter(function (x) { return x.r.ok; }).length;
+    if (libOk === 0) out.push('❌ Semua server library gagal: gunakan versi dengan library tertanam di dalam aplikasi.');
+    else out.push('✅ Server library yang terbuka: ' + libOk + ' dari ' + lib.length + '.');
+    return out;
+  }
+
+  function teksSalin(hasil, ringkas, info) {
+    var baris = ['Tes koneksi ' + new Date().toLocaleString('id-ID'), info, ''];
+    hasil.forEach(function (x) { baris.push((x.r.ok ? '[OK]    ' : '[GAGAL] ') + x.t.n + ' - ' + (x.r.ok ? x.r.ms + ' ms' : (x.r.jenis === 'timeout' ? 'tidak menjawab' : 'diputus/gagal'))); });
+    baris.push('', 'Kesimpulan:'); ringkas.forEach(function (s) { baris.push('- ' + s); });
+    return baris.join('\n');
+  }
+
+  btnMulai.addEventListener('click', function () {
+    btnMulai.disabled = true; btnSalin.disabled = true; elRingkas.style.display = 'none';
+    var info = infoKoneksi(); gambar();
+    var hasil = [];
+    Promise.all(TES.map(function (t, i) { return uji(t).then(function (r) { tulisBaris(i, r); hasil.push({ t: t, r: r }); }); })).then(function () {
+      var ring = kesimpulan(hasil);
+      daftarRingkas.innerHTML = '';
+      ring.forEach(function (s) { var li = document.createElement('li'); li.textContent = s; daftarRingkas.appendChild(li); });
+      elRingkas.style.display = 'block';
+      terakhir = teksSalin(hasil, ring, info);
+      btnMulai.disabled = false; btnMulai.textContent = 'Ulangi Tes'; btnSalin.disabled = false;
+    });
+  });
+
+  btnSalin.addEventListener('click', function () {
+    var ok = function () { btnSalin.textContent = 'Tersalin ✓'; setTimeout(function () { btnSalin.textContent = 'Salin Hasil'; }, 1800); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(terakhir).then(ok, function () { window.prompt('Salin teks ini:', terakhir); });
+    else window.prompt('Salin teks ini:', terakhir);
+  });
+})();
+</script>
+</body>
+</html>

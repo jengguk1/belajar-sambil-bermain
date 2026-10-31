@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Papan Peringkat - Belajar Sambil Bermain SDN Tamberu 1</title>
+<link rel="preconnect" href="https://dyxmilgvaymkbzgjtvln.supabase.co" crossorigin>
+<script>
+(function () {
+  var KUNCI = 'lib_supabase_v2';
+  var SUMBER = [
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js',
+    'https://fastly.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js',
+    'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js',
+    'https://gcore.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js'
+  ];
+  var banner = null;
+  function tampilBanner(teks, tombol, aksi) {
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.style.cssText = 'position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:99999;background:#F5C542;color:#0B2A4A;font:800 0.85rem Trebuchet MS,sans-serif;padding:9px 16px;border-radius:999px;border:2px solid #7A5A12;box-shadow:0 6px 16px rgba(0,0,0,.4);text-align:center;max-width:90vw;';
+      document.body.appendChild(banner);
+    }
+    banner.textContent = teks + ' ';
+    if (tombol) {
+      var b = document.createElement('button');
+      b.textContent = tombol;
+      b.style.cssText = 'margin-left:6px;padding:4px 10px;border-radius:999px;border:2px solid #0B2A4A;background:#fff;color:#0B2A4A;font:800 0.8rem Trebuchet MS,sans-serif;cursor:pointer;';
+      b.onclick = aksi;
+      banner.appendChild(b);
+    }
+  }
+  function hapusBanner() { if (banner && banner.parentNode) banner.parentNode.removeChild(banner); banner = null; }
+  function libSiap() { return !!(window.supabase && typeof window.supabase.createClient === 'function'); }
+  function jalankanKode(kode) {
+    var s = document.createElement('script');
+    s.text = kode;
+    document.head.appendChild(s);
+    return libSiap();
+  }
+  function ambil(url, ms) {
+    return new Promise(function (ok, gagal) {
+      var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var t = setTimeout(function () { if (ctrl) ctrl.abort(); gagal(new Error('waktu habis')); }, ms);
+      fetch(url, { signal: ctrl ? ctrl.signal : undefined, cache: 'force-cache' })
+        .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.text(); })
+        .then(function (txt) { clearTimeout(t); ok(txt); }, function (e) { clearTimeout(t); gagal(e); });
+    });
+  }
+  function siapkanLib() {
+    try {
+      var simpan = localStorage.getItem(KUNCI);
+      if (simpan) { if (jalankanKode(simpan)) return Promise.resolve(); localStorage.removeItem(KUNCI); }
+    } catch (e) {}
+    var i = 0;
+    function coba() {
+      if (i >= SUMBER.length) return Promise.reject(new Error('semua sumber gagal'));
+      var url = SUMBER[i++];
+      return ambil(url, 9000).then(function (txt) {
+        if (txt.length < 50000 || txt.indexOf('createClient') < 0) throw new Error('isi tidak valid');
+        if (!jalankanKode(txt)) throw new Error('library tidak aktif');
+        try { localStorage.setItem(KUNCI, txt); } catch (e) {}
+      }).catch(function () { return coba(); });
+    }
+    return coba();
+  }
+  window.mulaiAplikasi = function () {
+    var el = document.getElementById('kode-app');
+    function jalan() { var s = document.createElement('script'); s.text = el.textContent; document.head.appendChild(s); hapusBanner(); }
+    if (libSiap()) { jalan(); return; }
+    tampilBanner('Menyiapkan aplikasi...');
+    siapkanLib().then(jalan, function () {
+      tampilBanner('Koneksi lambat atau terputus.', 'Coba Lagi', function () { window.mulaiAplikasi(); });
+    });
+  };
+})();
+</script>
+<style>
+  :root {
+    --navy: #0B2A4A; --navy-light: #123a63; --gold: #F5C542; --gold-dark: #C9932A;
+    --cream: #FFF8E7; --green: #2E9E5B;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; width: 100%; }
+  body {
+    font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
+    background: radial-gradient(circle at top, var(--navy-light) 0%, var(--navy) 65%, #061a2e 100%);
+    padding: env(safe-area-inset-top, 0px) 14px calc(env(safe-area-inset-bottom, 0px) + 20px);
+    min-height: 100vh;
+  }
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 2px 4px; }
+  .back-btn { all: unset; color: var(--cream); font-weight: 800; cursor: pointer; padding: 6px 10px; }
+  .brand { color: var(--gold); font-weight: 900; font-size: 1.1rem; text-align: center; flex: 1; }
+
+  .tabs { display: flex; gap: 6px; background: rgba(255,255,255,0.08); border-radius: 999px; padding: 4px; max-width: 460px; margin: 14px auto 6px; overflow-x: auto; }
+  .tab-btn { all: unset; flex: 0 0 auto; text-align: center; padding: 9px 12px; border-radius: 999px; color: var(--cream); font-weight: 700; cursor: pointer; font-size: 0.78rem; white-space: nowrap; }
+  .tab-btn.active { background: var(--gold); color: var(--navy); }
+
+  .filter-row { max-width: 460px; margin: 0 auto 14px; display: flex; gap: 8px; }
+  .filter-row select { flex: 1; padding: 9px 10px; border-radius: 10px; border: 2px solid var(--gold-dark); background: var(--cream); color: var(--navy); font-weight: 700; font-size: 0.82rem; }
+
+  .list { max-width: 460px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; }
+  .row-item {
+    display: flex; align-items: center; gap: 10px; background: var(--cream);
+    border: 2.5px solid var(--gold-dark); border-radius: 14px; padding: 10px 14px;
+  }
+  .row-item.top1 { border-color: #FFD700; background: linear-gradient(180deg,#FFF7D6,#FFF1B0); }
+  .row-item.top2 { border-color: #C0C0C0; }
+  .row-item.top3 { border-color: #CD7F32; }
+  .peringkat { font-weight: 900; color: var(--navy); width: 28px; text-align: center; font-size: 1.05rem; }
+  .info { flex: 1; }
+  .info b { display: block; color: var(--navy); font-size: 0.95rem; }
+  .info span { display: block; color: #6b6b6b; font-size: 0.75rem; margin-top: 2px; }
+  .nilai { font-weight: 900; color: var(--gold-dark); font-size: 1.05rem; text-align: right; }
+
+  .empty-note { color: var(--cream); text-align: center; margin-top: 40px; opacity: 0.8; }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <button class="back-btn" onclick="window.location.href='beranda.html'">&larr; Beranda</button>
+    <div class="brand">🏆 Papan Peringkat</div>
+    <div style="width:56px;"></div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab-btn active" data-game="race-berhitung">🏃 Race</button>
+    <button class="tab-btn" data-game="cari-pasangan">🃏 Pasangan</button>
+    <button class="tab-btn" data-game="petualangan-matematika">🤖 Petualangan MTK</button>
+    <button class="tab-btn" data-game="petualangan-bindo">🤖 Petualangan B.Indo</button>
+    <button class="tab-btn" data-game="millionaire">💰 Jutawan</button>
+    <button class="tab-btn" data-game="total">🏆 Total</button>
+  </div>
+
+  <div class="filter-row">
+    <select id="filter-kelas"><option value="">Semua Kelas</option></select>
+  </div>
+
+  <div class="list" id="list"></div>
+  <div class="empty-note" id="empty-note" style="display:none;">Belum ada skor. Ayo main dulu!</div>
+
+<script type="text/plain" id="kode-app">
+const SUPABASE_URL = "https://dyxmilgvaymkbzgjtvln.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5eG1pbGd2YXlta2J6Z2p0dmxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4NDI0NTAsImV4cCI6MjEwNTQxODQ1MH0.FbzeXaVS2WIhbd1U3RMoqvYxieD-_x-o7PYmS4zmrcE";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let gameAktif = 'race-berhitung';
+let kelasAktif = '';
+
+async function init() {
+  const { data: sesi } = await sb.auth.getSession();
+  if (!sesi.session) { window.location.href = 'index.html'; return; }
+
+  const { data: kelasData } = await sb.from('kelas').select('*').order('tingkat', { ascending: true });
+  const sel = document.getElementById('filter-kelas');
+  (kelasData || []).forEach(k => {
+    const opt = document.createElement('option');
+    opt.value = k.tingkat;
+    opt.textContent = k.nama_kelas;
+    sel.appendChild(opt);
+  });
+  sel.onchange = () => { kelasAktif = sel.value; muatData(); };
+
+  document.getElementById('tabs').addEventListener('click', (e) => {
+    const btn = e.target.closest('.tab-btn');
+    if (!btn) return;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    gameAktif = btn.dataset.game;
+    muatData();
+  });
+
+  muatData();
+}
+
+async function muatData() {
+  const list = document.getElementById('list');
+  const empty = document.getElementById('empty-note');
+  list.innerHTML = '';
+  empty.style.display = 'none';
+
+  if (gameAktif === 'total') {
+    await muatTotalKeseluruhan();
+    return;
+  }
+
+  try {
+    let query = sb.from('skor_game').select('*').eq('game', gameAktif).order('nilai', { ascending: false }).limit(20);
+    if (kelasAktif) query = query.eq('tingkat', kelasAktif);
+    const { data, error } = await query;
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      empty.style.display = 'block';
+      return;
+    }
+
+    data.forEach((row, idx) => {
+      const peringkat = idx + 1;
+      const item = document.createElement('div');
+      item.className = 'row-item' + (peringkat === 1 ? ' top1' : peringkat === 2 ? ' top2' : peringkat === 3 ? ' top3' : '');
+      const medali = peringkat === 1 ? '🥇' : peringkat === 2 ? '🥈' : peringkat === 3 ? '🥉' : peringkat;
+      let detail = '';
+      if (gameAktif === 'race-berhitung') detail = 'Kelas ' + row.tingkat;
+      else if (gameAktif === 'cari-pasangan') detail = 'Kelas ' + row.tingkat + ' · ' + (row.langkah || '-') + ' langkah · ' + (row.waktu_detik || '-') + ' detik';
+      else if (gameAktif === 'millionaire') detail = 'Kelas ' + row.tingkat + ' · ' + (row.mapel || '-') + ' · Level ' + (row.tahap || '-');
+      else detail = 'Kelas ' + row.tingkat + ' · Stage ' + (row.tahap || '-');
+      const satuan = (gameAktif === 'petualangan-matematika' || gameAktif === 'petualangan-bindo') ? ' ⭐' : '';
+
+      item.innerHTML = `
+        <div class="peringkat">${medali}</div>
+        <div class="info"><b>${row.nama}</b><span>${detail}</span></div>
+        <div class="nilai">${row.nilai}${satuan}</div>
+      `;
+      list.appendChild(item);
+    });
+  } catch (e) {
+    empty.textContent = 'Gagal memuat data: ' + (e.message || e);
+    empty.style.display = 'block';
+  }
+}
+
+async function muatTotalKeseluruhan() {
+  const list = document.getElementById('list');
+  const empty = document.getElementById('empty-note');
+  try {
+    let query = sb.from('skor_game').select('*');
+    if (kelasAktif) query = query.eq('tingkat', kelasAktif);
+    const { data, error } = await query;
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      empty.textContent = 'Belum ada skor. Ayo main dulu!';
+      empty.style.display = 'block';
+      return;
+    }
+
+    const rekap = {};
+    data.forEach(row => {
+      if (!rekap[row.id_siswa]) {
+        rekap[row.id_siswa] = { nama: row.nama, tingkat: row.tingkat, total: 0, jumlahGame: 0 };
+      }
+      rekap[row.id_siswa].total += row.nilai;
+      rekap[row.id_siswa].jumlahGame += 1;
+    });
+
+    const daftar = Object.values(rekap).sort((a, b) => b.total - a.total).slice(0, 20);
+
+    daftar.forEach((r, idx) => {
+      const peringkat = idx + 1;
+      const item = document.createElement('div');
+      item.className = 'row-item' + (peringkat === 1 ? ' top1' : peringkat === 2 ? ' top2' : peringkat === 3 ? ' top3' : '');
+      const medali = peringkat === 1 ? '🥇' : peringkat === 2 ? '🥈' : peringkat === 3 ? '🥉' : peringkat;
+      item.innerHTML = `
+        <div class="peringkat">${medali}</div>
+        <div class="info"><b>${r.nama}</b><span>Kelas ${r.tingkat} · ${r.jumlahGame} kali main</span></div>
+        <div class="nilai">${r.total}</div>
+      `;
+      list.appendChild(item);
+    });
+  } catch (e) {
+    empty.textContent = 'Gagal memuat data: ' + (e.message || e);
+    empty.style.display = 'block';
+  }
+}
+
+init();
+</script>
+<script>mulaiAplikasi();</script>
+</body>
+</html>

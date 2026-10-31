@@ -1,0 +1,1617 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Petualangan Pak Aji di SDN Tamberu 1</title>
+<link rel="preconnect" href="https://dyxmilgvaymkbzgjtvln.supabase.co" crossorigin>
+<script>
+(function () {
+  var KUNCI = 'lib_supabase_v2';
+  var SUMBER = [
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js',
+    'https://fastly.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js',
+    'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js',
+    'https://gcore.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js'
+  ];
+  var banner = null;
+  function tampilBanner(teks, tombol, aksi) {
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.style.cssText = 'position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:99999;background:#F5C542;color:#0B2A4A;font:800 0.85rem Trebuchet MS,sans-serif;padding:9px 16px;border-radius:999px;border:2px solid #7A5A12;box-shadow:0 6px 16px rgba(0,0,0,.4);text-align:center;max-width:90vw;';
+      document.body.appendChild(banner);
+    }
+    banner.textContent = teks + ' ';
+    if (tombol) {
+      var b = document.createElement('button');
+      b.textContent = tombol;
+      b.style.cssText = 'margin-left:6px;padding:4px 10px;border-radius:999px;border:2px solid #0B2A4A;background:#fff;color:#0B2A4A;font:800 0.8rem Trebuchet MS,sans-serif;cursor:pointer;';
+      b.onclick = aksi;
+      banner.appendChild(b);
+    }
+  }
+  function hapusBanner() { if (banner && banner.parentNode) banner.parentNode.removeChild(banner); banner = null; }
+  function libSiap() { return !!(window.supabase && typeof window.supabase.createClient === 'function'); }
+  function jalankanKode(kode) {
+    var s = document.createElement('script');
+    s.text = kode;
+    document.head.appendChild(s);
+    return libSiap();
+  }
+  function ambil(url, ms) {
+    return new Promise(function (ok, gagal) {
+      var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var t = setTimeout(function () { if (ctrl) ctrl.abort(); gagal(new Error('waktu habis')); }, ms);
+      fetch(url, { signal: ctrl ? ctrl.signal : undefined, cache: 'force-cache' })
+        .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.text(); })
+        .then(function (txt) { clearTimeout(t); ok(txt); }, function (e) { clearTimeout(t); gagal(e); });
+    });
+  }
+  function siapkanLib() {
+    try {
+      var simpan = localStorage.getItem(KUNCI);
+      if (simpan) { if (jalankanKode(simpan)) return Promise.resolve(); localStorage.removeItem(KUNCI); }
+    } catch (e) {}
+    var i = 0;
+    function coba() {
+      if (i >= SUMBER.length) return Promise.reject(new Error('semua sumber gagal'));
+      var url = SUMBER[i++];
+      return ambil(url, 9000).then(function (txt) {
+        if (txt.length < 50000 || txt.indexOf('createClient') < 0) throw new Error('isi tidak valid');
+        if (!jalankanKode(txt)) throw new Error('library tidak aktif');
+        try { localStorage.setItem(KUNCI, txt); } catch (e) {}
+      }).catch(function () { return coba(); });
+    }
+    return coba();
+  }
+  window.mulaiAplikasi = function () {
+    var el = document.getElementById('kode-app');
+    function jalan() { var s = document.createElement('script'); s.text = el.textContent; document.head.appendChild(s); hapusBanner(); }
+    if (libSiap()) { jalan(); return; }
+    tampilBanner('Menyiapkan aplikasi...');
+    siapkanLib().then(jalan, function () {
+      tampilBanner('Koneksi lambat atau terputus.', 'Coba Lagi', function () { window.mulaiAplikasi(); });
+    });
+  };
+})();
+</script>
+<style>
+  :root {
+    --navy: #0B2A4A; --navy-light: #123a63; --gold: #F5C542; --gold-dark: #C9932A;
+    --cream: #FFF8E7; --green: #2E9E5B; --red: #C43D3D;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; width: 100%; }
+  body {
+    font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
+    background: radial-gradient(circle at top, var(--navy-light) 0%, var(--navy) 65%, #061a2e 100%);
+    padding: env(safe-area-inset-top, 0px) 14px calc(env(safe-area-inset-bottom, 0px) + 20px);
+    min-height: 100vh;
+  }
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 2px 4px; }
+  .back-btn { all: unset; color: var(--cream); font-weight: 800; cursor: pointer; padding: 6px 10px; }
+  .brand { color: var(--gold); font-weight: 900; font-size: 0.95rem; text-align: center; flex: 1; line-height: 1.2; }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* PETA STAGE */
+  .stage-grid {
+    max-width: 420px; margin: 20px auto 0;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+  }
+  .stage-node {
+    all: unset; box-sizing: border-box; aspect-ratio: 1/1; border-radius: 18px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-weight: 900; cursor: pointer; text-align: center; gap: 4px; padding: 6px;
+  }
+  .stage-node.buka {
+    background: linear-gradient(180deg, #FFE28A, var(--gold) 55%, var(--gold-dark));
+    border: 3px solid #7A5A12; color: var(--navy);
+  }
+  .stage-node.kunci {
+    background: rgba(255,255,255,0.08); border: 2.5px dashed rgba(255,255,255,0.3); color: rgba(255,255,255,0.55);
+  }
+  .stage-node .angka { font-size: 1.5rem; }
+  .stage-node .ket { font-size: 0.62rem; }
+
+  /* STAGE 1: DAFTAR MISI */
+  .misi-list { max-width: 420px; margin: 18px auto 0; display: flex; flex-direction: column; gap: 12px; }
+  .misi-card {
+    all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; background: var(--cream); border: 3px solid var(--gold-dark);
+    border-radius: 16px; cursor: pointer;
+  }
+  .misi-card:active { transform: scale(0.97); }
+  .misi-card .num {
+    flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%;
+    background: var(--navy); color: var(--cream); display: flex; align-items: center; justify-content: center;
+    font-weight: 900;
+  }
+  .misi-card .txt { flex: 1; }
+  .misi-card .txt b { display: block; color: var(--navy); font-size: 0.95rem; }
+  .misi-card .txt span { display: block; color: #6b6b6b; font-size: 0.75rem; margin-top: 2px; }
+  .misi-card .bintang { flex-shrink: 0; font-size: 1rem; letter-spacing: 1px; }
+  .misi-card.terkunci { opacity: 0.55; cursor: not-allowed; }
+  .misi-card.terkunci .num { background: #888; }
+
+  /* MAIN MISI */
+  .main-wrap { max-width: 460px; margin: 0 auto; }
+  .progress-row { display: flex; justify-content: space-between; align-items: center; color: var(--cream); font-size: 0.82rem; margin: 10px 4px 14px; }
+  .progress-row .nyawa { color: var(--red); letter-spacing: 2px; }
+
+  .soal-card {
+    background: var(--cream); border: 3px solid var(--gold-dark); border-radius: 18px;
+    padding: 20px 18px; margin-top: 6px;
+  }
+  .soal-teks { color: var(--navy); font-weight: 800; font-size: 1.05rem; line-height: 1.5; margin-bottom: 18px; text-align: center; white-space: pre-wrap; font-family: "Courier New", monospace; }
+  .opsi-list { display: flex; flex-direction: column; gap: 10px; }
+  .opsi-btn {
+    all: unset; box-sizing: border-box; width: 100%; text-align: center; padding: 13px;
+    background: white; border: 2.5px solid #DCC98A; border-radius: 12px;
+    color: var(--navy); font-weight: 700; cursor: pointer; font-size: 0.95rem;
+  }
+  .opsi-btn.benar { background: #E4F7EA; border-color: var(--green); }
+  .opsi-btn.salah { background: #FBE7E7; border-color: var(--red); }
+  .opsi-btn.disabled { pointer-events: none; }
+
+  .feedback { text-align: center; font-weight: 800; margin-top: 12px; min-height: 24px; }
+  .feedback.ok { color: var(--green); }
+  .feedback.err { color: var(--red); }
+
+  /* HASIL MISI */
+  .hasil-card {
+    max-width: 380px; margin: 40px auto 0; background: var(--cream); border: 3px solid var(--gold-dark);
+    border-radius: 20px; padding: 28px 22px; text-align: center;
+  }
+  .hasil-card .bintang-besar { font-size: 2.2rem; letter-spacing: 4px; margin: 10px 0; }
+  .hasil-card h2 { color: var(--navy); margin-bottom: 4px; }
+  .hasil-card p { color: #555; font-size: 0.9rem; margin-bottom: 18px; }
+  .btn-main {
+    all: unset; box-sizing: border-box; display: block; width: 100%; text-align: center; padding: 12px;
+    font-weight: 800; color: var(--navy);
+    background: linear-gradient(180deg, #FFE28A 0%, var(--gold) 55%, var(--gold-dark) 100%);
+    border-radius: 999px; border: 2.5px solid #7A5A12; cursor: pointer; margin-top: 8px;
+  }
+  .btn-secondary {
+    all: unset; box-sizing: border-box; display: block; width: 100%; text-align: center; padding: 12px;
+    font-weight: 800; color: var(--cream); background: var(--navy-light);
+    border-radius: 999px; border: 2.5px solid #06162a; cursor: pointer; margin-top: 8px;
+  }
+
+  .center-msg { color: var(--cream); text-align: center; margin-top: 40px; font-weight: 600; max-width: 320px; margin-left:auto; margin-right:auto; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 8%; transform: translate(-50%, 20px);
+    z-index: 5; background: var(--gold); color: var(--navy); font-weight: 800;
+    padding: 11px 18px; border-radius: 999px; border: 2.5px solid #7A5A12;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.4); opacity: 0; pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease; text-align: center; max-width: 80vw;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  @keyframes goyang { 0%,100%{transform:translateX(0);} 20%{transform:translateX(-6px);} 40%{transform:translateX(6px);} 60%{transform:translateX(-4px);} 80%{transform:translateX(4px);} }
+  .opsi-btn.salah { animation: goyang 0.4s; }
+  @keyframes lonjak { 0%{transform:scale(1);} 45%{transform:scale(1.07);} 100%{transform:scale(1);} }
+  .opsi-btn.benar { animation: lonjak 0.4s; }
+  @keyframes munculBintang { 0%{transform:scale(0) rotate(-25deg); opacity:0;} 60%{transform:scale(1.25) rotate(8deg); opacity:1;} 100%{transform:scale(1) rotate(0);} }
+  .bintang-besar { animation: munculBintang 0.6s ease-out; }
+  @keyframes masukView { from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+  .view.active { animation: masukView 0.25s ease-out; }
+  @keyframes lompatKunci { 0%,100%{transform:scale(1);} 50%{transform:scale(1.15);} }
+  .stage-node.buka:active .angka, .misi-card:not(.terkunci):active .num { animation: lompatKunci 0.3s; }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <button class="back-btn" id="btn-back">&larr; Kembali</button>
+    <div class="brand">🤖 PETUALANGAN PAK AJI<br>DI SDN TAMBERU 1</div>
+    <button class="back-btn" style="font-size:1.3rem;" onclick="window.location.href='papan-peringkat.html'">🏆</button>
+  </div>
+
+  <div class="center-msg" id="center-msg" style="display:none;"></div>
+
+  <!-- VIEW: PETA STAGE -->
+  <div class="view active" id="view-peta">
+    <div class="stage-grid" id="stage-grid"></div>
+  </div>
+
+  <!-- VIEW: DAFTAR MISI STAGE 1 -->
+  <div class="view" id="view-misi">
+    <div class="kelas-tag" id="info-total-bintang" style="text-align:center;color:var(--cream);opacity:0.85;font-size:0.82rem;margin-top:8px;"></div>
+    <div class="misi-list" id="misi-list"></div>
+  </div>
+
+  <!-- VIEW: MAIN SOAL -->
+  <div class="view" id="view-main">
+    <div class="main-wrap">
+      <div class="progress-row">
+        <span id="progress-teks">Soal 1/5</span>
+        <span class="nyawa" id="progress-nyawa">♥♥♥</span>
+      </div>
+      <div class="soal-card">
+        <div class="soal-teks" id="soal-teks"></div>
+        <div class="opsi-list" id="opsi-list"></div>
+        <div class="feedback" id="feedback"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW: HASIL MISI -->
+  <div class="view" id="view-hasil">
+    <div class="hasil-card">
+      <div>🏆</div>
+      <h2>Misi Selesai!</h2>
+      <div class="bintang-besar" id="hasil-bintang"></div>
+      <p id="hasil-detail"></p>
+      <button class="btn-main" id="btn-ulangi">Ulangi Misi</button>
+      <button class="btn-secondary" id="btn-ke-misi">Kembali ke Daftar Misi</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script type="text/plain" id="kode-app">
+const SUPABASE_URL = "https://dyxmilgvaymkbzgjtvln.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5eG1pbGd2YXlta2J6Z2p0dmxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4NDI0NTAsImV4cCI6MjEwNTQxODQ1MH0.FbzeXaVS2WIhbd1U3RMoqvYxieD-_x-o7PYmS4zmrcE";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const TINGKAT_GAME = 3;
+const JUMLAH_SOAL = 5;
+const MAKS_SALAH = 3;
+const SYARAT_BINTANG_LANJUT = 2;
+const SYARAT_TOTAL_STAGE = 8; // separuh dari maksimal 15 (5 misi x 3 bintang)
+
+let uid = null;
+let namaSaya = "Siswa";
+let isAdmin = false;
+let tahapTercapai = 0; // stage tertinggi yang syaratnya sudah terpenuhi
+let progresMisi = {};  // {misi: bintang} untuk stage yang sedang dibuka
+let misiAktif = null;
+let tahapAktif = null;
+
+// ---------- UTIL ----------
+function acakInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function tampilkanToast(teks) {
+  const t = document.getElementById('toast');
+  t.textContent = teks;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+function tampilkanView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function bintangStr(n) { return '★'.repeat(n) + '☆'.repeat(3 - n); }
+function pulangKeMisiList() {
+  tampilkanView('view-misi');
+  document.getElementById('btn-back').onclick = () => kembaliKePeta();
+}
+function kembaliKePeta() {
+  tampilkanView('view-peta');
+  document.getElementById('btn-back').onclick = () => window.location.href = 'mapel.html?mapel=matematika';
+}
+function formatSusun(a, b) {
+  const lebar = Math.max(String(a).length, String(b).length) + 1;
+  const baris1 = String(a).padStart(lebar, ' ');
+  const baris2 = '+' + String(b).padStart(lebar - 1, ' ');
+  const garis = '-'.repeat(lebar + 1);
+  return baris1 + '\n' + baris2 + '\n' + garis;
+}
+
+// ---------- GENERATOR SOAL STAGE 1 ----------
+function buatSoalUrutanHilang() {
+  const langkahOpsi = [1, 2, 5, 10, 25, 50, 100];
+  const step = langkahOpsi[acakInt(0, langkahOpsi.length - 1)];
+  const jumlahSuku = 5;
+  const awalMax = Math.max(1, 1000 - step * (jumlahSuku - 1));
+  const awal = acakInt(1, awalMax);
+  const suku = [];
+  for (let i = 0; i < jumlahSuku; i++) suku.push(awal + i * step);
+  const posKosong = acakInt(1, jumlahSuku - 2);
+  const jawaban = suku[posKosong];
+  const tampil = suku.map((v, i) => i === posKosong ? '...' : v);
+  const pertanyaan = 'Lengkapi barisan angka berikut:\n' + tampil.join(', ');
+  let opsiSet = new Set([jawaban]);
+  let percobaan = 0;
+  while (opsiSet.size < 4 && percobaan < 30) {
+    percobaan++;
+    const delta = acakInt(-step * 2, step * 2);
+    const kandidat = jawaban + (delta === 0 ? step : delta);
+    if (kandidat > 0) opsiSet.add(kandidat);
+  }
+  const opsi = shuffle([...opsiSet]).map(String);
+  return { pertanyaan, opsi, jawabanIndex: opsi.indexOf(String(jawaban)) };
+}
+
+function buatSoalUrutkan() {
+  let angkaSet = new Set();
+  while (angkaSet.size < 4) angkaSet.add(acakInt(1, 1000));
+  const angka = [...angkaSet];
+  const menaik = Math.random() < 0.5;
+  const benarArr = [...angka].sort((a, b) => menaik ? a - b : b - a);
+  const benarStr = benarArr.join(', ');
+  const pertanyaan = 'Urutkan angka berikut dari yang ' + (menaik ? 'TERKECIL ke TERBESAR' : 'TERBESAR ke TERKECIL') + ':\n' + angka.join(', ');
+  let opsiSet = [benarStr];
+  let percobaan = 0;
+  while (opsiSet.length < 4 && percobaan < 30) {
+    percobaan++;
+    const acakUrut = shuffle(angka).join(', ');
+    if (!opsiSet.includes(acakUrut)) opsiSet.push(acakUrut);
+  }
+  const opsi = shuffle(opsiSet);
+  return { pertanyaan, opsi, jawabanIndex: opsi.indexOf(benarStr) };
+}
+
+function buatSoalTetangga() {
+  const n = acakInt(2, 998);
+  const pertanyaan = 'Berapa angka sebelum dan sesudah ini?\n___ , ' + n + ' , ___';
+  const benar = (n - 1) + ' dan ' + (n + 1);
+  let opsiSet = [benar];
+  let percobaan = 0;
+  while (opsiSet.length < 4 && percobaan < 30) {
+    percobaan++;
+    const a = n + acakInt(-3, 3);
+    const b = n + acakInt(-3, 3);
+    const str = a + ' dan ' + b;
+    if (a === n - 1 && b === n + 1) continue;
+    if (!opsiSet.includes(str)) opsiSet.push(str);
+  }
+  const opsi = shuffle(opsiSet);
+  return { pertanyaan, opsi, jawabanIndex: opsi.indexOf(benar) };
+}
+
+function buatSoalKatak() {
+  const posisi = acakInt(1, 400);
+  const lompat = acakInt(2, 8);
+  const langkah = acakInt(1, 40);
+  const hasil = posisi + lompat * langkah;
+  const pertanyaan = `Seekor katak berada di angka ${posisi}. Ia melompat maju sebanyak ${lompat} kali, tiap lompatan sejauh ${langkah}. Sekarang katak berada di angka berapa?`;
+  let opsiSet = new Set([hasil]);
+  let percobaan = 0;
+  while (opsiSet.size < 4 && percobaan < 30) {
+    percobaan++;
+    const delta = acakInt(-langkah * 2, langkah * 2);
+    const kandidat = hasil + (delta === 0 ? langkah : delta);
+    if (kandidat >= 0) opsiSet.add(kandidat);
+  }
+  const opsi = shuffle([...opsiSet]).map(String);
+  return { pertanyaan, opsi, jawabanIndex: opsi.indexOf(String(hasil)) };
+}
+
+// ---------- GENERATOR SOAL STAGE 2 (Penjumlahan, tema Taman) ----------
+function buatSoalMendatar() {
+  const a = acakInt(10, 90);
+  const b = acakInt(1, 9);
+  const hasil = a + b;
+  const pertanyaan = `${a} + ${b} = ...`;
+  return buatOpsiAngka(hasil, 5, pertanyaan);
+}
+
+function buatSoalSusunPendek() {
+  const a = acakInt(10, 89);
+  const b = acakInt(10, 89);
+  const hasil = a + b;
+  const pertanyaan = 'Hitunglah penjumlahan bersusun pendek berikut:\n' + formatSusun(a, b);
+  return buatOpsiAngka(hasil, 8, pertanyaan);
+}
+
+
+
+const TEMPLATE_CERITA = [
+  (a, b) => `Pak Aji menanam ${a} bunga di taman sekolah. Kemudian ia menanam lagi ${b} bunga. Berapa jumlah bunga di taman sekarang?`,
+  (a, b) => `Ada ${a} anak sedang bermain di taman SDN Tamberu 1. Lalu datang ${b} anak lagi untuk bermain. Berapa jumlah anak sekarang?`,
+  (a, b) => `Di taman ada ${a} burung yang hinggap di pohon. Kemudian ${b} burung lain datang bergabung. Berapa jumlah burung seluruhnya?`,
+  (a, b) => `Pak Aji mengumpulkan ${a} daun kering di pagi hari, lalu ${b} daun kering lagi di sore hari. Berapa total daun yang terkumpul?`,
+];
+
+function buatSoalCerita() {
+  const a = acakInt(50, 400);
+  const b = acakInt(20, 300);
+  const hasil = a + b;
+  const template = TEMPLATE_CERITA[acakInt(0, TEMPLATE_CERITA.length - 1)];
+  const pertanyaan = template(a, b);
+  return buatOpsiAngka(hasil, 20, pertanyaan);
+}
+
+function buatSoalIsiKosong() {
+  const hasil = acakInt(100, 1000);
+  const a = acakInt(10, hasil - 10);
+  const b = hasil - a;
+  const diKiri = Math.random() < 0.5;
+  const pertanyaan = diKiri
+    ? `... + ${b} = ${hasil}`
+    : `${a} + ... = ${hasil}`;
+  const jawaban = diKiri ? a : b;
+  return buatOpsiAngka(jawaban, 15, pertanyaan);
+}
+
+function buatOpsiAngka(jawaban, rentang, pertanyaanOverride) {
+  let opsiSet = new Set([jawaban]);
+  let percobaan = 0;
+  while (opsiSet.size < 4 && percobaan < 30) {
+    percobaan++;
+    const delta = acakInt(-rentang, rentang);
+    const kandidat = jawaban + (delta === 0 ? 1 : delta);
+    if (kandidat >= 0) opsiSet.add(kandidat);
+  }
+  const opsi = shuffle([...opsiSet]).map(String);
+  return { pertanyaan: pertanyaanOverride, opsi, jawabanIndex: opsi.indexOf(String(jawaban)) };
+}
+
+
+// ---------- DATA STAGE ----------
+// ---------- GENERATOR SOAL STAGE 3 (Cerita Perpustakaan) ----------
+const TEMPLATE_PERPUS_1 = [
+  (a, b) => ({ teks: `Perpustakaan SDN Tamberu 1 memiliki ${a} buku cerita. Sekolah menambah ${b} buku baru. Berapa jumlah buku sekarang?`, jawaban: a + b }),
+  (a, b) => ({ teks: `Ada ${a} buku di rak perpustakaan. Sebanyak ${b} buku dipinjam siswa. Berapa buku yang tersisa?`, jawaban: a - b }),
+  (a, b) => ({ teks: `Bu guru menyumbang ${a} buku ke perpustakaan. Murid-murid juga menyumbang ${b} buku. Berapa total buku sumbangan?`, jawaban: a + b }),
+];
+function buatSoalPerpusCerita1() {
+  const a = acakInt(30, 200);
+  const b = acakInt(10, Math.min(100, a - 5));
+  const t = TEMPLATE_PERPUS_1[acakInt(0, TEMPLATE_PERPUS_1.length - 1)](a, b);
+  return { ...buatOpsiAngka(t.jawaban, 15), pertanyaan: t.teks };
+}
+
+function buatSoalPerpusKali() {
+  const rak = acakInt(3, 12);
+  const isi = acakInt(3, 12);
+  const hasil = rak * isi;
+  const pertanyaan = `Di perpustakaan ada ${rak} rak buku. Setiap rak berisi ${isi} buku. Berapa jumlah seluruh buku?`;
+  return { ...buatOpsiAngka(hasil, Math.max(6, isi)), pertanyaan };
+}
+
+function buatSoalPerpusBagi() {
+  const n = acakInt(2, 10);
+  const perRak = acakInt(3, 20);
+  const total = n * perRak;
+  const pertanyaan = `Ada ${total} buku baru yang akan dibagi rata ke ${n} rak. Berapa buku di setiap rak?`;
+  return { ...buatOpsiAngka(perRak, Math.max(3, Math.floor(perRak / 2))), pertanyaan };
+}
+
+const TEMPLATE_PERPUS_WAKTU = [
+  (a, b) => ({ teks: `Adi membaca buku selama ${a} menit, lalu istirahat sebentar, kemudian membaca lagi ${b} menit. Berapa total menit Adi membaca?`, jawaban: a + b }),
+  (buka, tutup) => ({ teks: `Perpustakaan buka pukul ${buka}.00 dan tutup pukul ${tutup}.00. Berapa jam perpustakaan buka setiap hari?`, jawaban: tutup - buka }),
+];
+function buatSoalPerpusWaktu() {
+  const pilih = acakInt(0, 1);
+  let t;
+  if (pilih === 0) {
+    const a = acakInt(10, 45);
+    const b = acakInt(10, 45);
+    t = TEMPLATE_PERPUS_WAKTU[0](a, b);
+  } else {
+    const buka = acakInt(7, 9);
+    const tutup = acakInt(buka + 2, 15);
+    t = TEMPLATE_PERPUS_WAKTU[1](buka, tutup);
+  }
+  return { ...buatOpsiAngka(t.jawaban, 10), pertanyaan: t.teks };
+}
+
+const TEMPLATE_PERPUS_CAMPUR = [
+  (a, b, c) => ({ teks: `Perpustakaan mempunyai ${a} buku. Sebanyak ${b} buku dipinjam, lalu datang ${c} buku baru. Berapa jumlah buku sekarang?`, jawaban: a - b + c }),
+  (rak, isi, pinjam) => ({ teks: `Ada ${rak} rak buku, masing-masing berisi ${isi} buku. Jika ${pinjam} buku dipinjam, berapa sisa buku sekarang?`, jawaban: rak * isi - pinjam }),
+];
+function buatSoalPerpusCampur() {
+  const pilih = acakInt(0, 1);
+  let t;
+  if (pilih === 0) {
+    const a = acakInt(100, 400);
+    const b = acakInt(10, 80);
+    const c = acakInt(10, 80);
+    t = TEMPLATE_PERPUS_CAMPUR[0](a, b, c);
+  } else {
+    const rak = acakInt(4, 10);
+    const isi = acakInt(5, 15);
+    const pinjam = acakInt(5, rak * isi - 10);
+    t = TEMPLATE_PERPUS_CAMPUR[1](rak, isi, pinjam);
+  }
+  return { ...buatOpsiAngka(t.jawaban, 15), pertanyaan: t.teks };
+}
+
+// ---------- GENERATOR SOAL STAGE 4 (Satuan Panjang & Berat) ----------
+const UNIT_PANJANG = ['km', 'm', 'cm', 'mm'];
+const BENDA_PANJANG = [
+  { benda: 'Panjang pensil', satuan: 'cm' },
+  { benda: 'Panjang buku tulis', satuan: 'cm' },
+  { benda: 'Jarak antara dua kota', satuan: 'km' },
+  { benda: 'Panjang lapangan sepak bola', satuan: 'm' },
+  { benda: 'Tinggi tiang bendera sekolah', satuan: 'm' },
+  { benda: 'Lebar meja belajar', satuan: 'cm' },
+  { benda: 'Jarak dari satu provinsi ke provinsi lain', satuan: 'km' },
+  { benda: 'Panjang ruang kelas', satuan: 'm' },
+];
+
+function buatSoalPilihSatuanPanjang() {
+  const item = BENDA_PANJANG[acakInt(0, BENDA_PANJANG.length - 1)];
+  const pertanyaan = 'Satuan yang tepat untuk mengukur "' + item.benda + '" adalah ...';
+  const opsi = shuffle([...UNIT_PANJANG]);
+  return { pertanyaan, opsi, jawabanIndex: opsi.indexOf(item.satuan) };
+}
+
+function buatSoalKonversiPanjang() {
+  const templates = [
+    () => { const x = acakInt(1, 9); return { p: `${x} km = ... m`, j: x * 1000 }; },
+    () => { const x = acakInt(1, 9); return { p: `${x} m = ... cm`, j: x * 100 }; },
+    () => { const x = acakInt(1, 9); return { p: `${x} cm = ... mm`, j: x * 10 }; },
+    () => { const x = acakInt(1, 9); return { p: `${x * 1000} m = ... km`, j: x }; },
+    () => { const x = acakInt(1, 9); return { p: `${x * 100} cm = ... m`, j: x }; },
+    () => { const x = acakInt(1, 9); return { p: `${x * 10} mm = ... cm`, j: x }; },
+  ];
+  const t = templates[acakInt(0, templates.length - 1)]();
+  return { ...buatOpsiAngka(t.j, Math.max(3, Math.round(t.j * 0.3))), pertanyaan: t.p };
+}
+
+const UNIT_BERAT = ['gram', 'ons', 'kg', 'ton'];
+const BENDA_BERAT = [
+  { benda: 'Berat sebuah pensil', satuan: 'gram' },
+  { benda: 'Berat sebutir kelereng', satuan: 'gram' },
+  { benda: 'Berat badan Ayah', satuan: 'kg' },
+  { benda: 'Berat sekarung beras', satuan: 'kg' },
+  { benda: 'Berat seekor ayam', satuan: 'kg' },
+  { benda: 'Berat sepotong kue kecil', satuan: 'gram' },
+  { benda: 'Berat satu buah semangka', satuan: 'kg' },
+  { benda: 'Berat cincin emas', satuan: 'gram' },
+];
+
+function buatSoalPilihSatuanBerat() {
+  const item = BENDA_BERAT[acakInt(0, BENDA_BERAT.length - 1)];
+  const pertanyaan = 'Satuan yang tepat untuk mengukur "' + item.benda + '" adalah ...';
+  const opsi = shuffle([...UNIT_BERAT]);
+  return { pertanyaan, opsi, jawabanIndex: opsi.indexOf(item.satuan) };
+}
+
+function buatSoalKonversiBerat() {
+  const templates = [
+    () => { const x = acakInt(1, 9); return { p: `${x} kg = ... gram`, j: x * 1000 }; },
+    () => { const x = acakInt(1, 9); return { p: `${x} kg = ... ons`, j: x * 10 }; },
+    () => { const x = acakInt(1, 9); return { p: `${x} ons = ... gram`, j: x * 100 }; },
+    () => { const x = acakInt(1, 9); return { p: `${x * 1000} gram = ... kg`, j: x }; },
+    () => { const x = acakInt(1, 9); return { p: `${x * 10} ons = ... kg`, j: x }; },
+    () => { const x = acakInt(1, 9); return { p: `${x * 100} gram = ... ons`, j: x }; },
+  ];
+  const t = templates[acakInt(0, templates.length - 1)]();
+  return { ...buatOpsiAngka(t.j, Math.max(3, Math.round(t.j * 0.3))), pertanyaan: t.p };
+}
+
+function buatSoalCampuranSatuan() {
+  const generators = [buatSoalPilihSatuanPanjang, buatSoalKonversiPanjang, buatSoalPilihSatuanBerat, buatSoalKonversiBerat];
+  return generators[acakInt(0, generators.length - 1)]();
+}
+
+// ---------- SOAL HOTS: PERBANDINGAN & CERITA (Stage 4) ----------
+const NAMA_TOKOH = ['Andi', 'Budi', 'Sari', 'Dodi', 'Rina', 'Tono'];
+function duaNamaAcak() {
+  const a = NAMA_TOKOH[acakInt(0, NAMA_TOKOH.length - 1)];
+  let b;
+  do { b = NAMA_TOKOH[acakInt(0, NAMA_TOKOH.length - 1)]; } while (b === a);
+  return [a, b];
+}
+
+function buatSoalBandingPanjang() {
+  const [namaA, namaB] = duaNamaAcak();
+  const unitPool = ['cm', 'm', 'km'];
+  const faktor = { cm: 1, m: 100, km: 100000 };
+  const unitA = unitPool[acakInt(0, 2)];
+  const unitB = unitPool[acakInt(0, 2)];
+  const nilaiA = acakInt(1, unitA === 'km' ? 9 : unitA === 'm' ? 9 : 300);
+  const nilaiB = acakInt(1, unitB === 'km' ? 9 : unitB === 'm' ? 9 : 300);
+  const panjangA = nilaiA * faktor[unitA];
+  const panjangB = nilaiB * faktor[unitB];
+  const jawaban = panjangA > panjangB ? namaA : panjangB > panjangA ? namaB : 'Sama panjang';
+  const pertanyaan = `${namaA} punya tali sepanjang ${nilaiA} ${unitA}. ${namaB} punya tali sepanjang ${nilaiB} ${unitB}. Siapa yang talinya lebih panjang?`;
+  const opsi = shuffle([namaA, namaB, 'Sama panjang']);
+  return { pertanyaan, opsi, jawabanIndex: opsi.indexOf(jawaban) };
+}
+
+function buatSoalCeritaPanjang() {
+  const templates = [
+    () => {
+      const totalKm = acakInt(2, 9);
+      const sudahM = acakInt(100, totalKm * 1000 - 100);
+      return { p: `Jarak dari rumah ke sekolah adalah ${totalKm} km. Jika sudah ditempuh ${sudahM} m, berapa meter lagi sisa jarak yang harus ditempuh?`, j: totalKm * 1000 - sudahM };
+    },
+    () => {
+      const aM = acakInt(2, 8);
+      const bCm = acakInt(10, 90);
+      return { p: `Sebatang bambu panjangnya ${aM} m ditambah ${bCm} cm. Berapa panjang bambu itu dalam cm?`, j: aM * 100 + bCm };
+    },
+    () => {
+      const totalCm = acakInt(200, 900);
+      const potongCm = acakInt(20, totalCm - 50);
+      return { p: `Sebuah kain panjangnya ${totalCm} cm dipotong sepanjang ${potongCm} cm. Berapa cm sisa kain itu?`, j: totalCm - potongCm };
+    },
+  ];
+  const t = templates[acakInt(0, templates.length - 1)]();
+  return { ...buatOpsiAngka(t.j, Math.max(5, Math.round(t.j * 0.15))), pertanyaan: t.p };
+}
+
+function buatSoalBandingBerat() {
+  const [namaA, namaB] = duaNamaAcak();
+  const unitPool = ['gram', 'ons', 'kg'];
+  const faktor = { gram: 1, ons: 100, kg: 1000 };
+  const unitA = unitPool[acakInt(0, 2)];
+  const unitB = unitPool[acakInt(0, 2)];
+  const nilaiA = acakInt(1, unitA === 'kg' ? 9 : unitA === 'ons' ? 20 : 500);
+  const nilaiB = acakInt(1, unitB === 'kg' ? 9 : unitB === 'ons' ? 20 : 500);
+  const beratA = nilaiA * faktor[unitA];
+  const beratB = nilaiB * faktor[unitB];
+  const jawaban = beratA > beratB ? namaA : beratB > beratA ? namaB : 'Sama berat';
+  const pertanyaan = `${namaA} membawa tas seberat ${nilaiA} ${unitA}. ${namaB} membawa tas seberat ${nilaiB} ${unitB}. Siapa yang tasnya lebih berat?`;
+  const opsi = shuffle([namaA, namaB, 'Sama berat']);
+  return { pertanyaan, opsi, jawabanIndex: opsi.indexOf(jawaban) };
+}
+
+function buatSoalCeritaBerat() {
+  const templates = [
+    () => {
+      const kgA = acakInt(1, 5);
+      const gB = acakInt(100, 900);
+      return { p: `Ibu membeli gula ${kgA} kg dan tepung ${gB} gram. Berapa gram total belanjaan Ibu?`, j: kgA * 1000 + gB };
+    },
+    () => {
+      const totalKg = acakInt(3, 9);
+      const terpakaiOns = acakInt(5, totalKg * 10 - 5);
+      return { p: `Sebuah karung beras seberat ${totalKg} kg sudah dipakai ${terpakaiOns} ons. Berapa gram sisa beras itu?`, j: totalKg * 1000 - terpakaiOns * 100 };
+    },
+    () => {
+      const totalGram = acakInt(500, 900);
+      const tambahGram = acakInt(50, 400);
+      return { p: `Berat sebuah paket adalah ${totalGram} gram. Jika ditambah isi baru seberat ${tambahGram} gram, berapa gram berat paket sekarang?`, j: totalGram + tambahGram };
+    },
+  ];
+  const t = templates[acakInt(0, templates.length - 1)]();
+  return { ...buatOpsiAngka(t.j, Math.max(10, Math.round(t.j * 0.15))), pertanyaan: t.p };
+}
+
+function misiUkurPanjangGab() { return Math.random() < 0.5 ? buatSoalPilihSatuanPanjang() : buatSoalBandingPanjang(); }
+function misiKonversiPanjangGab() { return Math.random() < 0.5 ? buatSoalKonversiPanjang() : buatSoalCeritaPanjang(); }
+function misiUkurBeratGab() { return Math.random() < 0.5 ? buatSoalPilihSatuanBerat() : buatSoalBandingBerat(); }
+function misiKonversiBeratGab() { return Math.random() < 0.5 ? buatSoalKonversiBerat() : buatSoalCeritaBerat(); }
+function buatSoalCampuranSatuanV2() {
+  const generators = [misiUkurPanjangGab, misiKonversiPanjangGab, misiUkurBeratGab, misiKonversiBeratGab];
+  return generators[acakInt(0, generators.length - 1)]();
+}
+
+// ====================== STAGE 5-10 (Matematika Kelas 3) ======================
+function xPilih(arr) { return arr[acakInt(0, arr.length - 1)]; }
+function rb(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+function rp(n) { return 'Rp' + rb(n); }
+function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+function lcm(a, b) { return a / gcd(a, b) * b; }
+function faktorDari(n) { const f = []; for (let i = 1; i <= n; i++) if (n % i === 0) f.push(i); return f; }
+function huruf1(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+// ---- pembuat soal (selalu mengembalikan {pertanyaan, opsi, jawabanIndex}) ----
+function soalNum(teks, jawaban, rentang, min) {
+  const mn = (min === undefined) ? 0 : min;
+  const r = Math.max(2, rentang);
+  const set = new Set([jawaban]); let p = 0;
+  while (set.size < 4 && p < 80) { p++; const d = acakInt(-r, r); const k = jawaban + (d === 0 ? 1 : d); if (k >= mn) set.add(k); }
+  let t = 1; while (set.size < 4) { set.add(jawaban + r + t); t++; }
+  const opsi = shuffle([...set]).map(String);
+  return { pertanyaan: teks, opsi, jawabanIndex: opsi.indexOf(String(jawaban)), _nilai: jawaban };
+}
+function soalNumStep(teks, jawaban, step, fmt, min) {
+  const f = fmt || String; const mn = (min === undefined) ? 0 : min;
+  const kand = [];
+  for (let k = 1; k <= 6; k++) { kand.push(jawaban + k * step); if (jawaban - k * step >= mn) kand.push(jawaban - k * step); }
+  const num = shuffle([jawaban, ...shuffle(kand).slice(0, 3)]);
+  return { pertanyaan: teks, opsi: num.map(f), jawabanIndex: num.indexOf(jawaban), _nilai: jawaban };
+}
+function soalNumKand(teks, jawaban, kandidat, fmt, step, min) {
+  const f = fmt || String; const mn = (min === undefined) ? 0 : min;
+  const set = [];
+  kandidat.forEach(x => { if (x !== jawaban && x >= mn && !set.includes(x)) set.push(x); });
+  const s = Math.max(1, step || 1); let t = 1;
+  while (set.length < 3 && t < 60) { const x = jawaban + s * t; if (!set.includes(x)) set.push(x); t++; }
+  const num = shuffle([jawaban, ...shuffle(set).slice(0, 3)]);
+  return { pertanyaan: teks, opsi: num.map(f), jawabanIndex: num.indexOf(jawaban), _nilai: jawaban };
+}
+function soalPilih(teks, benar, salahArr) {
+  const uniq = [...new Set(salahArr.filter(x => x !== benar))];
+  const opsi = shuffle([benar, ...shuffle(uniq).slice(0, 3)]);
+  return { pertanyaan: teks, opsi, jawabanIndex: opsi.indexOf(benar) };
+}
+function bandingTanda(a, b) { return a > b ? '>' : a < b ? '<' : '='; }
+
+const S5_BENDA = ['kelereng', 'stiker', 'buku', 'permen', 'kartu', 'pensil'];
+const S5_NAMA = ['Dodi', 'Rina', 'Sari', 'Budi', 'Tono', 'Ani'];
+function duaNama() { const a = xPilih(S5_NAMA); let b; do { b = xPilih(S5_NAMA); } while (b === a); return [a, b]; }
+
+// ============================ STAGE 5: KALIMAT MATEMATIKA ============================
+function s5Lengkapi() {
+  const a = acakInt(12, 190); let b; do { b = acakInt(12, 190); } while (b === a);
+  const x = Math.max(a, b), y = Math.min(a, b);
+  const tipe = acakInt(0, 5);
+  let teks, j;
+  if (tipe === 0) { teks = `${a} + n = ${a + b}`; j = b; }
+  else if (tipe === 1) { teks = `n + ${b} = ${a + b}`; j = a; }
+  else if (tipe === 2) { teks = `${x} - n = ${x - y}`; j = y; }
+  else if (tipe === 3) { teks = `n - ${y} = ${x - y}`; j = x; }
+  else if (tipe === 4) { teks = `${a + b} = ${a} + n`; j = b; }
+  else { teks = `${x - y} = ${x} - n`; j = y; }
+  return soalNum(teks + '\nBerapa nilai n?', j, 10, 0);
+}
+function s5Benar() {
+  const mode = acakInt(0, 2);
+  const eqBenar = () => { const a = acakInt(20, 300), b = acakInt(10, 200); return Math.random() < 0.5 ? `${a} + ${b} = ${a + b}` : `${a + b} - ${b} = ${a}`; };
+  const eqSalah = () => { const a = acakInt(20, 300), b = acakInt(10, 200); const off = xPilih([-20, -10, -1, 1, 10, 20, 100]); return Math.random() < 0.5 ? `${a} + ${b} = ${a + b + off}` : `${a + b} - ${b} = ${a + off}`; };
+  if (mode === 0) {
+    const salah = []; for (let i = 0; i < 6; i++) salah.push(eqSalah());
+    return soalPilih('Manakah kalimat matematika yang BENAR?', eqBenar(), salah);
+  }
+  if (mode === 1) {
+    const benar = []; for (let i = 0; i < 6; i++) benar.push(eqBenar());
+    return soalPilih('Manakah kalimat matematika yang SALAH?', eqSalah(), benar);
+  }
+  const a = acakInt(20, 200), b = acakInt(20, 200), c = acakInt(100, 400);
+  let d = acakInt(10, c - 10);
+  if (Math.random() < 0.2 && a + b < c - 5) d = c - (a + b);
+  const ans = bandingTanda(a + b, c - d);
+  return soalPilih(`Isi titik dengan tanda <, >, atau =\n${a} + ${b} ... ${c} - ${d}`, ans, ['<', '>', '=']);
+}
+function s5Story() {
+  const benda = xPilih(S5_BENDA), nama = xPilih(S5_NAMA);
+  const a = acakInt(30, 200), b = acakInt(10, a - 10);
+  const tipe = acakInt(0, 3);
+  let teks, benar, salah, n;
+  if (tipe === 0) {
+    teks = `${nama} punya ${a} ${benda}. Lalu ia diberi temannya ${b} ${benda} lagi. Jumlah ${benda} ${nama} sekarang adalah n.`;
+    benar = `${a} + ${b} = n`; salah = [`${a} - ${b} = n`, `n + ${a} = ${b}`, `${b} - ${a} = n`]; n = a + b;
+  } else if (tipe === 1) {
+    teks = `${nama} punya ${a} ${benda}. Sebanyak ${b} ${benda} diberikan kepada adiknya. Sisa ${benda} ${nama} adalah n.`;
+    benar = `${a} - ${b} = n`; salah = [`${a} + ${b} = n`, `${b} - ${a} = n`, `n - ${a} = ${b}`]; n = a - b;
+  } else if (tipe === 2) {
+    const c = a + b;
+    teks = `${nama} punya beberapa ${benda}, yaitu n. Setelah diberi ${b} ${benda}, jumlahnya menjadi ${c}.`;
+    benar = `n + ${b} = ${c}`; salah = [`n - ${b} = ${c}`, `${b} - n = ${c}`, `${c} + ${b} = n`]; n = a;
+  } else {
+    const c = a - b;
+    teks = `${nama} punya ${a} ${benda}. Setelah ${nama} memberikan sebanyak n kepada temannya, sisanya ${c}.`;
+    benar = `${a} - n = ${c}`; salah = [`${a} + n = ${c}`, `n - ${a} = ${c}`, `${c} - ${a} = n`]; n = b;
+  }
+  return { teks, benar, salah, n };
+}
+function s5CeritaKalimat() { const s = s5Story(); return soalPilih(s.teks + '\nKalimat matematika yang tepat adalah ...', s.benar, s.salah); }
+function s5CeritaHitung() { const s = s5Story(); return soalNum(s.teks + '\nBerapa nilai n?', s.n, 10, 0); }
+function s5Hots() {
+  const t = acakInt(0, 3);
+  let teks, j;
+  if (t === 0) {
+    const n = acakInt(10, 120), a = acakInt(10, 120), m = acakInt(40, 200), b = acakInt(10, m - 10);
+    teks = `Diketahui:\nn + ${a} = ${n + a}\nm - ${b} = ${m - b}\nBerapa nilai n + m?`; j = n + m;
+  } else if (t === 1) {
+    const n = acakInt(12, 150); teks = `n + n = ${2 * n}\nBerapa nilai n?`; j = n;
+  } else if (t === 2) {
+    const n = acakInt(10, 120); teks = `${2 * n} - n = n\nBerapa nilai n?`; j = n;
+  } else {
+    const a = acakInt(30, 200), b = acakInt(30, 200), c = acakInt(10, a + b - 10);
+    teks = `${a} + ${b} = n\nn - ${c} = m\nBerapa nilai m?`; j = a + b - c;
+  }
+  return soalNum(teks, j, 10, 0);
+}
+
+// ============================ STAGE 6: KELIPATAN & FAKTOR ============================
+function s6Kelipatan() {
+  const t = acakInt(0, 2), k = acakInt(2, 9);
+  if (t === 0) {
+    const benar = [1, 2, 3].map(i => k * i).join(', ');
+    const salah = [[1, 2, 3].map(i => k + i).join(', '), [2, 3, 4].map(i => k * i).join(', '), `${k}, ${k * k}, ${k * k * k}`];
+    return soalPilih(`Tiga kelipatan pertama dari ${k} adalah ...`, benar, salah);
+  }
+  if (t === 1) {
+    const m = acakInt(3, 12) * k;
+    const peng = []; for (let x = Math.max(1, m - 2 * k); x <= m + 2 * k; x++) if (x % k !== 0) peng.push(x);
+    return soalNumKand(`Manakah yang merupakan kelipatan ${k}?`, m, shuffle(peng), String, 1, 1);
+  }
+  const n = acakInt(5, 10);
+  return soalNumStep(`Kelipatan ${k} yang ke-${n} adalah ...`, k * n, k, String, 1);
+}
+function s6Faktor() {
+  const t = acakInt(0, 2);
+  const bil = xPilih([12, 16, 18, 20, 24, 28, 30, 36, 40, 42, 45, 48]);
+  const fk = faktorDari(bil);
+  const non = []; for (let i = 2; i < bil; i++) if (bil % i !== 0) non.push(i);
+  if (t === 0) {
+    const salah = [];
+    for (let i = 1; i < fk.length - 1; i++) salah.push(fk.filter((_, j) => j !== i).join(', '));
+    salah.push([...fk, xPilih(non)].sort((a, b) => a - b).join(', '));
+    salah.push([1, 2, 3, 4, 5].map(i => bil * i).join(', '));
+    return soalPilih(`Faktor dari ${bil} adalah ...`, fk.join(', '), salah);
+  }
+  if (t === 1) return soalPilih(`Manakah yang BUKAN faktor dari ${bil}?`, String(xPilih(non)), shuffle(fk.filter(f => f > 1 && f < bil)).slice(0, 3).map(String));
+  const dalam = fk.filter(f => f > 1 && f < bil);
+  return soalNumKand(`Manakah yang merupakan faktor dari ${bil}?`, xPilih(dalam), shuffle(non), String, 1, 1);
+}
+function s6BanyakFaktor() {
+  const bil = xPilih([6, 8, 9, 10, 12, 14, 15, 16, 18, 20, 21, 24, 25, 27, 28, 30, 32, 36]);
+  if (Math.random() < 0.55) return soalNum(`Berapa banyak faktor dari ${bil}?`, faktorDari(bil).length, 3, 1);
+  const fk = faktorDari(bil); const j = fk[fk.length - 2];
+  return soalNum(`Faktor terbesar dari ${bil} selain ${bil} sendiri adalah ...`, j, Math.max(2, Math.floor(j / 2)), 1);
+}
+function s6Cerita() {
+  const [a, b] = xPilih([[2, 3], [2, 5], [3, 4], [3, 5], [4, 6], [4, 5], [5, 6], [3, 7], [2, 7], [6, 9], [4, 10]]);
+  const l = lcm(a, b);
+  const tipe = acakInt(0, 2);
+  let teks;
+  if (tipe === 0) teks = `Lampu merah menyala setiap ${a} detik, lampu biru setiap ${b} detik. Keduanya menyala bersamaan pada detik ke-0.\nSetelah berapa detik keduanya menyala bersamaan lagi untuk pertama kali?`;
+  else if (tipe === 1) teks = `Bus A berangkat setiap ${a} menit dan bus B setiap ${b} menit dari terminal. Pada pukul 07.00 keduanya berangkat bersamaan.\nSetelah berapa menit keduanya berangkat bersamaan lagi untuk pertama kali?`;
+  else teks = `Dodi piket setiap ${a} hari sekali dan Rina setiap ${b} hari sekali. Hari ini mereka piket bersama.\nBerapa hari lagi mereka piket bersama untuk pertama kali?`;
+  return soalNumKand(teks, l, [a * b, a + b, l + a, l + b, l * 2, Math.max(a, b)], String, a, 1);
+}
+const S6_PUZZLE = [[6, 48], [4, 36], [5, 60], [3, 24], [6, 36], [4, 48], [8, 48], [3, 36], [5, 40], [7, 42], [9, 36], [4, 40]];
+function s6Puzzle() {
+  const [a, b] = xPilih(S6_PUZZLE);
+  const common = faktorDari(b).filter(x => x % a === 0);
+  const x = xPilih(common);
+  let lo = x - 1, hi = x + 1;
+  for (let i = 0; i < 30; i++) {
+    const l = Math.max(0, x - acakInt(1, 8)), h = x + acakInt(1, 8);
+    if (common.filter(c => c > l && c < h).length === 1) { lo = l; hi = h; break; }
+  }
+  const peng = [];
+  for (let i = 1; i <= 12; i++) { const m = a * i; if (b % m !== 0) peng.push(m); }
+  faktorDari(b).forEach(f => { if (f % a !== 0) peng.push(f); });
+  return soalNumKand(`Aku bilangan kelipatan ${a} sekaligus faktor dari ${b}.\nAku lebih dari ${lo} dan kurang dari ${hi}.\nSiapakah aku?`, x, shuffle(peng), String, a, 1);
+}
+function s6Bersama() {
+  const [a, b] = xPilih([[2, 3], [3, 4], [4, 6], [2, 5], [3, 5], [4, 5], [6, 8]]);
+  const l = lcm(a, b);
+  const benar = l * acakInt(1, 4);
+  const peng = []; for (let i = 1; i <= 14; i++) { const m = (Math.random() < 0.5 ? a : b) * i; if (m % l !== 0) peng.push(m); }
+  return soalNumKand(`Manakah bilangan yang merupakan kelipatan ${a} sekaligus kelipatan ${b}?`, benar, shuffle(peng), String, a, 1);
+}
+function s6Permen() {
+  const bil = xPilih([12, 18, 20, 24, 30, 36, 48]);
+  const fk = faktorDari(bil).filter(f => f > 1 && f < bil);
+  const non = []; for (let i = 2; i < bil; i++) if (bil % i !== 0) non.push(i);
+  return soalNumKand(`Ibu punya ${bil} permen. Permen dibagi sama banyak kepada beberapa anak tanpa sisa (satu anak mendapat lebih dari 1 permen).\nBanyak anak yang mungkin adalah ...`, xPilih(fk), shuffle(non), String, 1, 1);
+}
+function s6Hots() { return xPilih([s6Permen, s6Puzzle, s6Bersama])(); }
+
+// ============================ STAGE 7: BILANGAN SAMPAI 10.000 ============================
+function terbilang(n) {
+  const sat = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan'];
+  function bagi(x) {
+    if (x < 10) return sat[x];
+    if (x === 10) return 'sepuluh';
+    if (x === 11) return 'sebelas';
+    if (x < 20) return sat[x - 10] + ' belas';
+    if (x < 100) { const p = Math.floor(x / 10), s = x % 10; return sat[p] + ' puluh' + (s ? ' ' + sat[s] : ''); }
+    if (x < 200) return 'seratus' + (x > 100 ? ' ' + bagi(x - 100) : '');
+    if (x < 1000) { const r = Math.floor(x / 100), s = x % 100; return sat[r] + ' ratus' + (s ? ' ' + bagi(s) : ''); }
+    if (x < 2000) return 'seribu' + (x > 1000 ? ' ' + bagi(x - 1000) : '');
+    if (x < 10000) { const r = Math.floor(x / 1000), s = x % 1000; return sat[r] + ' ribu' + (s ? ' ' + bagi(s) : ''); }
+    return 'sepuluh ribu';
+  }
+  return n === 0 ? 'nol' : bagi(n);
+}
+function acakBil4() {
+  const th = acakInt(1, 9); let h = acakInt(0, 9), t = acakInt(0, 9), s = acakInt(0, 9);
+  if (Math.random() < 0.4) { const pos = acakInt(0, 2); if (pos === 0) h = 0; else if (pos === 1) t = 0; else s = 0; }
+  return th * 1000 + h * 100 + t * 10 + s;
+}
+function pengecohBilangan(n) {
+  const kand = new Set(); const d = String(n).split('');
+  for (let i = 0; i < 3; i++) { if (d[i] !== d[i + 1]) { const c = d.slice(); [c[i], c[i + 1]] = [c[i + 1], c[i]]; const v = parseInt(c.join(''), 10); if (v >= 1000) kand.add(v); } }
+  [10, 100, 1000, -10, -100, -1000, 1, -1].forEach(x => { const v = n + x; if (v >= 1000 && v <= 9999) kand.add(v); });
+  kand.delete(n);
+  return [...kand];
+}
+function s7Baca() {
+  let n, peng;
+  if (Math.random() < 0.08) { n = 10000; peng = [1000, 10100, 9999, 11000, 10010, 100000]; }
+  else { n = acakBil4(); peng = pengecohBilangan(n); }
+  return soalPilih(`Bilangan ${rb(n)} dibaca ...`, huruf1(terbilang(n)), peng.map(x => huruf1(terbilang(x))));
+}
+function s7Tulis() {
+  let n, peng;
+  if (Math.random() < 0.08) { n = 10000; peng = [1000, 10100, 9999, 11000, 10010, 100000]; }
+  else { n = acakBil4(); peng = pengecohBilangan(n); }
+  return soalPilih(`Bilangan "${terbilang(n)}" ditulis ...`, rb(n), peng.map(rb));
+}
+function bilDigitBeda() { while (true) { const d = shuffle([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]).slice(0, 4); if (d[0] !== 0) return d; } }
+function s7NilaiTempat() {
+  const d = bilDigitBeda();
+  const n = d[0] * 1000 + d[1] * 100 + d[2] * 10 + d[3];
+  const i = xPilih([0, 1, 2, 3].filter(k => d[k] !== 0));
+  const digit = d[i], pangkat = [1000, 100, 10, 1][i], nama = ['ribuan', 'ratusan', 'puluhan', 'satuan'][i];
+  const t = acakInt(0, 2);
+  if (t === 0) return soalPilih(`Nilai tempat angka ${digit} pada bilangan ${rb(n)} adalah ...`, nama, ['ribuan', 'ratusan', 'puluhan', 'satuan']);
+  if (t === 1) return soalPilih(`Nilai angka ${digit} pada bilangan ${rb(n)} adalah ...`, rb(digit * pangkat), [1, 10, 100, 1000].map(p => rb(digit * p)));
+  return soalPilih(`Angka pada tempat ${nama} dari bilangan ${rb(n)} adalah ...`, String(digit), [0, 1, 2, 3].filter(j => j !== i).map(j => String(d[j])));
+}
+function s7Banding() {
+  const t = acakInt(0, 2);
+  if (t === 0) {
+    const a = acakBil4(); let b = a;
+    if (Math.random() > 0.15) { do { b = a + acakInt(-99, 99); } while (b < 1000 || b > 9999 || b === a); }
+    return soalPilih(`Isi titik dengan tanda <, >, atau =\n${rb(a)} ... ${rb(b)}`, bandingTanda(a, b), ['<', '>', '=']);
+  }
+  if (t === 1) {
+    const n = acakBil4(); const g = String(n).split('').map(Number);
+    const bentuk = `${g[0] * 1000} + ${g[1] * 100} + ${g[2] * 10} + ${g[3]}`;
+    let m = n;
+    if (Math.random() > 0.3) { m = n + xPilih([-1000, -100, -10, -1, 1, 10, 100, 1000]); if (m < 1000 || m > 9999) m = n; }
+    return soalPilih(`Isi titik dengan tanda <, >, atau =\n${bentuk} ... ${rb(m)}`, bandingTanda(n, m), ['<', '>', '=']);
+  }
+  let arr = [];
+  while (arr.length < 4) {
+    const base = acakInt(1500, 9000); const s = new Set();
+    while (s.size < 4) s.add(base + acakInt(-900, 900));
+    arr = [...s].filter(x => x >= 1000 && x <= 9999);
+  }
+  const besar = Math.random() < 0.5;
+  const target = besar ? Math.max(...arr) : Math.min(...arr);
+  return soalPilih(`Bilangan paling ${besar ? 'besar' : 'kecil'} di antara bilangan berikut adalah ...`, rb(target), arr.filter(x => x !== target).map(rb));
+}
+function s7Urut() {
+  const set = new Set(); while (set.size < 4) set.add(acakBil4());
+  const angka = [...set]; const naik = Math.random() < 0.5;
+  const benar = [...angka].sort((a, b) => naik ? a - b : b - a).map(rb).join(', ');
+  const salah = new Set(); let p = 0;
+  while (salah.size < 3 && p < 80) { p++; const s = shuffle(angka).map(rb).join(', '); if (s !== benar) salah.add(s); }
+  return soalPilih(`Urutkan bilangan berikut dari yang ${naik ? 'TERKECIL ke TERBESAR' : 'TERBESAR ke TERKECIL'}:\n${angka.map(rb).join(', ')}`, benar, [...salah]);
+}
+function s7Hots() {
+  const t = acakInt(0, 2);
+  if (t === 0) {
+    const d = shuffle([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]).slice(0, 4);
+    const asc = [...d].sort((a, b) => a - b), desc = [...d].sort((a, b) => b - a);
+    const terkecil = [...asc]; if (terkecil[0] === 0) { const k = terkecil.findIndex(x => x !== 0); [terkecil[0], terkecil[k]] = [terkecil[k], terkecil[0]]; }
+    const besar = Math.random() < 0.5;
+    const benarArr = besar ? desc : terkecil;
+    const benar = parseInt(benarArr.join(''), 10);
+    const peng = new Set();
+    peng.add(parseInt((besar ? asc : desc).join(''), 10));
+    const c = benarArr.slice(); [c[0], c[1]] = [c[1], c[0]]; peng.add(parseInt(c.join(''), 10));
+    let p = 0; while (peng.size < 5 && p < 60) { p++; const s = shuffle(d); if (s[0] !== 0) peng.add(parseInt(s.join(''), 10)); }
+    peng.delete(benar);
+    return soalPilih(`Dari angka ${d.join(', ')}, bilangan empat angka paling ${besar ? 'besar' : 'kecil'} yang dapat dibentuk (setiap angka dipakai satu kali) adalah ...`,
+      rb(benar), [...peng].filter(x => x >= 1000).map(rb));
+  }
+  if (t === 1) {
+    const n = acakBil4(); const g = String(n).split('').map(Number);
+    return soalPilih(`Aku bilangan empat angka.\nAngka ribuanku ${g[0]}.\nNilai angka ratusanku ${g[1] * 100}.\nNilai angka puluhanku ${g[2] * 10}.\nAngka satuanku ${g[3]}.\nSiapakah aku?`, rb(n), pengecohBilangan(n).map(rb));
+  }
+  const lo = acakInt(1100, 9500), hi = lo + xPilih([20, 30, 40, 50, 60, 80, 100]);
+  const benar = lo + acakInt(1, hi - lo - 1);
+  return soalPilih(`Bilangan yang terletak di antara ${rb(lo)} dan ${rb(hi)} adalah ...`, rb(benar), [lo - acakInt(1, 15), hi + acakInt(1, 15), lo, hi].map(rb));
+}
+
+// ============================ STAGE 8: UANG ============================
+const UANG_LOGAM = [100, 200, 500];
+const UANG_KERTAS = [2000, 5000, 10000, 20000, 50000, 100000];
+const UANG_SEMUA = [...UANG_LOGAM, ...UANG_KERTAS];
+function s8Kenal() {
+  const t = acakInt(0, 4);
+  if (t === 0) return soalPilih('Manakah yang merupakan uang logam?', rp(xPilih(UANG_LOGAM)), shuffle(UANG_KERTAS).slice(0, 3).map(rp));
+  if (t === 1) return soalPilih('Manakah yang merupakan uang kertas?', rp(xPilih(UANG_KERTAS)), UANG_LOGAM.map(rp));
+  if (t === 2) {
+    const arr = shuffle(UANG_SEMUA).slice(0, 4); const besar = Math.random() < 0.5;
+    const target = besar ? Math.max(...arr) : Math.min(...arr);
+    return soalPilih(`Uang yang nilainya paling ${besar ? 'besar' : 'kecil'} adalah ...`, rp(target), arr.filter(x => x !== target).map(rp));
+  }
+  if (t === 3) {
+    const palsu = xPilih([3000, 4000, 6000, 7000, 15000, 25000, 30000, 40000]);
+    return soalPilih('Manakah yang BUKAN pecahan uang rupiah yang berlaku?', rp(palsu), shuffle([500, 2000, 5000, 10000, 20000, 50000, 100000]).slice(0, 3).map(rp));
+  }
+  const arr = shuffle(UANG_SEMUA).slice(0, 4);
+  const benar = [...arr].sort((a, b) => a - b).map(rp).join(', ');
+  const salah = new Set(); let p = 0;
+  while (salah.size < 3 && p < 80) { p++; const s = shuffle(arr).map(rp).join(', '); if (s !== benar) salah.add(s); }
+  return soalPilih(`Urutkan uang berikut dari nilai yang TERKECIL:\n${arr.map(rp).join(', ')}`, benar, [...salah]);
+}
+const UANG_ITEM = [{ v: 200, j: 'koin' }, { v: 500, j: 'koin' }, { v: 1000, j: 'lembar' }, { v: 2000, j: 'lembar' }, { v: 5000, j: 'lembar' }, { v: 10000, j: 'lembar' }, { v: 20000, j: 'lembar' }, { v: 50000, j: 'lembar' }];
+function acakItemUang(n) {
+  return shuffle(UANG_ITEM).slice(0, n).map(it => ({ v: it.v, j: it.j, q: acakInt(1, it.v <= 2000 ? 6 : it.v <= 10000 ? 4 : 3) }));
+}
+function teksUang(items) {
+  const p = items.map(it => `${it.q} ${it.j} ${rp(it.v)}`);
+  return p.length === 1 ? p[0] : p.slice(0, -1).join(', ') + ' dan ' + p[p.length - 1];
+}
+function totalUang(items) { return items.reduce((s, it) => s + it.v * it.q, 0); }
+function gcdItems(...kelompok) { let g = 0; kelompok.forEach(k => k.forEach(it => { g = gcd(g, it.v); })); return g; }
+function s8Hitung() {
+  const items = acakItemUang(acakInt(2, 4));
+  return soalNumStep(`${xPilih(S5_NAMA)} memiliki ${teksUang(items)}.\nBerapa jumlah seluruh uangnya?`, totalUang(items), gcdItems(items), rp, 0);
+}
+function s8Banding() {
+  const [A, B] = duaNama();
+  let ia, ib;
+  do { ia = acakItemUang(acakInt(2, 3)); ib = acakItemUang(acakInt(2, 3)); } while (totalUang(ia) === totalUang(ib));
+  const ta = totalUang(ia), tb = totalUang(ib);
+  const dasar = `${A} memiliki ${teksUang(ia)}.\n${B} memiliki ${teksUang(ib)}.\n`;
+  if (Math.random() < 0.5) return soalPilih(dasar + 'Siapa yang uangnya lebih banyak?', ta > tb ? A : B, [ta > tb ? B : A, 'Sama banyak', 'Tidak dapat ditentukan']);
+  return soalNumStep(dasar + `Berapa selisih uang ${A} dan ${B}?`, Math.abs(ta - tb), gcdItems(ia, ib), rp, 0);
+}
+const BARANG = [
+  { n: 'pensil', p: [1500, 2000, 2500, 3000] }, { n: 'buku tulis', p: [3500, 4000, 4500, 5000] },
+  { n: 'penghapus', p: [1000, 1500, 2000] }, { n: 'penggaris', p: [2000, 2500, 3000] },
+  { n: 'roti', p: [2500, 3000, 3500] }, { n: 'susu kotak', p: [4000, 5000, 6000] },
+  { n: 'es teh', p: [2000, 3000] }, { n: 'gorengan', p: [1000, 1500, 2000] },
+];
+function duaBarang() {
+  const b1 = xPilih(BARANG); let b2; do { b2 = xPilih(BARANG); } while (b2 === b1);
+  return { b1, b2, p1: xPilih(b1.p), p2: xPilih(b2.p), q1: acakInt(1, 4), q2: acakInt(1, 4) };
+}
+function s8Belanja() {
+  const t = acakInt(0, 3), nama = xPilih(S5_NAMA);
+  if (t === 0) {
+    const b = xPilih(BARANG), p = xPilih(b.p), q = acakInt(2, 5), total = p * q;
+    const bayar = xPilih([5000, 10000, 20000, 50000, 100000].filter(x => x > total));
+    return soalNumStep(`${nama} membeli ${q} ${b.n} dengan harga ${rp(p)} per buah. Ia membayar dengan selembar uang ${rp(bayar)}.\nBerapa uang kembaliannya?`, bayar - total, 500, rp, 0);
+  }
+  const { b1, b2, p1, p2, q1, q2 } = duaBarang(); const total = p1 * q1 + p2 * q2;
+  const daftar = `${q1} ${b1.n} (@${rp(p1)}) dan ${q2} ${b2.n} (@${rp(p2)})`;
+  if (t === 1) return soalNumStep(`${nama} membeli ${daftar}.\nBerapa total yang harus dibayar?`, total, 500, rp, 0);
+  if (t === 2) {
+    const punya = Math.ceil((total + 1000) / 5000) * 5000;
+    return soalNumStep(`${nama} punya uang ${rp(punya)}. Ia membeli ${daftar}.\nBerapa sisa uang ${nama}?`, punya - total, 500, rp, 0);
+  }
+  let kurang = 500 * acakInt(1, 8); if (total - kurang < 500) kurang = 500;
+  return soalNumStep(`${nama} punya uang ${rp(total - kurang)}. Ia ingin membeli ${daftar}.\nBerapa uang yang masih kurang?`, kurang, 500, rp, 500);
+}
+function lembarMinimum(T) { let sisa = T, c = 0; [50000, 20000, 10000, 5000].forEach(v => { c += Math.floor(sisa / v); sisa %= v; }); return c; }
+function s8Hots() {
+  const t = acakInt(0, 3), nama = xPilih(S5_NAMA);
+  if (t === 0) {
+    const y = xPilih([500, 1000, 1500, 2000, 2500, 5000]), d = acakInt(3, 12), x = acakInt(1, 10) * 1000;
+    return soalNum(`${nama} punya tabungan ${rp(x)}. Setiap hari ia menabung ${rp(y)}.\nBerapa hari lagi agar tabungannya menjadi ${rp(x + y * d)}?`, d, 3, 1);
+  }
+  if (t === 1) {
+    const T = 5000 * acakInt(3, 19);
+    return soalNum(`Pak Aji ingin membayar ${rp(T)} dengan jumlah lembar uang sesedikit mungkin. Pecahan yang tersedia: Rp50.000, Rp20.000, Rp10.000, dan Rp5.000.\nBerapa lembar uang yang diperlukan?`, lembarMinimum(T), 2, 1);
+  }
+  if (t === 2) {
+    const u1 = xPilih([500, 1000, 1500, 2000, 2500, 3000]); let u2; do { u2 = xPilih([500, 1000, 1500, 2000, 2500, 3000]); } while (u2 === u1);
+    const q1 = acakInt(2, 5), q2 = acakInt(2, 5), benda = xPilih(['pensil', 'penghapus', 'permen', 'buku tulis']);
+    return soalPilih(`Toko A menjual ${q1} ${benda} seharga ${rp(u1 * q1)}.\nToko B menjual ${q2} ${benda} seharga ${rp(u2 * q2)}.\nHarga satu ${benda} paling murah ada di ...`, u1 < u2 ? 'Toko A' : 'Toko B', [u1 < u2 ? 'Toko B' : 'Toko A', 'Harganya sama', 'Tidak dapat ditentukan']);
+  }
+  let X, a, b, c;
+  do { X = xPilih([50000, 100000]); a = 500 * acakInt(10, 40); b = 500 * acakInt(20, 60); c = 500 * acakInt(10, 40); } while (a + b + c > X - 1000);
+  return soalNumStep(`Ibu membawa uang ${rp(X)}. Ibu membeli sayur ${rp(a)} dan daging ${rp(b)}, lalu memberi kakak ${rp(c)}.\nBerapa sisa uang Ibu?`, X - a - b - c, 500, rp, 0);
+}
+
+// ============================ STAGE 9: ULASAN STAGE 5-8 ============================
+const POOL_S5 = [s5Lengkapi, s5Benar, s5CeritaKalimat, s5CeritaHitung, s5Hots];
+const POOL_S6 = [s6Kelipatan, s6Faktor, s6BanyakFaktor, s6Cerita, s6Hots];
+const POOL_S7 = [s7Baca, s7Tulis, s7NilaiTempat, s7Banding, s7Urut, s7Hots];
+const POOL_S8 = [s8Kenal, s8Hitung, s8Banding, s8Belanja, s8Hots];
+const POOL_HOTS_UMUM = [s5Hots, s6Hots, s7Hots, s8Hots, s5CeritaHitung, s6Cerita, s8Belanja];
+function dariPool(pool) { return () => xPilih(pool)(); }
+function ulasanCampur() { return xPilih([...POOL_S5, ...POOL_S6, ...POOL_S7, ...POOL_S8, ...POOL_HOTS_UMUM])(); }
+
+// ============================ STAGE 10: TANTANGAN AKHIR (10 MISI, HOTS) ============================
+function s10Kalimat() {
+  const nama = xPilih(S5_NAMA), benda = xPilih(S5_BENDA);
+  for (let i = 0; i < 50; i++) {
+    const t = acakInt(0, 2), a = acakInt(20, 120), b = acakInt(20, 120);
+    if (t === 0) {
+      const c = acakInt(50, 250), n = c + a - b;
+      if (n < a || n > 400) continue;
+      return soalNum(`${nama} punya n ${benda}. Ia memberikan ${a} ${benda} kepada temannya, lalu mendapat ${b} ${benda} dari kakaknya. Sekarang ${nama} punya ${c} ${benda}.\nKalimat matematikanya n - ${a} + ${b} = ${c}.\nBerapa nilai n?`, n, 10, 1);
+    }
+    if (t === 1) {
+      const c = acakInt(50, 250), n = c - a + b;
+      if (n < 1) continue;
+      return soalNum(`${nama} punya n ${benda}. Ia mendapat ${a} ${benda} dari ibunya, lalu memberikan ${b} ${benda} kepada adiknya. Sekarang ${nama} punya ${c} ${benda}.\nKalimat matematikanya n + ${a} - ${b} = ${c}.\nBerapa nilai n?`, n, 10, 1);
+    }
+    const n = acakInt(20, 150), k = acakInt(10, 100);
+    return soalNum(`${nama} punya n ${benda}. Temannya punya ${benda} sebanyak ${nama} juga (n ${benda}), dan kakaknya punya ${k} ${benda}. Jumlah seluruhnya ${2 * n + k} ${benda}.\nKalimat matematikanya n + n + ${k} = ${2 * n + k}.\nBerapa nilai n?`, n, 10, 1);
+  }
+  return s5Hots();
+}
+function s10Selisih() {
+  const d = bilDigitBeda(); const n = d[0] * 1000 + d[1] * 100 + d[2] * 10 + d[3];
+  const pos = [0, 1, 2, 3].filter(k => d[k] !== 0); const i = xPilih(pos); let j; do { j = xPilih(pos); } while (j === i);
+  const pangkat = [1000, 100, 10, 1];
+  const v1 = d[i] * pangkat[i], v2 = d[j] * pangkat[j], sel = Math.abs(v1 - v2);
+  return soalNumKand(`Berapa selisih nilai angka ${d[i]} dan nilai angka ${d[j]} pada bilangan ${rb(n)}?`, sel,
+    [v1 + v2, Math.abs(d[i] - d[j]), sel + 100, Math.abs(sel - 100), sel + 1000, Math.abs(sel - 10)], rb, 10, 1);
+}
+function s10Urutan() {
+  const nama = shuffle(['Rani', 'Sita', 'Tono', 'Budi', 'Dodi']).slice(0, 3);
+  const nilai = []; while (nilai.length < 3) { const v = acakBil4(); if (!nilai.includes(v)) nilai.push(v); }
+  const naik = Math.random() < 0.5;
+  const idx = [0, 1, 2].sort((x, y) => naik ? nilai[x] - nilai[y] : nilai[y] - nilai[x]);
+  const benar = idx.map(k => nama[k]).join(', ');
+  const salah = new Set(); let p = 0;
+  while (salah.size < 3 && p < 80) { p++; const s = shuffle(nama).join(', '); if (s !== benar) salah.add(s); }
+  const daftar = nama.map((n, k) => `${n}: ${rp(nilai[k])}`).join('\n');
+  return soalPilih(`Uang tabungan tiga anak:\n${daftar}\nUrutan dari yang uangnya ${naik ? 'PALING SEDIKIT' : 'PALING BANYAK'} adalah ...`, benar, [...salah]);
+}
+function s10Pola() {
+  const t = acakInt(0, 1);
+  if (t === 0) {
+    const k = acakInt(3, 9), n = acakInt(8, 12);
+    return soalNumStep(`Perhatikan pola bilangan berikut:\n${[1, 2, 3, 4].map(i => k * i).join(', ')}, ...\nBilangan ke-${n} pada pola itu adalah ...`, k * n, k, String, 1);
+  }
+  const a = acakInt(5, 60), d = acakInt(3, 25), n = acakInt(7, 10);
+  return soalNum(`Perhatikan pola bilangan berikut:\n${[0, 1, 2, 3].map(i => a + d * i).join(', ')}, ...\nBilangan ke-${n} pada pola itu adalah ...`, a + d * (n - 1), d, 1);
+}
+function s10Cerita() {
+  const t = acakInt(0, 2), nama = xPilih(S5_NAMA);
+  if (t === 0) {
+    const w = acakInt(3, 8), e = acakInt(2, 6), x = acakInt(3, 6), y = acakInt(10, 20), total = x * y, sisa = w * e, z = total - sisa;
+    if (z < 5) return s10Cerita();
+    return soalNum(`Pak Aji membeli ${x} kotak pensil, tiap kotak berisi ${y} pensil. Ia membagikan ${z} pensil kepada siswa. Sisa pensil dibagi sama banyak kepada ${w} anak.\nBerapa pensil yang diterima tiap anak?`, e, 2, 1);
+  }
+  if (t === 1) {
+    const harga = xPilih([1500, 2000, 2500, 3000]), beli = acakInt(6, 10), bayar = xPilih([50000, 100000]);
+    return soalNumStep(`Di toko, 3 pulpen harganya ${rp(harga * 3)}. ${nama} membeli ${beli} pulpen dan membayar dengan uang ${rp(bayar)}.\nBerapa uang kembaliannya?`, bayar - harga * beli, 500, rp, 0);
+  }
+  const box = acakInt(3, 6), isi = acakInt(8, 15), dipakai = acakInt(5, box * isi - 5), teman = acakInt(2, 5);
+  const sisa = box * isi - dipakai;
+  return soalNum(`Ada ${box} kardus buku, tiap kardus berisi ${isi} buku. ${dipakai} buku sudah dipinjam, sisanya disimpan di ${teman} rak.\nBerapa jumlah seluruh buku yang masih ada?`, sisa, 5, 1);
+}
+function s10Ukur() {
+  const t = acakInt(0, 3);
+  if (t === 0) { const potong = xPilih([20, 25, 50]), m = acakInt(2, 5); return soalNum(`Tali sepanjang ${m} m dipotong menjadi potongan-potongan yang sama panjang, masing-masing ${potong} cm.\nBerapa banyak potongan yang diperoleh?`, m * 100 / potong, 3, 1); }
+  if (t === 1) { const bungkus = xPilih([250, 500, 100]), kg = acakInt(2, 5); return soalNum(`Beras ${kg} kg dibungkus ke dalam plastik, tiap plastik berisi ${bungkus} gram.\nBerapa bungkus beras yang diperoleh?`, kg * 1000 / bungkus, 3, 1); }
+  if (t === 2) { const m = acakInt(4, 9), a = acakInt(60, 190), b = acakInt(1, 2), c = acakInt(10, 90); const sisa = m * 100 - a - (b * 100 + c); if (sisa < 20) return s10Ukur(); return soalNum(`Kain sepanjang ${m} m dipakai ${a} cm untuk taplak, lalu ${b} m ${c} cm untuk gorden.\nBerapa cm sisa kain itu?`, sisa, 10, 1); }
+  const kg = acakInt(3, 8), gram = acakInt(2, 8) * 100, pakai = acakInt(1, 2) * 500;
+  const sisa = kg * 1000 + gram - pakai;
+  return soalNum(`Ibu membeli tepung ${kg} kg ${gram} gram. Tepung dipakai membuat kue sebanyak ${pakai} gram.\nBerapa gram sisa tepung Ibu?`, sisa, 100, 1);
+}
+function s10Umur() {
+  const t = acakInt(0, 1), [A, B] = duaNama();
+  if (t === 0) {
+    const kecil = acakInt(10, 40) * 500, d = acakInt(2, 10) * 500; const besar = kecil + d;
+    return soalNumStep(`Jumlah uang ${A} dan ${B} adalah ${rp(kecil + besar)}. Uang ${A} ${rp(d)} lebih banyak daripada uang ${B}.\nBerapa uang ${B}?`, kecil, 500, rp, 500);
+  }
+  const kecil = acakInt(20, 120), d = acakInt(5, 40); const besar = kecil + d;
+  return soalNum(`Jumlah kelereng ${A} dan ${B} adalah ${kecil + besar} butir. ${A} punya ${d} butir lebih banyak daripada ${B}.\nBerapa butir kelereng ${B}?`, kecil, 8, 1);
+}
+function s10Boss() { return xPilih([s10Kalimat, s10Selisih, s10Urutan, s10Pola, s10Cerita, s10Ukur, s10Umur, s6Puzzle, s7Hots, s8Hots, s6Cerita])(); }
+function s10Kelipatan() { return xPilih([s6Puzzle, s6Bersama, s6Permen, s6Cerita])(); }
+function s10Uang() { return xPilih([s8Hots, s8Belanja])(); }
+
+
+const STAGES = {
+  1: {
+    nama: 'SDN Tamberu 1',
+    icon: '🏫',
+    misi: [
+      { id: 1, judul: 'Temukan Angka', desc: 'Lengkapi barisan bilangan yang kosong', generator: buatSoalUrutanHilang },
+      { id: 2, judul: 'Rapikan Angka', desc: 'Urutkan angka dengan benar', generator: buatSoalUrutkan },
+      { id: 3, judul: 'Tetangga Angka', desc: 'Cari angka sebelum & sesudahnya', generator: buatSoalTetangga },
+      { id: 4, judul: 'Lompatan Katak', desc: 'Hitung posisi setelah melompat', generator: buatSoalKatak },
+      { id: 5, judul: 'Susun Angka', desc: 'Urutkan angka dengan benar', generator: buatSoalUrutkan },
+    ]
+  },
+  2: {
+    nama: 'Taman SDN Tamberu 1',
+    icon: '🌳',
+    misi: [
+      { id: 1, judul: 'Penjumlahan Dasar', desc: 'Penjumlahan mendatar sederhana', generator: buatSoalMendatar },
+      { id: 2, judul: 'Susun Pendek', desc: 'Penjumlahan bersusun pendek', generator: buatSoalSusunPendek },
+      { id: 3, judul: 'Susun Panjang', desc: 'Penjumlahan bersusun panjang', generator: () => {
+          let a = acakInt(100, 899);
+          let b = acakInt(100, Math.min(899, 999 - a));
+          const hasil = a + b;
+          return { ...buatOpsiAngka(hasil, 15), pertanyaan: 'Hitunglah penjumlahan bersusun panjang berikut:\n' + formatSusun(a, b) };
+        } },
+      { id: 4, judul: 'Soal Cerita', desc: 'Penjumlahan dalam bentuk cerita', generator: buatSoalCerita },
+      { id: 5, judul: 'Isi Angka Kosong', desc: 'Cari suku yang hilang', generator: buatSoalIsiKosong },
+    ]
+  },
+  3: {
+    nama: 'Perpustakaan SDN Tamberu 1',
+    icon: '📚',
+    misi: [
+      { id: 1, judul: 'Tambah & Kurang Buku', desc: 'Soal cerita penjumlahan & pengurangan', generator: buatSoalPerpusCerita1 },
+      { id: 2, judul: 'Rak Buku', desc: 'Soal cerita perkalian', generator: buatSoalPerpusKali },
+      { id: 3, judul: 'Bagi Rata', desc: 'Soal cerita pembagian', generator: buatSoalPerpusBagi },
+      { id: 4, judul: 'Waktu Membaca', desc: 'Soal cerita satuan waktu', generator: buatSoalPerpusWaktu },
+      { id: 5, judul: 'Cerita Campuran', desc: 'Gabungan operasi hitung', generator: buatSoalPerpusCampur },
+    ]
+  },
+  4: {
+    nama: 'Luas Sekolah SDN Tamberu 1',
+    icon: '🏫',
+    misi: [
+      { id: 1, judul: 'Ukur Panjang', desc: 'Pengukuran & perbandingan panjang', generator: misiUkurPanjangGab },
+      { id: 2, judul: 'Hubungan Satuan Panjang', desc: 'Konversi & soal cerita panjang', generator: misiKonversiPanjangGab },
+      { id: 3, judul: 'Ukur Berat', desc: 'Pengukuran & perbandingan berat', generator: misiUkurBeratGab },
+      { id: 4, judul: 'Hubungan Satuan Berat', desc: 'Konversi & soal cerita berat', generator: misiKonversiBeratGab },
+      { id: 5, judul: 'Campuran', desc: 'Gabungan semua jenis soal', generator: buatSoalCampuranSatuanV2 },
+    ]
+  },
+  5: {
+    nama: 'Kalimat Matematika',
+    icon: '📝',
+    misi: [
+      { id: 1, judul: 'Lengkapi Kalimat', desc: 'Cari nilai n pada kalimat matematika', generator: s5Lengkapi },
+      { id: 2, judul: 'Benar atau Salah', desc: 'Menilai dan membandingkan kalimat matematika', generator: s5Benar },
+      { id: 3, judul: 'Cerita ke Kalimat', desc: 'Ubah cerita jadi kalimat matematika', generator: s5CeritaKalimat },
+      { id: 4, judul: 'Cerita: Cari n', desc: 'Selesaikan soal cerita tambah-kurang', generator: s5CeritaHitung },
+      { id: 5, judul: 'Tantangan Kalimat', desc: 'Soal penalaran penjumlahan & pengurangan', generator: s5Hots },
+    ]
+  },
+  6: {
+    nama: 'Kelipatan & Faktor',
+    icon: '🔢',
+    misi: [
+      { id: 1, judul: 'Kelipatan Bilangan', desc: 'Menentukan kelipatan suatu bilangan', generator: s6Kelipatan },
+      { id: 2, judul: 'Faktor Bilangan', desc: 'Menentukan faktor suatu bilangan', generator: s6Faktor },
+      { id: 3, judul: 'Banyak Faktor', desc: 'Menghitung dan memilih faktor', generator: s6BanyakFaktor },
+      { id: 4, judul: 'Kelipatan Bersama', desc: 'Soal cerita kelipatan persekutuan', generator: s6Cerita },
+      { id: 5, judul: 'Tantangan Faktor', desc: 'Teka-teki kelipatan dan faktor', generator: s6Hots },
+    ]
+  },
+  7: {
+    nama: 'Bilangan 10.000',
+    icon: '🏛️',
+    misi: [
+      { id: 1, judul: 'Membaca Bilangan', desc: 'Membaca bilangan sampai 10.000', generator: s7Baca },
+      { id: 2, judul: 'Menulis Bilangan', desc: 'Menulis bilangan dengan angka', generator: s7Tulis },
+      { id: 3, judul: 'Nilai Tempat', desc: 'Satuan, puluhan, ratusan, ribuan', generator: s7NilaiTempat },
+      { id: 4, judul: 'Membandingkan', desc: 'Lebih besar, lebih kecil, atau sama', generator: s7Banding },
+      { id: 5, judul: 'Mengurutkan', desc: 'Mengurutkan & menyusun bilangan', generator: () => (Math.random() < 0.6 ? s7Urut() : s7Hots()) },
+    ]
+  },
+  8: {
+    nama: 'Uang Rupiah',
+    icon: '💰',
+    misi: [
+      { id: 1, judul: 'Mengenal Uang', desc: 'Mengenal uang rupiah', generator: s8Kenal },
+      { id: 2, judul: 'Menghitung Uang', desc: 'Nilai sekelompok uang', generator: s8Hitung },
+      { id: 3, judul: 'Membandingkan Uang', desc: 'Siapa lebih banyak & selisihnya', generator: s8Banding },
+      { id: 4, judul: 'Membelanjakan Uang', desc: 'Belanja, kembalian, dan sisa uang', generator: s8Belanja },
+      { id: 5, judul: 'Tantangan Uang', desc: 'Menabung dan menghemat', generator: s8Hots },
+    ]
+  },
+  9: {
+    nama: 'Ulasan Stage 5–8',
+    icon: '📚',
+    misi: [
+      { id: 1, judul: 'Ulasan Kalimat Matematika', desc: 'Kumpulan soal Stage 5', generator: dariPool(POOL_S5) },
+      { id: 2, judul: 'Ulasan Kelipatan & Faktor', desc: 'Kumpulan soal Stage 6', generator: dariPool(POOL_S6) },
+      { id: 3, judul: 'Ulasan Bilangan 10.000', desc: 'Kumpulan soal Stage 7', generator: dariPool(POOL_S7) },
+      { id: 4, judul: 'Ulasan Uang', desc: 'Kumpulan soal Stage 8', generator: dariPool(POOL_S8) },
+      { id: 5, judul: 'Campuran Semua', desc: 'Gabungan soal Stage 5 sampai 8', generator: ulasanCampur },
+    ]
+  },
+  10: {
+    nama: 'Tantangan Akhir',
+    icon: '🏆',
+    misi: [
+      { id: 1, judul: 'Kalimat Dua Langkah', desc: 'Kalimat matematika bertahap', generator: s10Kalimat },
+      { id: 2, judul: 'Teka-teki Bilangan', desc: 'Kelipatan, faktor, dan petunjuk', generator: s10Kelipatan },
+      { id: 3, judul: 'Selisih Nilai Tempat', desc: 'Penalaran nilai tempat', generator: s10Selisih },
+      { id: 4, judul: 'Urutan Uang', desc: 'Mengurutkan dan membandingkan uang', generator: s10Urutan },
+      { id: 5, judul: 'Uang Bertahap', desc: 'Belanja, tabungan, dan lembar uang', generator: s10Uang },
+      { id: 6, judul: 'Pola Bilangan', desc: 'Menemukan pola dan suku ke-n', generator: s10Pola },
+      { id: 7, judul: 'Cerita Bertahap', desc: 'Soal cerita beberapa langkah', generator: s10Cerita },
+      { id: 8, judul: 'Ukuran Bertahap', desc: 'Panjang dan berat bertahap', generator: s10Ukur },
+      { id: 9, judul: 'Jumlah & Selisih', desc: 'Mencari dua bilangan', generator: s10Umur },
+      { id: 10, judul: 'Tantangan Bos', desc: 'Campuran soal paling sulit', generator: s10Boss },
+    ]
+  }
+};
+
+function maksBintangStage(s) { return STAGES[s].misi.length * 3; }
+function syaratBintangStage(s) { return Math.ceil(maksBintangStage(s) / 2); }
+
+// ---------- INIT & SESI ----------
+window.addEventListener('error', function(e) {
+  tampilkanToast('Error JS: ' + e.message);
+});
+window.addEventListener('unhandledrejection', function(e) {
+  const pesan = (e.reason && e.reason.message) ? e.reason.message : String(e.reason);
+  tampilkanToast('Error: ' + pesan);
+});
+
+async function init() {
+  const { data: sesi } = await sb.auth.getSession();
+  if (!sesi.session) { window.location.href = 'index.html'; return; }
+  uid = sesi.session.user.id;
+
+  try {
+    const { data: p, error } = await sb.from('profil').select('*, kelas(tingkat, nama_kelas)').eq('id', uid).single();
+    if (error) throw error;
+    if (p.status !== 'approved' && p.role !== 'admin') {
+      tampilkanPesan('Akun belum disetujui admin.');
+      return;
+    }
+    isAdmin = p.role === 'admin';
+    namaSaya = p.nama || 'Siswa';
+    const tingkatSaya = p.kelas ? p.kelas.tingkat : null;
+
+    if (!isAdmin && tingkatSaya !== TINGKAT_GAME) {
+      tampilkanPesan('Game ini khusus untuk Kelas ' + TINGKAT_GAME + '. Kelas kamu: ' + (p.kelas ? p.kelas.nama_kelas : '-'));
+      return;
+    }
+
+    const { data: progresStage } = await sb.from('progres_petualangan').select('*').eq('id_siswa', uid).eq('mapel', 'matematika').eq('tingkat', TINGKAT_GAME).maybeSingle();
+    tahapTercapai = progresStage ? progresStage.tahap_tercapai : 0;
+
+    renderPeta();
+  } catch (e) {
+    tampilkanPesan('Gagal memuat: ' + (e.message || e));
+  }
+}
+
+function tampilkanPesan(teks) {
+  document.getElementById('view-peta').style.display = 'none';
+  const el = document.getElementById('center-msg');
+  el.style.display = 'block';
+  el.textContent = teks;
+}
+
+async function muatProgresMisi(tahap) {
+  progresMisi = {};
+  const { data, error } = await sb.from('progres_misi').select('*').eq('id_siswa', uid).eq('mapel', 'matematika').eq('tingkat', TINGKAT_GAME).eq('tahap', tahap);
+  if (!error && data) data.forEach(row => { progresMisi[row.misi] = row.bintang; });
+}
+
+function renderPeta() {
+  const grid = document.getElementById('stage-grid');
+  grid.innerHTML = '';
+  for (let s = 1; s <= 10; s++) {
+    const node = document.createElement('button');
+    const adaKonten = !!STAGES[s];
+    const terbuka = isAdmin || s === 1 || tahapTercapai >= (s - 1);
+
+    if (adaKonten && terbuka) {
+      node.className = 'stage-node buka';
+      node.innerHTML = '<span class="angka">' + STAGES[s].icon + '</span><span class="ket">Stage ' + s + '<br>' + STAGES[s].nama + '</span>';
+      node.onclick = () => { bunyiKlik(); bukaStage(s); };
+    } else {
+      node.className = 'stage-node kunci';
+      node.innerHTML = '<span class="angka">🔒</span><span class="ket">Stage ' + s + '</span>';
+      node.onclick = () => {
+        if (adaKonten && !terbuka) tampilkanToast('Selesaikan Stage ' + (s - 1) + ' dulu (kumpulkan cukup bintang).');
+        else tampilkanToast('Stage ' + s + ' masih dalam pengembangan.');
+      };
+    }
+    grid.appendChild(node);
+  }
+  document.getElementById('btn-back').onclick = () => window.location.href = 'mapel.html?mapel=matematika';
+}
+
+async function bukaStage(s) {
+  tahapAktif = s;
+  try {
+    await muatProgresMisi(s);
+  } catch (e) {
+    tampilkanToast('Gagal ambil progres: ' + (e.message || e));
+    progresMisi = {};
+  }
+  renderMisiList();
+  pulangKeMisiList();
+}
+
+function renderMisiList() {
+  const misiList = STAGES[tahapAktif].misi;
+  const list = document.getElementById('misi-list');
+  list.innerHTML = '';
+  misiList.forEach((m, idx) => {
+    const bintang = progresMisi[m.id] || 0;
+    const bintangSebelumnya = idx === 0 ? 999 : (progresMisi[misiList[idx - 1].id] || 0);
+    const terkunci = !isAdmin && idx > 0 && bintangSebelumnya < SYARAT_BINTANG_LANJUT;
+
+    const card = document.createElement('button');
+    card.className = 'misi-card' + (terkunci ? ' terkunci' : '');
+    card.innerHTML = `
+      <div class="num">${terkunci ? '🔒' : m.id}</div>
+      <div class="txt"><b>${m.judul}</b><span>${terkunci ? 'Selesaikan misi sebelumnya (min. 2 ★) dulu' : m.desc}</span></div>
+      <div class="bintang">${terkunci ? '' : bintangStr(bintang)}</div>
+    `;
+    card.onclick = () => {
+      bunyiKlik();
+      if (terkunci) {
+        tampilkanToast('Selesaikan Misi ' + misiList[idx - 1].id + ' dengan minimal ' + SYARAT_BINTANG_LANJUT + ' bintang dulu.');
+        return;
+      }
+      mulaiMisi(m);
+    };
+    list.appendChild(card);
+  });
+
+  const totalBintang = misiList.reduce((sum, m) => sum + (progresMisi[m.id] || 0), 0);
+  const infoEl = document.getElementById('info-total-bintang');
+  if (infoEl) infoEl.textContent = 'Total bintang Stage ' + tahapAktif + ': ' + totalBintang + ' / ' + maksBintangStage(tahapAktif) + ' (perlu ' + syaratBintangStage(tahapAktif) + (tahapAktif === 10 ? ' untuk menamatkan petualangan)' : ' untuk buka stage berikutnya)');
+}
+
+// ---------- MAIN GAMEPLAY ----------
+let soalSaatIni = [];
+let idxSoal = 0;
+let salahBerturut = 0;
+let bintangPerSoal = [];
+
+function mulaiMisi(misi) {
+  misiAktif = misi;
+  soalSaatIni = [];
+  const sudahAda = new Set();
+  for (let i = 0; i < JUMLAH_SOAL; i++) {
+    let s, coba = 0;
+    do { s = misi.generator(); coba++; } while (sudahAda.has(s.pertanyaan) && coba < 25);
+    sudahAda.add(s.pertanyaan);
+    soalSaatIni.push(s);
+  }
+  idxSoal = 0;
+  bintangPerSoal = [];
+  tampilkanView('view-main');
+  document.getElementById('btn-back').onclick = () => pulangKeMisiList();
+  tampilkanSoal();
+}
+
+
+function bacaPengaturan() {
+  try { return JSON.parse(localStorage.getItem('pengaturan_game') || '{"musik":true,"efek":true}'); }
+  catch (e) { return { musik: true, efek: true }; }
+}
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function nada(freq, durasi, tipe, waktuMulai) {
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = tipe || 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.16, ctx.currentTime + waktuMulai);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + waktuMulai + durasi);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(ctx.currentTime + waktuMulai);
+    osc.stop(ctx.currentTime + waktuMulai + durasi);
+  } catch (e) {}
+}
+function bunyiKlik() { if (bacaPengaturan().efek) nada(600, 0.06, 'square', 0); }
+function bunyiBenar() {
+  if (!bacaPengaturan().efek) return;
+  nada(523, 0.12, 'sine', 0); nada(659, 0.12, 'sine', 0.1); nada(784, 0.18, 'sine', 0.2);
+}
+function bunyiSalah() { if (bacaPengaturan().efek) nada(200, 0.25, 'sawtooth', 0); }
+function bunyiBintang() {
+  if (!bacaPengaturan().efek) return;
+  nada(784, 0.1, 'sine', 0); nada(988, 0.1, 'sine', 0.08); nada(1175, 0.22, 'sine', 0.16);
+}
+
+function tampilkanSoal() {
+  salahBerturut = 0;
+  const s = soalSaatIni[idxSoal];
+  document.getElementById('progress-teks').textContent = 'Soal ' + (idxSoal + 1) + '/' + JUMLAH_SOAL;
+  document.getElementById('progress-nyawa').textContent = '♥'.repeat(MAKS_SALAH);
+  document.getElementById('soal-teks').textContent = s.pertanyaan;
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+
+  const opsiList = document.getElementById('opsi-list');
+  opsiList.innerHTML = '';
+  s.opsi.forEach((teks, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opsi-btn';
+    btn.textContent = teks;
+    btn.onclick = () => jawabSoal(i, btn);
+    opsiList.appendChild(btn);
+  });
+}
+
+function jawabSoal(i, btnEl) {
+  const s = soalSaatIni[idxSoal];
+  const benar = i === s.jawabanIndex;
+  const fb = document.getElementById('feedback');
+
+  if (benar) {
+    document.querySelectorAll('.opsi-btn').forEach(b => b.classList.add('disabled'));
+    btnEl.classList.add('benar');
+    const bintang = salahBerturut === 0 ? 3 : (salahBerturut === 1 ? 2 : 1);
+    bintangPerSoal.push(bintang);
+    bunyiBenar();
+    fb.textContent = 'Benar! ' + bintangStr(bintang);
+    fb.className = 'feedback ok';
+    setTimeout(lanjutSoal, 1100);
+  } else {
+    salahBerturut++;
+    btnEl.classList.add('salah');
+    document.getElementById('progress-nyawa').textContent = '♥'.repeat(Math.max(0, MAKS_SALAH - salahBerturut));
+    if (salahBerturut >= MAKS_SALAH) {
+      document.querySelectorAll('.opsi-btn').forEach((b, idx2) => {
+        b.classList.add('disabled');
+        if (idx2 === s.jawabanIndex) b.classList.add('benar');
+      });
+      bintangPerSoal.push(1);
+      bunyiSalah();
+      fb.textContent = 'Jawaban yang benar: ' + s.opsi[s.jawabanIndex];
+      fb.className = 'feedback err';
+      setTimeout(lanjutSoal, 1600);
+    } else {
+      bunyiSalah();
+      btnEl.classList.add('disabled');
+      fb.textContent = 'Belum tepat, coba lagi!';
+      fb.className = 'feedback err';
+    }
+  }
+}
+
+function lanjutSoal() {
+  idxSoal++;
+  if (idxSoal < JUMLAH_SOAL) tampilkanSoal();
+  else selesaiMisi();
+}
+
+async function selesaiMisi() {
+  const bintangMisi = Math.min(...bintangPerSoal);
+  bunyiBintang();
+  document.getElementById('hasil-bintang').textContent = bintangStr(bintangMisi);
+  document.getElementById('hasil-detail').textContent = misiAktif.judul + ' — kamu mendapat ' + bintangMisi + ' bintang.';
+  tampilkanView('view-hasil');
+  document.getElementById('btn-back').onclick = () => pulangKeMisiList();
+
+  document.getElementById('btn-ulangi').onclick = () => mulaiMisi(misiAktif);
+  document.getElementById('btn-ke-misi').onclick = () => { renderMisiList(); pulangKeMisiList(); };
+
+  const bintangSebelumnya = progresMisi[misiAktif.id] || 0;
+  if (bintangMisi > bintangSebelumnya) {
+    progresMisi[misiAktif.id] = bintangMisi;
+    try {
+      await sb.from('progres_misi').upsert({
+        id_siswa: uid, mapel: 'matematika', tingkat: TINGKAT_GAME, tahap: tahapAktif, misi: misiAktif.id, bintang: bintangMisi
+      }, { onConflict: 'id_siswa,mapel,tingkat,tahap,misi' });
+    } catch (e) { console.warn('Gagal simpan progres misi:', e); }
+  }
+
+  const misiList = STAGES[tahapAktif].misi;
+  const totalBintangStage = misiList.reduce((sum, m) => sum + (progresMisi[m.id] || 0), 0);
+  try {
+    await sb.from('skor_game').insert({
+      id_siswa: uid, nama: namaSaya, mapel: 'matematika', tingkat: TINGKAT_GAME,
+      game: 'petualangan-matematika', nilai: totalBintangStage, tahap: tahapAktif
+    });
+  } catch (e) { console.warn('Gagal simpan skor petualangan:', e); }
+
+  if (totalBintangStage >= syaratBintangStage(tahapAktif) && tahapTercapai < tahapAktif) {
+    tahapTercapai = tahapAktif;
+    try {
+      await sb.from('progres_petualangan').upsert({
+        id_siswa: uid, mapel: 'matematika', tingkat: TINGKAT_GAME, tahap_tercapai: tahapTercapai
+      }, { onConflict: 'id_siswa,mapel,tingkat' });
+    } catch (e) { console.warn('Gagal simpan progres stage:', e); }
+  }
+}
+
+
+let musikInterval = null;
+let musikLangkah = 0;
+const MELODI_LATAR = [392, 440, 494, 440, 523, 494, 440, 392];
+function mulaiMusikLatar() {
+  if (musikInterval) return;
+  musikInterval = setInterval(() => {
+    if (!bacaPengaturan().musik) return;
+    const freq = MELODI_LATAR[musikLangkah % MELODI_LATAR.length];
+    nada(freq, 0.5, 'sine', 0);
+    musikLangkah++;
+  }, 650);
+}
+function hentikanMusikLatar() {
+  clearInterval(musikInterval);
+  musikInterval = null;
+}
+document.addEventListener('click', function mulaiSekaliSaja() {
+  if (bacaPengaturan().musik) mulaiMusikLatar();
+  document.removeEventListener('click', mulaiSekaliSaja);
+}, { once: true });
+
+init();
+
+</script>
+<script>mulaiAplikasi();</script>
+</body>
+</html>

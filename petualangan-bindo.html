@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Petualangan Bahasa Indonesia - SDN Tamberu 1</title>
+<link rel="preconnect" href="https://dyxmilgvaymkbzgjtvln.supabase.co" crossorigin>
+<script>
+(function () {
+  var KUNCI = 'lib_supabase_v2';
+  var SUMBER = [
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js',
+    'https://fastly.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js',
+    'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js',
+    'https://gcore.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js'
+  ];
+  var banner = null;
+  function tampilBanner(teks, tombol, aksi) {
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.style.cssText = 'position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:99999;background:#F5C542;color:#0B2A4A;font:800 0.85rem Trebuchet MS,sans-serif;padding:9px 16px;border-radius:999px;border:2px solid #7A5A12;box-shadow:0 6px 16px rgba(0,0,0,.4);text-align:center;max-width:90vw;';
+      document.body.appendChild(banner);
+    }
+    banner.textContent = teks + ' ';
+    if (tombol) {
+      var b = document.createElement('button');
+      b.textContent = tombol;
+      b.style.cssText = 'margin-left:6px;padding:4px 10px;border-radius:999px;border:2px solid #0B2A4A;background:#fff;color:#0B2A4A;font:800 0.8rem Trebuchet MS,sans-serif;cursor:pointer;';
+      b.onclick = aksi;
+      banner.appendChild(b);
+    }
+  }
+  function hapusBanner() { if (banner && banner.parentNode) banner.parentNode.removeChild(banner); banner = null; }
+  function libSiap() { return !!(window.supabase && typeof window.supabase.createClient === 'function'); }
+  function jalankanKode(kode) {
+    var s = document.createElement('script');
+    s.text = kode;
+    document.head.appendChild(s);
+    return libSiap();
+  }
+  function ambil(url, ms) {
+    return new Promise(function (ok, gagal) {
+      var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var t = setTimeout(function () { if (ctrl) ctrl.abort(); gagal(new Error('waktu habis')); }, ms);
+      fetch(url, { signal: ctrl ? ctrl.signal : undefined, cache: 'force-cache' })
+        .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.text(); })
+        .then(function (txt) { clearTimeout(t); ok(txt); }, function (e) { clearTimeout(t); gagal(e); });
+    });
+  }
+  function siapkanLib() {
+    try {
+      var simpan = localStorage.getItem(KUNCI);
+      if (simpan) { if (jalankanKode(simpan)) return Promise.resolve(); localStorage.removeItem(KUNCI); }
+    } catch (e) {}
+    var i = 0;
+    function coba() {
+      if (i >= SUMBER.length) return Promise.reject(new Error('semua sumber gagal'));
+      var url = SUMBER[i++];
+      return ambil(url, 9000).then(function (txt) {
+        if (txt.length < 50000 || txt.indexOf('createClient') < 0) throw new Error('isi tidak valid');
+        if (!jalankanKode(txt)) throw new Error('library tidak aktif');
+        try { localStorage.setItem(KUNCI, txt); } catch (e) {}
+      }).catch(function () { return coba(); });
+    }
+    return coba();
+  }
+  window.mulaiAplikasi = function () {
+    var el = document.getElementById('kode-app');
+    function jalan() { var s = document.createElement('script'); s.text = el.textContent; document.head.appendChild(s); hapusBanner(); }
+    if (libSiap()) { jalan(); return; }
+    tampilBanner('Menyiapkan aplikasi...');
+    siapkanLib().then(jalan, function () {
+      tampilBanner('Koneksi lambat atau terputus.', 'Coba Lagi', function () { window.mulaiAplikasi(); });
+    });
+  };
+})();
+</script>
+<style>
+  :root {
+    --navy: #0B2A4A; --navy-light: #123a63; --gold: #F5C542; --gold-dark: #C9932A;
+    --cream: #FFF8E7; --green: #2E9E5B; --red: #C43D3D;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; width: 100%; }
+  body {
+    font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
+    background: radial-gradient(circle at top, var(--navy-light) 0%, var(--navy) 65%, #061a2e 100%);
+    padding: env(safe-area-inset-top, 0px) 14px calc(env(safe-area-inset-bottom, 0px) + 20px);
+    min-height: 100vh;
+  }
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 2px 4px; }
+  .back-btn { all: unset; color: var(--cream); font-weight: 800; cursor: pointer; padding: 6px 10px; }
+  .brand { color: var(--gold); font-weight: 900; font-size: 0.95rem; text-align: center; flex: 1; line-height: 1.2; }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* PETA STAGE */
+  .stage-grid {
+    max-width: 420px; margin: 20px auto 0;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+  }
+  .stage-node {
+    all: unset; box-sizing: border-box; aspect-ratio: 1/1; border-radius: 18px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-weight: 900; cursor: pointer; text-align: center; gap: 4px; padding: 6px;
+  }
+  .stage-node.buka {
+    background: linear-gradient(180deg, #FFE28A, var(--gold) 55%, var(--gold-dark));
+    border: 3px solid #7A5A12; color: var(--navy);
+  }
+  .stage-node.kunci {
+    background: rgba(255,255,255,0.08); border: 2.5px dashed rgba(255,255,255,0.3); color: rgba(255,255,255,0.55);
+  }
+  .stage-node .angka { font-size: 1.5rem; }
+  .stage-node .ket { font-size: 0.62rem; }
+
+  /* STAGE 1: DAFTAR MISI */
+  .misi-list { max-width: 420px; margin: 18px auto 0; display: flex; flex-direction: column; gap: 12px; }
+  .misi-card {
+    all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; background: var(--cream); border: 3px solid var(--gold-dark);
+    border-radius: 16px; cursor: pointer;
+  }
+  .misi-card:active { transform: scale(0.97); }
+  .misi-card .num {
+    flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%;
+    background: var(--navy); color: var(--cream); display: flex; align-items: center; justify-content: center;
+    font-weight: 900;
+  }
+  .misi-card .txt { flex: 1; }
+  .misi-card .txt b { display: block; color: var(--navy); font-size: 0.95rem; }
+  .misi-card .txt span { display: block; color: #6b6b6b; font-size: 0.75rem; margin-top: 2px; }
+  .misi-card .bintang { flex-shrink: 0; font-size: 1rem; letter-spacing: 1px; }
+  .misi-card.terkunci { opacity: 0.55; cursor: not-allowed; }
+  .misi-card.terkunci .num { background: #888; }
+
+  /* MAIN MISI */
+  .main-wrap { max-width: 460px; margin: 0 auto; }
+  .progress-row { display: flex; justify-content: space-between; align-items: center; color: var(--cream); font-size: 0.82rem; margin: 10px 4px 14px; }
+  .progress-row .nyawa { color: var(--red); letter-spacing: 2px; }
+
+  .soal-card {
+    background: var(--cream); border: 3px solid var(--gold-dark); border-radius: 18px;
+    padding: 20px 18px; margin-top: 6px;
+  }
+  .soal-teks { color: var(--navy); font-weight: 800; font-size: 1.05rem; line-height: 1.5; margin-bottom: 18px; text-align: center; white-space: pre-wrap; }
+  .opsi-list { display: flex; flex-direction: column; gap: 10px; }
+  .opsi-btn {
+    all: unset; box-sizing: border-box; width: 100%; text-align: center; padding: 13px;
+    background: white; border: 2.5px solid #DCC98A; border-radius: 12px;
+    color: var(--navy); font-weight: 700; cursor: pointer; font-size: 0.95rem;
+  }
+  .opsi-btn.benar { background: #E4F7EA; border-color: var(--green); }
+  .opsi-btn.salah { background: #FBE7E7; border-color: var(--red); }
+  .opsi-btn.disabled { pointer-events: none; }
+
+  .feedback { text-align: center; font-weight: 800; margin-top: 12px; min-height: 24px; }
+  .feedback.ok { color: var(--green); }
+  .feedback.err { color: var(--red); }
+
+  /* HASIL MISI */
+  .hasil-card {
+    max-width: 380px; margin: 40px auto 0; background: var(--cream); border: 3px solid var(--gold-dark);
+    border-radius: 20px; padding: 28px 22px; text-align: center;
+  }
+  .hasil-card .bintang-besar { font-size: 2.2rem; letter-spacing: 4px; margin: 10px 0; }
+  .hasil-card h2 { color: var(--navy); margin-bottom: 4px; }
+  .hasil-card p { color: #555; font-size: 0.9rem; margin-bottom: 18px; }
+  .btn-main {
+    all: unset; box-sizing: border-box; display: block; width: 100%; text-align: center; padding: 12px;
+    font-weight: 800; color: var(--navy);
+    background: linear-gradient(180deg, #FFE28A 0%, var(--gold) 55%, var(--gold-dark) 100%);
+    border-radius: 999px; border: 2.5px solid #7A5A12; cursor: pointer; margin-top: 8px;
+  }
+  .btn-secondary {
+    all: unset; box-sizing: border-box; display: block; width: 100%; text-align: center; padding: 12px;
+    font-weight: 800; color: var(--cream); background: var(--navy-light);
+    border-radius: 999px; border: 2.5px solid #06162a; cursor: pointer; margin-top: 8px;
+  }
+
+  .center-msg { color: var(--cream); text-align: center; margin-top: 40px; font-weight: 600; max-width: 320px; margin-left:auto; margin-right:auto; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 8%; transform: translate(-50%, 20px);
+    z-index: 5; background: var(--gold); color: var(--navy); font-weight: 800;
+    padding: 11px 18px; border-radius: 999px; border: 2.5px solid #7A5A12;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.4); opacity: 0; pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease; text-align: center; max-width: 80vw;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  @keyframes goyang { 0%,100%{transform:translateX(0);} 20%{transform:translateX(-6px);} 40%{transform:translateX(6px);} 60%{transform:translateX(-4px);} 80%{transform:translateX(4px);} }
+  .soal-gambar { font-size: 4.2rem; text-align: center; margin-bottom: 10px; line-height: 1.1; animation: munculGambar 0.4s ease-out; }
+  @keyframes munculGambar { 0%{transform:scale(0.4); opacity:0;} 70%{transform:scale(1.15); opacity:1;} 100%{transform:scale(1);} }
+  .opsi-btn.salah { animation: goyang 0.4s; }
+  @keyframes lonjak { 0%{transform:scale(1);} 45%{transform:scale(1.07);} 100%{transform:scale(1);} }
+  .opsi-btn.benar { animation: lonjak 0.4s; }
+  @keyframes munculBintang { 0%{transform:scale(0) rotate(-25deg); opacity:0;} 60%{transform:scale(1.25) rotate(8deg); opacity:1;} 100%{transform:scale(1) rotate(0);} }
+  .bintang-besar { animation: munculBintang 0.6s ease-out; }
+  @keyframes masukView { from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+  .view.active { animation: masukView 0.25s ease-out; }
+  @keyframes lompatKunci { 0%,100%{transform:scale(1);} 50%{transform:scale(1.15);} }
+  .stage-node.buka:active .angka, .misi-card:not(.terkunci):active .num { animation: lompatKunci 0.3s; }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <button class="back-btn" id="btn-back">&larr; Kembali</button>
+    <div class="brand">🤖 PETUALANGAN PAK AJI<br>BAHASA INDONESIA</div>
+    <button class="back-btn" style="font-size:1.3rem;" onclick="window.location.href='papan-peringkat.html'">🏆</button>
+  </div>
+
+  <div class="center-msg" id="center-msg" style="display:none;"></div>
+
+  <!-- VIEW: PETA STAGE -->
+  <div class="view active" id="view-peta">
+    <div class="stage-grid" id="stage-grid"></div>
+  </div>
+
+  <!-- VIEW: DAFTAR MISI STAGE 1 -->
+  <div class="view" id="view-misi">
+    <div class="kelas-tag" id="info-total-bintang" style="text-align:center;color:var(--cream);opacity:0.85;font-size:0.82rem;margin-top:8px;"></div>
+    <div class="misi-list" id="misi-list"></div>
+  </div>
+
+  <!-- VIEW: MAIN SOAL -->
+  <div class="view" id="view-main">
+    <div class="main-wrap">
+      <div class="progress-row">
+        <span id="progress-teks">Soal 1/5</span>
+        <span class="nyawa" id="progress-nyawa">♥♥♥</span>
+      </div>
+      <div class="soal-card">
+        <div class="soal-gambar" id="soal-gambar" style="display:none;"></div>
+        <div class="soal-teks" id="soal-teks"></div>
+        <div class="opsi-list" id="opsi-list"></div>
+        <div class="feedback" id="feedback"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW: HASIL MISI -->
+  <div class="view" id="view-hasil">
+    <div class="hasil-card">
+      <div>🏆</div>
+      <h2>Misi Selesai!</h2>
+      <div class="bintang-besar" id="hasil-bintang"></div>
+      <p id="hasil-detail"></p>
+      <button class="btn-main" id="btn-ulangi">Ulangi Misi</button>
+      <button class="btn-secondary" id="btn-ke-misi">Kembali ke Daftar Misi</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script type="text/plain" id="kode-app">
+const SUPABASE_URL = "https://dyxmilgvaymkbzgjtvln.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5eG1pbGd2YXlta2J6Z2p0dmxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4NDI0NTAsImV4cCI6MjEwNTQxODQ1MH0.FbzeXaVS2WIhbd1U3RMoqvYxieD-_x-o7PYmS4zmrcE";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const MAPEL_GAME = 'bahasa_indonesia';
+const TINGKAT_GAME = 2;
+const JUMLAH_SOAL = 5;
+const MAKS_SALAH = 3;
+const SYARAT_BINTANG_LANJUT = 2;
+const SYARAT_TOTAL_STAGE = 8;
+
+let uid = null;
+let namaSaya = "Siswa";
+let isAdmin = false;
+let tahapTercapai = 0;
+let progresMisi = {};
+let misiAktif = null;
+let tahapAktif = null;
+
+function acakInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function tampilkanToast(teks) {
+  const t = document.getElementById('toast');
+  t.textContent = teks;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+function tampilkanView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function bintangStr(n) { return '★'.repeat(n) + '☆'.repeat(3 - n); }
+function pulangKeMisiList() {
+  tampilkanView('view-misi');
+  document.getElementById('btn-back').onclick = () => kembaliKePeta();
+}
+function kembaliKePeta() {
+  tampilkanView('view-peta');
+  document.getElementById('btn-back').onclick = () => window.location.href = 'mapel.html?mapel=bahasa_indonesia';
+}
+function acakHuruf(kata) {
+  let arr = kata.split('');
+  let hasil = arr.join('');
+  let percobaan = 0;
+  while (hasil === kata && percobaan < 10) {
+    arr = shuffle(arr);
+    hasil = arr.join('');
+    percobaan++;
+  }
+  return hasil;
+}
+function pilihAcak(arr, n) { return shuffle(arr).slice(0, n); }
+
+// ---------- MEKANIK GENERIK (menerima item eksplisit, dikelola antrian anti-ulang) ----------
+function buildTebakGambar(item, bank) {
+  const pertanyaan = 'Perhatikan gambar berikut. Apa nama benda/kegiatan ini?';
+  const lain = pilihAcak(bank.filter(x => x.kata !== item.kata && x.emoji !== item.emoji), 2).map(o => o.kata);
+  const opsi = shuffle([item.kata, ...lain]);
+  return { pertanyaan, opsi, jawabanIndex: opsi.indexOf(item.kata), gambar: item.emoji };
+}
+function buildCocokkanArti(item, bank) {
+  const pertanyaan = 'Apa arti atau ciri dari kata "' + item.kata + '"?';
+  const lain = pilihAcak(bank.filter(x => x.kata !== item.kata), 2).map(o => o.deskripsi);
+  const opsi = shuffle([item.deskripsi, ...lain]);
+  return { pertanyaan, opsi, jawabanIndex: opsi.indexOf(item.deskripsi) };
+}
+function buildLengkapiKalimat(item, bank) {
+  const pertanyaan = 'Lengkapi kalimat berikut:\n"' + item.kalimat + '"';
+  const lain = pilihAcak(bank.filter(x => x.kata !== item.kata), 2).map(o => o.kata);
+  const opsi = shuffle([item.kata, ...lain]);
+  return { pertanyaan, opsi, jawabanIndex: opsi.indexOf(item.kata) };
+}
+function buildSusunHuruf(item, bank) {
+  const kataAsli = item.kata;
+  const acak = acakHuruf(kataAsli.toUpperCase());
+  const pertanyaan = 'Susun huruf berikut menjadi kata yang benar:\n' + acak.split('').join('  ');
+  const lain = pilihAcak(bank.filter(x => x.kata !== kataAsli), 2).map(o => o.kata);
+  const opsi = shuffle([kataAsli, ...lain]);
+  return { pertanyaan, opsi, jawabanIndex: opsi.indexOf(kataAsli) };
+}
+function buildCerita(item, bank) {
+  const NAMA = ['Ani', 'Budi', 'Sari', 'Dodi', 'Rina', 'Tono'];
+  const nama = NAMA[acakInt(0, NAMA.length - 1)];
+  const pertanyaan = `${nama} sedang belajar sesuatu yang baru. ${nama} diberi tahu: "${item.deskripsi}". Apa yang sedang dipelajari ${nama}?`;
+  const lain = pilihAcak(bank.filter(x => x.kata !== item.kata), 2).map(o => o.kata);
+  const opsi = shuffle([item.kata, ...lain]);
+  return { pertanyaan, opsi, jawabanIndex: opsi.indexOf(item.kata) };
+}
+
+// Kata yang gambarnya terlalu abstrak/mirip dengan kata lain -> tidak dipakai di misi Tebak Gambar
+const TANPA_GAMBAR = new Set([
+  'Isra Miraj', 'Halal Bihalal', 'Nyepi',
+  'Istirahat', 'Berat Badan Ideal',
+  'Jalur Evakuasi', 'Rambu Dilarang Parkir', 'Petugas Keamanan',
+  'Kakak', 'Adik', 'Paman', 'Bibi', 'Sepupu', 'Keponakan', 'Cucu', 'Menantu', 'Mertua', 'Kerukunan', 'Silsilah Keluarga',
+  'Toleransi', 'Menghormati', 'Empati', 'Sopan Santun', 'Adil', 'Jujur', 'Mengalah', 'Meminta Maaf',
+  'Menghargai Pendapat', 'Kompak', 'Setia Kawan', 'Saling Menolong',
+  'Celengan', 'Hemat', 'Keinginan', 'Kebutuhan', 'Untung Rugi', 'Rencana Belanja', 'Diskon', 'Kembalian',
+  'Sedekah', 'Uang Saku',
+  'Reboisasi', 'Pencemaran Air', 'Energi Terbarukan', 'Kebersihan Sekolah', 'Tempat Sampah',
+]);
+
+const MISI_TEMPLATE = [
+  { id: 1, judul: 'Tebak Gambar', desc: 'Tebak nama dari gambarnya', builder: buildTebakGambar, pool: x => !TANPA_GAMBAR.has(x.kata) },
+  { id: 2, judul: 'Cocokkan Arti', desc: 'Pilih arti kata yang tepat', builder: buildCocokkanArti },
+  { id: 3, judul: 'Lengkapi Kalimat', desc: 'Isi kalimat rumpang', builder: buildLengkapiKalimat },
+  { id: 4, judul: 'Susun Huruf', desc: 'Susun jadi kata yang benar', builder: buildSusunHuruf, pool: x => !x.kata.includes(' ') },
+  { id: 5, judul: 'Cerita Sederhana', desc: 'Pahami cerita singkat', builder: buildCerita },
+];
+
+// Tiap misi punya antrian sendiri (dikocok dari bank) supaya 1x main tidak ada soal berulang.
+// Kalau antrian habis (semua kata sudah keluar), baru dikocok ulang dari awal.
+function buatMisiDariBank(bank) {
+  return MISI_TEMPLATE.map(t => {
+    const pool = t.pool ? bank.filter(t.pool) : bank;
+    let antrian = [];
+    function isiUlang() { antrian = shuffle(pool); }
+    isiUlang();
+    function ambil() {
+      if (antrian.length === 0) isiUlang();
+      const item = antrian.pop();
+      return t.builder(item, pool);
+    }
+    return { id: t.id, judul: t.judul, desc: t.desc, generator: ambil, reset: isiUlang };
+  });
+}
+
+// ---------- BANK KATA PER TEMA (8 STAGE x 20 kata = 100 soal/stage) ----------
+const BANK_PERAYAAN = [
+  { kata: 'Lebaran', emoji: '🌙', deskripsi: 'Hari raya umat Islam setelah sebulan berpuasa', kalimat: 'Keluarga kami berkumpul dan bermaaf-maafan saat hari raya ___.' },
+  { kata: 'Natal', emoji: '🎄', deskripsi: 'Hari raya umat Kristen memperingati kelahiran Yesus', kalimat: 'Pohon terang dihias saat menyambut hari raya ___.' },
+  { kata: 'Nyepi', emoji: '🤫', deskripsi: 'Hari raya umat Hindu yang dirayakan dengan hening sehari penuh', kalimat: 'Umat Hindu merayakan tahun baru Saka dengan hari ___.' },
+  { kata: 'Waisak', emoji: '☸️', deskripsi: 'Hari raya umat Buddha memperingati kelahiran Sang Buddha', kalimat: 'Umat Buddha merayakan hari ___ dengan penuh khidmat.' },
+  { kata: 'Kemerdekaan', emoji: '🇮🇩', deskripsi: 'Hari untuk memperingati bebasnya negara Indonesia dari penjajah', kalimat: 'Setiap 17 Agustus kita merayakan Hari ___ Indonesia.' },
+  { kata: 'Ulang Tahun', emoji: '🎂', deskripsi: 'Hari untuk memperingati hari kelahiran seseorang', kalimat: 'Ada kue dan lilin saat merayakan hari ___.' },
+  { kata: 'Tahun Baru', emoji: '🎆', deskripsi: 'Hari pertama di awal tahun', kalimat: 'Kembang api dinyalakan saat malam pergantian ___.' },
+  { kata: 'Imlek', emoji: '🧧', deskripsi: 'Hari raya Tahun Baru bagi masyarakat Tionghoa', kalimat: 'Ada barongsai yang menari saat perayaan ___.' },
+  { kata: 'Maulid Nabi', emoji: '🕌', deskripsi: 'Peringatan hari kelahiran Nabi Muhammad SAW', kalimat: 'Umat Islam membaca selawat saat peringatan ___.' },
+  { kata: 'Isra Miraj', emoji: '🌌', deskripsi: 'Peringatan perjalanan malam Nabi Muhammad SAW', kalimat: 'Setiap tahun umat Islam memperingati ___.' },
+  { kata: 'Hari Guru', emoji: '👩‍🏫', deskripsi: 'Hari untuk menghormati jasa para guru', kalimat: 'Murid-murid memberi kartu ucapan saat ___.' },
+  { kata: 'Hari Ibu', emoji: '👩', deskripsi: 'Hari untuk menghormati jasa seorang ibu', kalimat: 'Aku membuatkan kado untuk Ibu saat ___.' },
+  { kata: 'Hari Anak', emoji: '🧒', deskripsi: 'Hari untuk memperingati dan merayakan hak-hak anak', kalimat: 'Ada banyak lomba seru diadakan sekolah saat ___.' },
+  { kata: 'Hari Pahlawan', emoji: '🎖️', deskripsi: 'Hari untuk mengenang jasa para pahlawan bangsa', kalimat: 'Kami mengheningkan cipta saat upacara ___.' },
+  { kata: 'Hari Kartini', emoji: '👘', deskripsi: 'Hari memperingati jasa R.A. Kartini bagi wanita Indonesia', kalimat: 'Murid perempuan memakai kebaya saat merayakan ___.' },
+  { kata: 'Karnaval', emoji: '🎭', deskripsi: 'Pawai atau arak-arakan yang meriah dengan kostum unik', kalimat: 'Warga kampung memakai kostum unik saat ___.' },
+  { kata: 'Pernikahan', emoji: '💍', deskripsi: 'Acara resmi menyatukan sepasang pengantin', kalimat: 'Paman mengundangku ke pesta ___nya.' },
+  { kata: 'Wisuda', emoji: '🎓', deskripsi: 'Acara perayaan kelulusan sekolah', kalimat: 'Kakak memakai toga saat acara ___.' },
+  { kata: 'Panen Raya', emoji: '🌾', deskripsi: 'Perayaan atas hasil panen yang melimpah', kalimat: 'Petani bergembira merayakan ___ padi.' },
+  { kata: 'Halal Bihalal', emoji: '🤝', deskripsi: 'Acara silaturahmi dan saling memaafkan setelah Lebaran', kalimat: 'Warga sekampung berkumpul saat acara ___.' },
+];
+
+const BANK_KESEHATAN = [
+  { kata: 'Olahraga', emoji: '🏃', deskripsi: 'Kegiatan menggerakkan tubuh agar badan sehat dan kuat', kalimat: 'Setiap pagi Ayah rajin ___ agar tubuhnya bugar.' },
+  { kata: 'Sarapan', emoji: '🍳', deskripsi: 'Makan pagi sebelum memulai kegiatan', kalimat: 'Sebelum berangkat sekolah, aku selalu ___ dulu.' },
+  { kata: 'Cuci Tangan', emoji: '🧼', deskripsi: 'Membersihkan tangan dengan sabun dan air mengalir', kalimat: 'Sebelum makan, kita wajib ___ terlebih dahulu.' },
+  { kata: 'Istirahat', emoji: '😴', deskripsi: 'Kegiatan berhenti sejenak agar tubuh tidak lelah', kalimat: 'Setelah belajar lama, tubuh perlu ___.' },
+  { kata: 'Tidur', emoji: '🛌', deskripsi: 'Kegiatan memejamkan mata untuk mengembalikan tenaga', kalimat: 'Anak-anak sebaiknya ___ cukup di malam hari.' },
+  { kata: 'Vitamin', emoji: '💊', deskripsi: 'Zat yang membantu tubuh tetap sehat', kalimat: 'Buah-buahan banyak mengandung ___ untuk tubuh.' },
+  { kata: 'Gosok Gigi', emoji: '🦷', deskripsi: 'Kegiatan membersihkan gigi agar tidak berlubang', kalimat: 'Kita perlu ___ dua kali sehari.' },
+  { kata: 'Air Putih', emoji: '💧', deskripsi: 'Minuman yang baik untuk menjaga tubuh tetap segar', kalimat: 'Setiap hari kita harus minum ___ yang cukup.' },
+  { kata: 'Dokter', emoji: '👨‍⚕️', deskripsi: 'Orang yang bertugas memeriksa dan mengobati orang sakit', kalimat: 'Kalau sakit, kita harus periksa ke ___.' },
+  { kata: 'Imunisasi', emoji: '💉', deskripsi: 'Pemberian suntikan untuk mencegah penyakit', kalimat: 'Adikku mendapat ___ agar tidak mudah sakit.' },
+  { kata: 'Masker', emoji: '😷', deskripsi: 'Penutup hidung dan mulut untuk mencegah penyakit menular', kalimat: 'Saat flu, sebaiknya kita memakai ___.' },
+  { kata: 'Makan Sayur', emoji: '🥦', deskripsi: 'Kegiatan makan sayuran yang menyehatkan tubuh', kalimat: 'Ibu selalu mengingatkanku untuk ___ setiap hari.' },
+  { kata: 'Makan Buah', emoji: '🍎', deskripsi: 'Kegiatan makan buah yang kaya vitamin', kalimat: 'Setelah makan siang, aku suka ___.' },
+  { kata: 'Berjemur', emoji: '☀️', deskripsi: 'Berdiri di bawah sinar matahari pagi agar tubuh sehat', kalimat: 'Setiap pagi kami ___ sebentar di halaman.' },
+  { kata: 'Mandi', emoji: '🛁', deskripsi: 'Kegiatan membersihkan seluruh tubuh dengan air', kalimat: 'Aku selalu ___ dua kali sehari.' },
+  { kata: 'Potong Kuku', emoji: '💅', deskripsi: 'Kegiatan memotong kuku agar tetap bersih dan pendek', kalimat: 'Ibu mengingatkanku untuk rutin ___.' },
+  { kata: 'Puskesmas', emoji: '🏥', deskripsi: 'Tempat pelayanan kesehatan masyarakat', kalimat: 'Warga desa berobat gratis di ___.' },
+  { kata: 'Posyandu', emoji: '👶', deskripsi: 'Tempat pemeriksaan kesehatan balita dan ibu hamil', kalimat: 'Ibu membawa adik bayi ke ___ setiap bulan.' },
+  { kata: 'Cuci Kaki', emoji: '🦶', deskripsi: 'Membersihkan kaki dari kotoran sebelum tidur', kalimat: 'Sebelum tidur, aku selalu ___ dulu.' },
+  { kata: 'Berat Badan Ideal', emoji: '⚖️', deskripsi: 'Berat badan yang sesuai dengan tinggi dan usia', kalimat: 'Olahraga dan makan sehat menjaga ___ tubuh.' },
+];
+
+const BANK_KESELAMATAN = [
+  { kata: 'Helm', emoji: '⛑️', deskripsi: 'Pelindung kepala saat naik motor atau sepeda', kalimat: 'Ayah selalu memakai ___ saat naik motor.' },
+  { kata: 'Zebra Cross', emoji: '🚸', deskripsi: 'Tempat khusus bergaris untuk menyeberang jalan', kalimat: 'Kita harus menyeberang di ___ agar aman.' },
+  { kata: 'Rambu Lalu Lintas', emoji: '🚦', deskripsi: 'Tanda di jalan yang mengatur pengguna jalan', kalimat: 'Pengendara harus mematuhi ___ di jalan raya.' },
+  { kata: 'Sabuk Pengaman', emoji: '🚗', deskripsi: 'Alat pengaman saat berkendara di mobil', kalimat: 'Sebelum mobil jalan, pasanglah ___ dulu.' },
+  { kata: 'Trotoar', emoji: '🚶', deskripsi: 'Jalan khusus di pinggir untuk pejalan kaki', kalimat: 'Pejalan kaki sebaiknya berjalan di ___.' },
+  { kata: 'P3K', emoji: '🩹', deskripsi: 'Kotak berisi alat pertolongan pertama saat terluka', kalimat: 'Saat lutut terluka, ambillah kotak ___.' },
+  { kata: 'Alarm', emoji: '🚨', deskripsi: 'Alat yang berbunyi keras sebagai tanda bahaya', kalimat: 'Saat ada kebakaran, ___ akan berbunyi nyaring.' },
+  { kata: 'Nomor Darurat', emoji: '☎️', deskripsi: 'Nomor telepon untuk meminta pertolongan cepat', kalimat: 'Kita bisa menghubungi ___ saat ada kecelakaan.' },
+  { kata: 'Polisi', emoji: '👮', deskripsi: 'Petugas yang menjaga keamanan dan ketertiban', kalimat: 'Kalau ada kecelakaan, kita bisa lapor ke ___.' },
+  { kata: 'Pemadam Kebakaran', emoji: '🚒', deskripsi: 'Petugas dan mobil yang bertugas memadamkan api', kalimat: 'Mobil ___ datang dengan sirine nyaring.' },
+  { kata: 'Ambulans', emoji: '🚑', deskripsi: 'Mobil khusus untuk mengangkut orang sakit atau terluka', kalimat: 'Korban kecelakaan dibawa memakai mobil ___.' },
+  { kata: 'Jembatan Penyeberangan', emoji: '🌉', deskripsi: 'Jembatan khusus untuk menyeberang di atas jalan raya', kalimat: 'Kami menyeberang lewat ___ agar aman.' },
+  { kata: 'Pagar Pengaman', emoji: '🚧', deskripsi: 'Pembatas untuk melindungi dari bahaya di sekitarnya', kalimat: 'Area proyek itu dipasangi ___ agar aman.' },
+  { kata: 'Pelampung', emoji: '🦺', deskripsi: 'Alat bantu mengapung saat berada di air', kalimat: 'Sebelum naik perahu, pakailah ___ dulu.' },
+  { kata: 'Tanda Bahaya', emoji: '⚠️', deskripsi: 'Simbol yang memperingatkan adanya bahaya', kalimat: 'Ada ___ di dekat kabel listrik itu.' },
+  { kata: 'Petugas Keamanan', emoji: '🛡️', deskripsi: 'Orang yang bertugas menjaga keamanan suatu tempat', kalimat: 'Sekolah kami dijaga oleh ___ setiap hari.' },
+  { kata: 'Sarung Tangan', emoji: '🧤', deskripsi: 'Pelindung tangan saat bekerja dengan benda berbahaya', kalimat: 'Petugas kebersihan memakai ___ saat bekerja.' },
+  { kata: 'Kacamata Pelindung', emoji: '🥽', deskripsi: 'Pelindung mata saat bekerja dengan benda berbahaya', kalimat: 'Tukang las memakai ___ agar mata aman.' },
+  { kata: 'Rambu Dilarang Parkir', emoji: '🚫', deskripsi: 'Tanda yang menunjukkan larangan berhenti kendaraan', kalimat: 'Ayah tidak parkir di sana karena ada ___.' },
+  { kata: 'Jalur Evakuasi', emoji: '🏃', deskripsi: 'Jalur khusus untuk menyelamatkan diri saat bencana', kalimat: 'Kami berlatih lewat ___ saat simulasi gempa.' },
+];
+
+const BANK_KELUARGA = [
+  { kata: 'Ayah', emoji: '👨', deskripsi: 'Orang tua laki-laki dalam keluarga', kalimat: '___ bekerja setiap hari untuk keluarga.' },
+  { kata: 'Ibu', emoji: '👩', deskripsi: 'Orang tua perempuan dalam keluarga', kalimat: '___ memasak makanan lezat setiap hari.' },
+  { kata: 'Kakak', emoji: '🧑', deskripsi: 'Saudara yang lebih tua', kalimat: '___ suka membantuku mengerjakan PR.' },
+  { kata: 'Adik', emoji: '🧒', deskripsi: 'Saudara yang lebih muda', kalimat: 'Aku senang bermain bersama ___ku.' },
+  { kata: 'Kakek', emoji: '👴', deskripsi: 'Ayah dari ayah atau ibu', kalimat: '___ suka bercerita tentang masa mudanya.' },
+  { kata: 'Nenek', emoji: '👵', deskripsi: 'Ibu dari ayah atau ibu', kalimat: '___ selalu membuatkan kue kesukaanku.' },
+  { kata: 'Paman', emoji: '👨‍🦱', deskripsi: 'Saudara laki-laki dari ayah atau ibu', kalimat: '___ mengajakku memancing di sungai.' },
+  { kata: 'Bibi', emoji: '👩‍🦱', deskripsi: 'Saudara perempuan dari ayah atau ibu', kalimat: '___ datang berkunjung membawa oleh-oleh.' },
+  { kata: 'Anak', emoji: '👶', deskripsi: 'Sebutan untuk keturunan dari orang tua', kalimat: 'Aku adalah ___ pertama di keluargaku.' },
+  { kata: 'Sepupu', emoji: '🧑‍🤝‍🧑', deskripsi: 'Anak dari paman atau bibi', kalimat: '___ku datang berlibur ke rumah.' },
+  { kata: 'Keponakan', emoji: '🧒', deskripsi: 'Anak dari kakak atau adik', kalimat: 'Aku suka bermain dengan ___ku yang lucu.' },
+  { kata: 'Cucu', emoji: '👶', deskripsi: 'Anak dari anak seseorang', kalimat: 'Kakek sangat sayang pada semua ___nya.' },
+  { kata: 'Menantu', emoji: '🤵', deskripsi: 'Suami atau istri dari anak kita', kalimat: 'Nenek memiliki dua orang ___.' },
+  { kata: 'Mertua', emoji: '👵', deskripsi: 'Orang tua dari suami atau istri', kalimat: 'Ayah mengunjungi rumah ___nya di kampung.' },
+  { kata: 'Keluarga Besar', emoji: '👨‍👩‍👧‍👦', deskripsi: 'Kumpulan seluruh anggota keluarga termasuk saudara', kalimat: 'Kami berkumpul dengan ___ saat Lebaran.' },
+  { kata: 'Kasih Sayang', emoji: '❤️', deskripsi: 'Perasaan cinta dan perhatian antar anggota keluarga', kalimat: 'Orang tua selalu memberi ___ pada anaknya.' },
+  { kata: 'Piknik Keluarga', emoji: '🧺', deskripsi: 'Kegiatan berlibur bersama seluruh anggota keluarga', kalimat: 'Hari Minggu kami pergi ___ ke pantai.' },
+  { kata: 'Rumah', emoji: '🏠', deskripsi: 'Tempat tinggal bersama seluruh anggota keluarga', kalimat: 'Kami tinggal bersama di sebuah ___.' },
+  { kata: 'Silsilah Keluarga', emoji: '🌳', deskripsi: 'Bagan yang menunjukkan hubungan antar anggota keluarga', kalimat: 'Aku membuat ___ untuk tugas sekolah.' },
+  { kata: 'Kerukunan', emoji: '🤝', deskripsi: 'Sikap hidup damai dan saling menyayangi dalam keluarga', kalimat: 'Kami selalu menjaga ___ di rumah.' },
+];
+
+const BANK_BERTEMAN = [
+  { kata: 'Toleransi', emoji: '🤝', deskripsi: 'Sikap saling menghargai perbedaan', kalimat: 'Kita harus punya sikap ___ pada teman yang berbeda agama.' },
+  { kata: 'Kerja Sama', emoji: '🧑‍🤝‍🧑', deskripsi: 'Melakukan sesuatu secara bersama-sama', kalimat: 'Tugas kelompok akan cepat selesai jika kita ___.' },
+  { kata: 'Menghormati', emoji: '🙏', deskripsi: 'Sikap menghargai orang lain', kalimat: 'Kita harus ___ teman meskipun berbeda suku.' },
+  { kata: 'Berbagi', emoji: '🎁', deskripsi: 'Memberikan sesuatu kepada teman', kalimat: 'Aku suka ___ bekal makanan dengan temanku.' },
+  { kata: 'Rukun', emoji: '🕊️', deskripsi: 'Hidup damai tanpa bertengkar', kalimat: 'Meskipun berbeda, kami tetap hidup ___.' },
+  { kata: 'Gotong Royong', emoji: '🧹', deskripsi: 'Bekerja bersama untuk kepentingan bersama', kalimat: 'Warga desa melakukan ___ membersihkan taman.' },
+  { kata: 'Persahabatan', emoji: '👬', deskripsi: 'Hubungan akrab antara teman', kalimat: 'Aku dan Dodi menjaga ___ sejak kecil.' },
+  { kata: 'Perbedaan', emoji: '🌈', deskripsi: 'Hal yang membuat setiap orang tidak sama', kalimat: '___ suku dan agama membuat Indonesia kaya budaya.' },
+  { kata: 'Saling Menolong', emoji: '🤲', deskripsi: 'Sikap membantu teman yang sedang kesusahan', kalimat: 'Kita harus ___ jika ada teman yang kesulitan.' },
+  { kata: 'Empati', emoji: '💗', deskripsi: 'Kemampuan merasakan apa yang dirasakan orang lain', kalimat: 'Aku merasa ___ saat melihat temanku sedih.' },
+  { kata: 'Sopan Santun', emoji: '🙇', deskripsi: 'Sikap baik dan hormat dalam bertutur kata dan bertingkah laku', kalimat: 'Kita harus punya ___ pada orang yang lebih tua.' },
+  { kata: 'Adil', emoji: '⚖️', deskripsi: 'Bersikap sama rata tanpa membeda-bedakan', kalimat: 'Guru harus ___ kepada semua muridnya.' },
+  { kata: 'Jujur', emoji: '✅', deskripsi: 'Berkata apa adanya dan tidak berbohong', kalimat: 'Kita harus selalu ___ meski itu sulit.' },
+  { kata: 'Mengalah', emoji: '🙆', deskripsi: 'Sikap mendahulukan kepentingan orang lain saat berbeda pendapat', kalimat: 'Kakak selalu ___ pada adiknya yang masih kecil.' },
+  { kata: 'Meminta Maaf', emoji: '🙏🏻', deskripsi: 'Mengakui kesalahan dan berharap dimaafkan', kalimat: 'Aku segera ___ setelah membuat temanku sedih.' },
+  { kata: 'Menghargai Pendapat', emoji: '💬', deskripsi: 'Sikap menghormati pendapat orang lain meski berbeda', kalimat: 'Saat diskusi, kita harus ___ teman lain.' },
+  { kata: 'Bermain Bersama', emoji: '🎲', deskripsi: 'Kegiatan bermain yang dilakukan lebih dari satu orang', kalimat: 'Kami suka ___ di halaman sekolah.' },
+  { kata: 'Keberagaman Budaya', emoji: '🎎', deskripsi: 'Banyaknya budaya berbeda yang ada di Indonesia', kalimat: 'Indonesia kaya akan ___ dari Sabang sampai Merauke.' },
+  { kata: 'Kompak', emoji: '🙌', deskripsi: 'Sikap saling mendukung dan bersatu dalam kelompok', kalimat: 'Regu kami menang lomba karena selalu ___.' },
+  { kata: 'Setia Kawan', emoji: '🤗', deskripsi: 'Sikap selalu mendukung dan membela teman', kalimat: 'Budi terkenal ___ pada semua temannya.' },
+];
+
+const BANK_UANG = [
+  { kata: 'Menabung', emoji: '🐷', deskripsi: 'Menyimpan uang untuk digunakan nanti', kalimat: 'Setiap hari aku ___ di celengan ayam.' },
+  { kata: 'Hemat', emoji: '💡', deskripsi: 'Sikap tidak boros dalam menggunakan uang', kalimat: 'Kita harus ___ agar uang tidak cepat habis.' },
+  { kata: 'Kebutuhan', emoji: '🛒', deskripsi: 'Sesuatu yang harus dipenuhi untuk hidup', kalimat: 'Makanan dan pakaian termasuk ___ sehari-hari.' },
+  { kata: 'Keinginan', emoji: '✨', deskripsi: 'Sesuatu yang ingin dimiliki tapi tidak wajib', kalimat: 'Mainan baru itu hanya ___ku, bukan kebutuhan.' },
+  { kata: 'Uang Saku', emoji: '💴', deskripsi: 'Uang yang diberikan orang tua untuk keperluan sehari-hari', kalimat: 'Ibu memberiku ___ setiap pagi sebelum sekolah.' },
+  { kata: 'Celengan', emoji: '🐖', deskripsi: 'Tempat untuk menyimpan uang tabungan', kalimat: 'Aku memasukkan uang receh ke dalam ___.' },
+  { kata: 'Belanja', emoji: '🛍️', deskripsi: 'Kegiatan membeli barang yang dibutuhkan', kalimat: 'Ibu pergi ___ ke pasar setiap minggu.' },
+  { kata: 'Boros', emoji: '💸', deskripsi: 'Sikap menghabiskan uang secara berlebihan', kalimat: 'Jangan bersikap ___ agar uang tidak cepat habis.' },
+  { kata: 'Uang Kertas', emoji: '💵', deskripsi: 'Uang yang terbuat dari bahan kertas khusus', kalimat: 'Ayah memberiku selembar ___ untuk jajan.' },
+  { kata: 'Uang Logam', emoji: '🪙', deskripsi: 'Uang yang terbuat dari logam berbentuk koin', kalimat: 'Aku menyimpan beberapa ___ di celengan.' },
+  { kata: 'ATM', emoji: '🏧', deskripsi: 'Mesin untuk mengambil uang tunai dari bank', kalimat: 'Ayah mengambil uang lewat mesin ___.' },
+  { kata: 'Bank', emoji: '🏦', deskripsi: 'Tempat untuk menyimpan dan mengelola uang', kalimat: 'Ibu menabung uangnya di ___.' },
+  { kata: 'Sedekah', emoji: '🤲', deskripsi: 'Memberikan sebagian harta kepada orang yang membutuhkan', kalimat: 'Setiap Jumat kami ___ di masjid.' },
+  { kata: 'Investasi', emoji: '📈', deskripsi: 'Menanamkan uang untuk mendapat keuntungan di masa depan', kalimat: 'Ayah melakukan ___ untuk masa depan keluarga.' },
+  { kata: 'Harga Barang', emoji: '🏷️', deskripsi: 'Nilai uang yang harus dibayar untuk membeli barang', kalimat: 'Kita harus melihat ___ sebelum membeli.' },
+  { kata: 'Dompet', emoji: '👛', deskripsi: 'Tempat menyimpan uang saat bepergian', kalimat: 'Ibu menaruh uangnya di dalam ___.' },
+  { kata: 'Kembalian', emoji: '🔄', deskripsi: 'Sisa uang yang dikembalikan setelah membayar', kalimat: 'Aku menerima ___ dari penjual setelah membayar.' },
+  { kata: 'Diskon', emoji: '🔖', deskripsi: 'Potongan harga dari harga barang aslinya', kalimat: 'Baju itu dijual dengan ___ besar.' },
+  { kata: 'Rencana Belanja', emoji: '📝', deskripsi: 'Daftar barang yang akan dibeli sebelum berbelanja', kalimat: 'Ibu membuat ___ sebelum pergi ke pasar.' },
+  { kata: 'Untung Rugi', emoji: '⚖️', deskripsi: 'Perhitungan hasil lebih atau kurang dari suatu usaha', kalimat: 'Pedagang harus menghitung ___ setiap hari.' },
+];
+
+const BANK_LINGKUNGAN = [
+  { kata: 'Sampah', emoji: '🗑️', deskripsi: 'Barang yang sudah tidak terpakai dan harus dibuang', kalimat: 'Buanglah ___ pada tempatnya.' },
+  { kata: 'Daur Ulang', emoji: '♻️', deskripsi: 'Mengolah kembali barang bekas menjadi barang baru', kalimat: 'Botol plastik bisa di- ___ menjadi pot bunga.' },
+  { kata: 'Menanam Pohon', emoji: '🌱', deskripsi: 'Kegiatan menanam tumbuhan agar lingkungan hijau', kalimat: 'Kami ikut ___ di halaman sekolah.' },
+  { kata: 'Polusi', emoji: '🏭', deskripsi: 'Pencemaran yang merusak lingkungan', kalimat: 'Asap kendaraan menyebabkan ___ udara.' },
+  { kata: 'Reboisasi', emoji: '🌲', deskripsi: 'Penanaman kembali hutan yang gundul', kalimat: 'Pemerintah melakukan ___ di hutan yang gundul.' },
+  { kata: 'Tempat Sampah', emoji: '🚮', deskripsi: 'Wadah untuk membuang sampah', kalimat: 'Setiap kelas memiliki ___ di sudut ruangan.' },
+  { kata: 'Hemat Air', emoji: '🚰', deskripsi: 'Sikap tidak menyia-nyiakan penggunaan air', kalimat: 'Matikan keran setelah dipakai untuk ___.' },
+  { kata: 'Hemat Listrik', emoji: '💡', deskripsi: 'Sikap tidak menyia-nyiakan penggunaan listrik', kalimat: 'Matikan lampu di siang hari untuk ___.' },
+  { kata: 'Sungai', emoji: '🏞️', deskripsi: 'Aliran air besar yang mengalir dari hulu ke hilir', kalimat: 'Jangan membuang sampah ke ___.' },
+  { kata: 'Hutan', emoji: '🌳', deskripsi: 'Kawasan yang ditumbuhi banyak pohon dan tumbuhan lebat', kalimat: 'Banyak hewan liar tinggal di dalam ___.' },
+  { kata: 'Banjir', emoji: '🌊', deskripsi: 'Genangan air besar akibat curah hujan atau saluran tersumbat', kalimat: 'Membuang sampah sembarangan bisa menyebabkan ___.' },
+  { kata: 'Kekeringan', emoji: '🏜️', deskripsi: 'Kondisi tanah yang kekurangan air dalam waktu lama', kalimat: 'Sawah itu mengalami ___ saat musim kemarau.' },
+  { kata: 'Pemanasan Global', emoji: '🌡️', deskripsi: 'Naiknya suhu bumi akibat polusi dan kerusakan lingkungan', kalimat: 'Kita harus jaga lingkungan agar ___ tidak makin parah.' },
+  { kata: 'Energi Terbarukan', emoji: '🔆', deskripsi: 'Sumber energi yang ramah lingkungan seperti matahari dan angin', kalimat: 'Panel surya memanfaatkan ___ dari matahari.' },
+  { kata: 'Kebersihan Sekolah', emoji: '🧹', deskripsi: 'Keadaan sekolah yang bersih dan terawat', kalimat: 'Kami piket menjaga ___ setiap hari.' },
+  { kata: 'Pencemaran Air', emoji: '🛢️', deskripsi: 'Kerusakan kualitas air akibat limbah atau sampah', kalimat: 'Limbah pabrik menyebabkan ___ di sungai.' },
+  { kata: 'Tanaman Hias', emoji: '🪴', deskripsi: 'Tumbuhan yang ditanam untuk memperindah lingkungan', kalimat: 'Ibu merawat ___ di depan rumah.' },
+  { kata: 'Kompos', emoji: '🍂', deskripsi: 'Pupuk alami dari sampah organik yang membusuk', kalimat: 'Daun kering bisa dijadikan ___ untuk tanaman.' },
+  { kata: 'Bersih Pantai', emoji: '🏖️', deskripsi: 'Kegiatan membersihkan sampah di area pantai', kalimat: 'Kami ikut kegiatan ___ bersama warga.' },
+  { kata: 'Udara Segar', emoji: '🍃', deskripsi: 'Udara bersih yang baik untuk pernapasan', kalimat: 'Di pegunungan kita bisa menghirup ___.' },
+];
+
+const BANK_KEGEMARAN = [
+  { kata: 'Membaca', emoji: '📖', deskripsi: 'Kegiatan melihat dan memahami tulisan', kalimat: 'Aku suka ___ buku cerita di perpustakaan.' },
+  { kata: 'Menggambar', emoji: '🎨', deskripsi: 'Kegiatan membuat gambar dengan pensil atau alat lukis', kalimat: 'Dodi hobi ___ pemandangan gunung.' },
+  { kata: 'Bernyanyi', emoji: '🎤', deskripsi: 'Kegiatan mengeluarkan suara mengikuti nada lagu', kalimat: 'Sari senang ___ lagu anak-anak.' },
+  { kata: 'Menari', emoji: '💃', deskripsi: 'Kegiatan menggerakkan tubuh mengikuti irama', kalimat: 'Rina ikut lomba ___ tradisional.' },
+  { kata: 'Berenang', emoji: '🏊', deskripsi: 'Kegiatan olahraga di dalam air', kalimat: 'Setiap minggu Budi pergi ___ di kolam renang.' },
+  { kata: 'Bersepeda', emoji: '🚲', deskripsi: 'Kegiatan mengendarai sepeda', kalimat: 'Ani suka ___ keliling kompleks.' },
+  { kata: 'Bermain', emoji: '🧸', deskripsi: 'Kegiatan yang menyenangkan untuk mengisi waktu', kalimat: 'Anak-anak senang ___ di taman sekolah.' },
+  { kata: 'Berkebun', emoji: '🌻', deskripsi: 'Kegiatan merawat tanaman di kebun', kalimat: 'Kakek suka ___ menanam sayuran di halaman.' },
+  { kata: 'Memasak', emoji: '🍳', deskripsi: 'Kegiatan mengolah bahan menjadi makanan', kalimat: 'Ibu suka ___ masakan kesukaan keluarga.' },
+  { kata: 'Menonton TV', emoji: '📺', deskripsi: 'Kegiatan melihat tayangan dari televisi', kalimat: 'Sore hari kami biasa ___ bersama.' },
+  { kata: 'Bermain Musik', emoji: '🎸', deskripsi: 'Kegiatan memainkan alat musik', kalimat: 'Kakak suka ___ gitar di teras rumah.' },
+  { kata: 'Fotografi', emoji: '📷', deskripsi: 'Kegiatan mengambil gambar dengan kamera', kalimat: 'Ayah senang ___ pemandangan saat liburan.' },
+  { kata: 'Menulis', emoji: '✍️', deskripsi: 'Kegiatan menuangkan ide lewat tulisan', kalimat: 'Aku suka ___ cerita pendek di buku harian.' },
+  { kata: 'Merajut', emoji: '🧶', deskripsi: 'Kegiatan membuat kain atau benda dari benang', kalimat: 'Nenek suka ___ syal untuk cucunya.' },
+  { kata: 'Mendaki Gunung', emoji: '🥾', deskripsi: 'Kegiatan olahraga naik ke puncak gunung', kalimat: 'Paman hobi ___ setiap akhir tahun.' },
+  { kata: 'Memancing', emoji: '🎣', deskripsi: 'Kegiatan menangkap ikan menggunakan pancing', kalimat: 'Ayah dan aku suka ___ di sungai.' },
+  { kata: 'Bermain Game', emoji: '🎮', deskripsi: 'Kegiatan bermain permainan di gawai atau komputer', kalimat: 'Dodi suka ___ setelah selesai belajar.' },
+  { kata: 'Berkemah', emoji: '⛺', deskripsi: 'Kegiatan bermalam di alam terbuka menggunakan tenda', kalimat: 'Kami ___ di dekat hutan pinus.' },
+  { kata: 'Bermain Layang-layang', emoji: '🪁', deskripsi: 'Kegiatan menerbangkan layang-layang di lapangan', kalimat: 'Sore hari anak-anak ___ di lapangan.' },
+  { kata: 'Koleksi Kartu', emoji: '🃏', deskripsi: 'Kegiatan mengumpulkan kartu bergambar sebagai hobi', kalimat: 'Tono senang ___ bergambar pahlawan.' },
+];
+
+// ---------- DATA STAGE (8 stage sesuai buku paket Yudistira) ----------
+const STAGES = {
+  1: { nama: 'Mengenal Berbagai Perayaan', icon: '🎉', misi: buatMisiDariBank(BANK_PERAYAAN) },
+  2: { nama: 'Menjaga Kesehatan', icon: '🩺', misi: buatMisiDariBank(BANK_KESEHATAN) },
+  3: { nama: 'Keselamatan Diri', icon: '🦺', misi: buatMisiDariBank(BANK_KESELAMATAN) },
+  4: { nama: 'Keluargaku', icon: '👨‍👩‍👧‍👦', misi: buatMisiDariBank(BANK_KELUARGA) },
+  5: { nama: 'Berteman dalam Keragaman', icon: '🤝', misi: buatMisiDariBank(BANK_BERTEMAN) },
+  6: { nama: 'Bijak Memakai Uang', icon: '💰', misi: buatMisiDariBank(BANK_UANG) },
+  7: { nama: 'Menjaga Lingkungan', icon: '🌱', misi: buatMisiDariBank(BANK_LINGKUNGAN) },
+  8: { nama: 'Kegemaranku', icon: '🎨', misi: buatMisiDariBank(BANK_KEGEMARAN) },
+};
+
+// ---------- INIT & SESI ----------
+async function init() {
+  const { data: sesi } = await sb.auth.getSession();
+  if (!sesi.session) { window.location.href = 'index.html'; return; }
+  uid = sesi.session.user.id;
+
+  try {
+    const { data: p, error } = await sb.from('profil').select('*, kelas(tingkat, nama_kelas)').eq('id', uid).single();
+    if (error) throw error;
+    if (p.status !== 'approved' && p.role !== 'admin') {
+      tampilkanPesan('Akun belum disetujui admin.');
+      return;
+    }
+    isAdmin = p.role === 'admin';
+    namaSaya = p.nama || 'Siswa';
+    const tingkatSaya = p.kelas ? p.kelas.tingkat : null;
+
+    if (!isAdmin && tingkatSaya !== TINGKAT_GAME) {
+      tampilkanPesan('Game ini khusus untuk Kelas ' + TINGKAT_GAME + '. Kelas kamu: ' + (p.kelas ? p.kelas.nama_kelas : '-'));
+      return;
+    }
+
+    const { data: progresStage } = await sb.from('progres_petualangan').select('*').eq('id_siswa', uid).eq('mapel', MAPEL_GAME).eq('tingkat', TINGKAT_GAME).maybeSingle();
+    tahapTercapai = progresStage ? progresStage.tahap_tercapai : 0;
+
+    renderPeta();
+  } catch (e) {
+    tampilkanPesan('Gagal memuat: ' + (e.message || e));
+  }
+}
+
+function tampilkanPesan(teks) {
+  document.getElementById('view-peta').style.display = 'none';
+  const el = document.getElementById('center-msg');
+  el.style.display = 'block';
+  el.textContent = teks;
+}
+
+async function muatProgresMisi(tahap) {
+  progresMisi = {};
+  const { data, error } = await sb.from('progres_misi').select('*').eq('id_siswa', uid).eq('mapel', MAPEL_GAME).eq('tingkat', TINGKAT_GAME).eq('tahap', tahap);
+  if (!error && data) data.forEach(row => { progresMisi[row.misi] = row.bintang; });
+}
+
+function renderPeta() {
+  const grid = document.getElementById('stage-grid');
+  grid.innerHTML = '';
+  for (let s = 1; s <= 10; s++) {
+    const node = document.createElement('button');
+    const adaKonten = !!STAGES[s];
+    const terbuka = isAdmin || s === 1 || tahapTercapai >= (s - 1);
+
+    if (adaKonten && terbuka) {
+      node.className = 'stage-node buka';
+      node.innerHTML = '<span class="angka">' + STAGES[s].icon + '</span><span class="ket">Stage ' + s + '<br>' + STAGES[s].nama + '</span>';
+      node.onclick = () => { bunyiKlik(); bukaStage(s); };
+    } else {
+      node.className = 'stage-node kunci';
+      node.innerHTML = '<span class="angka">🔒</span><span class="ket">Stage ' + s + '</span>';
+      node.onclick = () => {
+        if (adaKonten && !terbuka) tampilkanToast('Selesaikan Stage ' + (s - 1) + ' dulu (kumpulkan cukup bintang).');
+        else tampilkanToast('Stage ' + s + ' masih dalam pengembangan.');
+      };
+    }
+    grid.appendChild(node);
+  }
+  document.getElementById('btn-back').onclick = () => window.location.href = 'mapel.html?mapel=bahasa_indonesia';
+}
+
+async function bukaStage(s) {
+  tahapAktif = s;
+  try {
+    await muatProgresMisi(s);
+  } catch (e) {
+    tampilkanToast('Gagal ambil progres: ' + (e.message || e));
+    progresMisi = {};
+  }
+  renderMisiList();
+  pulangKeMisiList();
+}
+
+function renderMisiList() {
+  const misiList = STAGES[tahapAktif].misi;
+  const list = document.getElementById('misi-list');
+  list.innerHTML = '';
+  misiList.forEach((m, idx) => {
+    const bintang = progresMisi[m.id] || 0;
+    const bintangSebelumnya = idx === 0 ? 999 : (progresMisi[misiList[idx - 1].id] || 0);
+    const terkunci = !isAdmin && idx > 0 && bintangSebelumnya < SYARAT_BINTANG_LANJUT;
+
+    const card = document.createElement('button');
+    card.className = 'misi-card' + (terkunci ? ' terkunci' : '');
+    card.innerHTML = `
+      <div class="num">${terkunci ? '🔒' : m.id}</div>
+      <div class="txt"><b>${m.judul}</b><span>${terkunci ? 'Selesaikan misi sebelumnya (min. 2 ★) dulu' : m.desc}</span></div>
+      <div class="bintang">${terkunci ? '' : bintangStr(bintang)}</div>
+    `;
+    card.onclick = () => {
+      bunyiKlik();
+      if (terkunci) {
+        tampilkanToast('Selesaikan Misi ' + misiList[idx - 1].id + ' dengan minimal ' + SYARAT_BINTANG_LANJUT + ' bintang dulu.');
+        return;
+      }
+      mulaiMisi(m);
+    };
+    list.appendChild(card);
+  });
+
+  const totalBintang = misiList.reduce((sum, m) => sum + (progresMisi[m.id] || 0), 0);
+  const infoEl = document.getElementById('info-total-bintang');
+  if (infoEl) infoEl.textContent = 'Total bintang Stage ' + tahapAktif + ': ' + totalBintang + ' / 15 (perlu ' + SYARAT_TOTAL_STAGE + ' untuk buka stage berikutnya)';
+}
+
+// ---------- MAIN GAMEPLAY ----------
+let soalSaatIni = [];
+let idxSoal = 0;
+let salahBerturut = 0;
+let bintangPerSoal = [];
+
+function mulaiMisi(misi) {
+  misiAktif = misi;
+  if (misi.reset) misi.reset();
+  soalSaatIni = [];
+  for (let i = 0; i < JUMLAH_SOAL; i++) soalSaatIni.push(misi.generator());
+  idxSoal = 0;
+  bintangPerSoal = [];
+  tampilkanView('view-main');
+  document.getElementById('btn-back').onclick = () => pulangKeMisiList();
+  tampilkanSoal();
+}
+
+
+function bacaPengaturan() {
+  try { return JSON.parse(localStorage.getItem('pengaturan_game') || '{"musik":true,"efek":true}'); }
+  catch (e) { return { musik: true, efek: true }; }
+}
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function nada(freq, durasi, tipe, waktuMulai) {
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = tipe || 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.16, ctx.currentTime + waktuMulai);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + waktuMulai + durasi);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(ctx.currentTime + waktuMulai);
+    osc.stop(ctx.currentTime + waktuMulai + durasi);
+  } catch (e) {}
+}
+function bunyiKlik() { if (bacaPengaturan().efek) nada(600, 0.06, 'square', 0); }
+function bunyiBenar() {
+  if (!bacaPengaturan().efek) return;
+  nada(523, 0.12, 'sine', 0); nada(659, 0.12, 'sine', 0.1); nada(784, 0.18, 'sine', 0.2);
+}
+function bunyiSalah() { if (bacaPengaturan().efek) nada(200, 0.25, 'sawtooth', 0); }
+function bunyiBintang() {
+  if (!bacaPengaturan().efek) return;
+  nada(784, 0.1, 'sine', 0); nada(988, 0.1, 'sine', 0.08); nada(1175, 0.22, 'sine', 0.16);
+}
+
+function tampilkanSoal() {
+  salahBerturut = 0;
+  const s = soalSaatIni[idxSoal];
+  document.getElementById('progress-teks').textContent = 'Soal ' + (idxSoal + 1) + '/' + JUMLAH_SOAL;
+  document.getElementById('progress-nyawa').textContent = '♥'.repeat(MAKS_SALAH);
+  document.getElementById('soal-teks').textContent = s.pertanyaan;
+  const elGambar = document.getElementById('soal-gambar');
+  if (s.gambar) {
+    elGambar.textContent = s.gambar;
+    elGambar.style.display = 'block';
+  } else {
+    elGambar.style.display = 'none';
+  }
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+
+  const opsiList = document.getElementById('opsi-list');
+  opsiList.innerHTML = '';
+  s.opsi.forEach((teks, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opsi-btn';
+    btn.textContent = teks;
+    btn.onclick = () => jawabSoal(i, btn);
+    opsiList.appendChild(btn);
+  });
+}
+
+function jawabSoal(i, btnEl) {
+  const s = soalSaatIni[idxSoal];
+  const benar = i === s.jawabanIndex;
+  const fb = document.getElementById('feedback');
+
+  if (benar) {
+    document.querySelectorAll('.opsi-btn').forEach(b => b.classList.add('disabled'));
+    btnEl.classList.add('benar');
+    const bintang = salahBerturut === 0 ? 3 : (salahBerturut === 1 ? 2 : 1);
+    bintangPerSoal.push(bintang);
+    bunyiBenar();
+    fb.textContent = 'Benar! ' + bintangStr(bintang);
+    fb.className = 'feedback ok';
+    setTimeout(lanjutSoal, 1100);
+  } else {
+    salahBerturut++;
+    btnEl.classList.add('salah');
+    document.getElementById('progress-nyawa').textContent = '♥'.repeat(Math.max(0, MAKS_SALAH - salahBerturut));
+    if (salahBerturut >= MAKS_SALAH) {
+      document.querySelectorAll('.opsi-btn').forEach((b, idx2) => {
+        b.classList.add('disabled');
+        if (idx2 === s.jawabanIndex) b.classList.add('benar');
+      });
+      bintangPerSoal.push(1);
+      bunyiSalah();
+      fb.textContent = 'Jawaban yang benar: ' + s.opsi[s.jawabanIndex];
+      fb.className = 'feedback err';
+      setTimeout(lanjutSoal, 1600);
+    } else {
+      bunyiSalah();
+      btnEl.classList.add('disabled');
+      fb.textContent = 'Belum tepat, coba lagi!';
+      fb.className = 'feedback err';
+    }
+  }
+}
+
+function lanjutSoal() {
+  idxSoal++;
+  if (idxSoal < JUMLAH_SOAL) tampilkanSoal();
+  else selesaiMisi();
+}
+
+async function selesaiMisi() {
+  const bintangMisi = Math.min(...bintangPerSoal);
+  bunyiBintang();
+  document.getElementById('hasil-bintang').textContent = bintangStr(bintangMisi);
+  document.getElementById('hasil-detail').textContent = misiAktif.judul + ' — kamu mendapat ' + bintangMisi + ' bintang.';
+  tampilkanView('view-hasil');
+  document.getElementById('btn-back').onclick = () => pulangKeMisiList();
+
+  document.getElementById('btn-ulangi').onclick = () => mulaiMisi(misiAktif);
+  document.getElementById('btn-ke-misi').onclick = () => { renderMisiList(); pulangKeMisiList(); };
+
+  const bintangSebelumnya = progresMisi[misiAktif.id] || 0;
+  if (bintangMisi > bintangSebelumnya) {
+    progresMisi[misiAktif.id] = bintangMisi;
+    try {
+      await sb.from('progres_misi').upsert({
+        id_siswa: uid, mapel: MAPEL_GAME, tingkat: TINGKAT_GAME, tahap: tahapAktif, misi: misiAktif.id, bintang: bintangMisi
+      }, { onConflict: 'id_siswa,mapel,tingkat,tahap,misi' });
+    } catch (e) { console.warn('Gagal simpan progres misi:', e); }
+  }
+
+  const misiList = STAGES[tahapAktif].misi;
+  const totalBintangStage = misiList.reduce((sum, m) => sum + (progresMisi[m.id] || 0), 0);
+  try {
+    await sb.from('skor_game').insert({
+      id_siswa: uid, nama: namaSaya, mapel: MAPEL_GAME, tingkat: TINGKAT_GAME,
+      game: 'petualangan-bindo', nilai: totalBintangStage, tahap: tahapAktif
+    });
+  } catch (e) { console.warn('Gagal simpan skor petualangan:', e); }
+
+  if (totalBintangStage >= SYARAT_TOTAL_STAGE && tahapTercapai < tahapAktif) {
+    tahapTercapai = tahapAktif;
+    try {
+      await sb.from('progres_petualangan').upsert({
+        id_siswa: uid, mapel: MAPEL_GAME, tingkat: TINGKAT_GAME, tahap_tercapai: tahapTercapai
+      }, { onConflict: 'id_siswa,mapel,tingkat' });
+    } catch (e) { console.warn('Gagal simpan progres stage:', e); }
+  }
+}
+
+window.addEventListener('error', function(e) { tampilkanToast('Error JS: ' + e.message); });
+window.addEventListener('unhandledrejection', function(e) {
+  const pesan = (e.reason && e.reason.message) ? e.reason.message : String(e.reason);
+  tampilkanToast('Error: ' + pesan);
+});
+
+
+let musikInterval = null;
+let musikLangkah = 0;
+const MELODI_LATAR = [392, 440, 494, 440, 523, 494, 440, 392];
+function mulaiMusikLatar() {
+  if (musikInterval) return;
+  musikInterval = setInterval(() => {
+    if (!bacaPengaturan().musik) return;
+    const freq = MELODI_LATAR[musikLangkah % MELODI_LATAR.length];
+    nada(freq, 0.5, 'sine', 0);
+    musikLangkah++;
+  }, 650);
+}
+function hentikanMusikLatar() {
+  clearInterval(musikInterval);
+  musikInterval = null;
+}
+document.addEventListener('click', function mulaiSekaliSaja() {
+  if (bacaPengaturan().musik) mulaiMusikLatar();
+  document.removeEventListener('click', mulaiSekaliSaja);
+}, { once: true });
+
+init();
+
+</script>
+<script>mulaiAplikasi();</script>
+</body>
+</html>

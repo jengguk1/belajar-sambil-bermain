@@ -1,0 +1,2151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pembuat Kartu Siswa Premium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;800;900&family=Montserrat:wght@600;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/JsBarcode/3.11.5/JsBarcode.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --ungu-tua:#2e0a52; --ungu:#3f0f6e; --ungu-terang:#5a1a96;
+    --emas:#e9c766; --emas-terang:#f7e199; --kertas:#f6f4fb; --teks:#241a35;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Segoe UI', system-ui, -apple-system, sans-serif;
+    background:
+      radial-gradient(circle at 15% 10%, #3f0f6e33 0%, transparent 40%),
+      radial-gradient(circle at 85% 90%, #e9c76622 0%, transparent 40%),
+      #14101c;
+    color:var(--teks); min-height:100vh; padding:28px 16px 60px;
+  }
+  h1{ text-align:center; color:var(--emas-terang); font-size:1.5rem; letter-spacing:1px; margin-bottom:4px; font-weight:700; }
+  .sub{ text-align:center; color:#c9bfe0; font-size:.85rem; margin-bottom:24px; }
+  .wrap{ max-width:1280px; margin:0 auto; display:grid; grid-template-columns:400px 1fr; gap:24px; align-items:start; }
+  .wrap > div{ min-width:0; }
+  @media (max-width:960px){ .wrap{grid-template-columns:1fr;} }
+
+  .panel{ background:#1e1730; border:1px solid #392a5c; border-radius:16px; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,.35); margin-bottom:18px; }
+  .panel h2{ color:var(--emas-terang); font-size:.95rem; margin:0 0 14px; border-bottom:1px solid #392a5c; padding-bottom:9px; letter-spacing:.5px; display:flex; align-items:center; justify-content:space-between; }
+  .panel h2 small{ color:#8f81b3; font-weight:400; font-size:.72rem; }
+  label{ display:block; font-size:.75rem; color:#c9bfe0; margin:11px 0 5px; font-weight:600; text-transform:uppercase; letter-spacing:.4px; }
+  input[type=text], input[type=file], select{
+    width:100%; padding:8px 10px; border-radius:9px; border:1px solid #4a3873;
+    background:#140f22; color:#f0ecfa; font-size:.88rem; outline:none;
+  }
+  input[type=text]:focus, select:focus{border-color:var(--emas);}
+  input[type=file]{ padding:6px; font-size:.78rem; color:#c9bfe0; }
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+  .hint{font-size:.7rem;color:#8f81b3;margin-top:4px;line-height:1.4;}
+  .btn{
+    width:100%; margin-top:14px; padding:11px; border:none; border-radius:10px;
+    background:linear-gradient(135deg,var(--emas-terang),var(--emas));
+    color:#2e0a52; font-weight:800; font-size:.86rem; letter-spacing:.3px; cursor:pointer;
+    box-shadow:0 6px 16px rgba(233,199,102,.25);
+  }
+  .btn:hover{filter:brightness(1.05);}
+  .btn.secondary{ background:#2a2044; color:#e9c766; border:1px solid #4a3873; box-shadow:none; }
+  .btn.danger{ background:#3a1a2a; color:#ff9db0; border:1px solid #5c2c40; box-shadow:none; }
+  .btn.small{ width:auto; padding:7px 12px; font-size:.74rem; margin-top:0; }
+  .btn:disabled{opacity:.4; cursor:not-allowed;}
+  .btn-row{display:flex; gap:8px; margin-top:14px;}
+  .btn-row .btn{margin-top:0;}
+
+  /* Daftar siswa */
+  .toolbar{display:flex; gap:8px; margin-bottom:10px;}
+  .list-siswa{ max-height:260px; overflow-y:auto; border:1px solid #392a5c; border-radius:10px; }
+  .list-siswa table{ width:100%; border-collapse:collapse; font-size:.78rem; }
+  .list-siswa th{ position:sticky; top:0; background:#241b3a; color:#c9bfe0; text-align:left; padding:8px; font-size:.68rem; text-transform:uppercase; letter-spacing:.4px; }
+  .list-siswa td{ padding:7px 8px; border-top:1px solid #2e2448; color:#e7e0f7; }
+  .list-siswa tr{cursor:pointer;}
+  .list-siswa tr:hover td{background:#241b3a;}
+  .list-siswa tr.aktif td{background:#3a2a5c;}
+  .list-siswa .hapus{color:#ff9db0; font-weight:800; cursor:pointer; padding:2px 6px;}
+  .kosong{padding:16px; text-align:center; color:#6f6390; font-size:.8rem;}
+
+  /* Foto crop */
+  .foto-edit{
+    position:relative; width:130px; aspect-ratio:1/1.28; border-radius:12px; overflow:hidden;
+    border:2px dashed var(--emas); background:#140f22; margin:8px auto 4px; cursor:grab; touch-action:none;
+  }
+  .foto-edit.dragover{ border-color:#8be08b; background:#16261a; }
+  .foto-edit img{ position:absolute; top:50%; left:50%; max-width:none; user-select:none; -webkit-user-drag:none; }
+  .foto-edit .fp{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; color:#8f81b3; font-size:.7rem; padding:8px; }
+  .zoom-row{display:flex; align-items:center; gap:8px; margin-top:8px;}
+  .zoom-row input[type=range]{flex:1;}
+  .zoom-row span{ min-width:70px; }
+  .foto-nudge{
+    position:absolute; top:6px; right:6px; display:grid;
+    grid-template-columns:repeat(3, 22px); grid-template-rows:repeat(2, 22px);
+    gap:2px; z-index:5;
+  }
+  .foto-nudge button{
+    grid-column:2; background:rgba(20,15,34,.75); border:1px solid var(--emas);
+    color:var(--emas-terang); border-radius:5px; font-size:.65rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; padding:0; line-height:1;
+  }
+  .foto-nudge button[data-arah="kiri"]{ grid-column:1; grid-row:2; }
+  .foto-nudge button[data-arah="kanan"]{ grid-column:3; grid-row:2; }
+  .foto-nudge button[data-arah="bawah"]{ grid-column:2; grid-row:2; }
+  .foto-nudge button[data-arah="atas"]{ grid-column:2; grid-row:1; }
+  .foto-nudge button:hover{ background:rgba(233,199,102,.25); }
+  .zoom-row span{font-size:.7rem; color:#8f81b3; width:34px;}
+
+  /* Stage kartu */
+  .stage{ display:flex; flex-direction:column; align-items:center; gap:14px; position:sticky; top:20px; min-width:0; width:100%; }
+  #kartuViewport{ width:100%; max-width:900px; min-width:0; margin:0 auto; overflow:hidden; position:relative; }
+  #kartuHost{ width:900px; transform-origin:top left; }
+  #kartuHost.mode-portrait{ width:640px; }
+  .kartu{
+    width:100%; aspect-ratio:900/560; position:relative; border-radius:26px; overflow:hidden;
+    background:var(--kertas); box-shadow:0 25px 60px rgba(0,0,0,.5);
+  }
+  .bg-ungu{ position:absolute; inset:0; background:linear-gradient(135deg, var(--ungu-tua) 0%, var(--ungu) 45%, var(--ungu-terang) 100%); }
+  .bg-dots{
+    position:absolute; top:0; right:0; width:38%; height:45%;
+    background-image:radial-gradient(rgba(255,255,255,.15) 1.4px, transparent 1.4px);
+    background-size:14px 14px; opacity:.35;
+    -webkit-mask-image:linear-gradient(225deg,#000 10%,transparent 70%); mask-image:linear-gradient(225deg,#000 10%,transparent 70%);
+  }
+  .ribbon{ position:absolute; background:linear-gradient(90deg,#c99a2e,var(--emas-terang) 40%,var(--emas-terang) 60%,#c99a2e); }
+  .ribbon-tl{ width:230%; height:16px; top:16%; left:-70%; transform:rotate(-32deg); box-shadow:0 0 0 2px rgba(255,255,255,.15) inset; }
+  .ribbon-br{ width:230%; height:14px; bottom:16%; right:-70%; transform:rotate(-32deg); }
+  .curve{ position:absolute; inset:0; background: radial-gradient(120% 90% at 62% 130%, var(--kertas) 62%, transparent 63%), radial-gradient(160% 120% at 35% -30%, var(--kertas) 60%, transparent 61%); }
+  .white-panel{ position:absolute; left:6.2%; right:6.2%; top:6%; bottom:6%; background:var(--kertas); border-radius:16px; }
+  .logo-wrap{ position:absolute; top:7%; left:5%; width:15%; aspect-ratio:1/1.05; }
+  .logo-wrap img{width:100%;height:100%;object-fit:contain;}
+  .logo-placeholder{ width:100%;height:100%; border:2px dashed var(--emas); border-radius:10px; display:flex;align-items:center;justify-content:center; color:#f2e9ff; font-size:.6rem; text-align:center; padding:6px; background:rgba(255,255,255,.06); }
+  .kop{ position:absolute; top:8.5%; left:29%; right:6%; text-align:left; }
+  .kop .kartu-siswa{ font-size:1.05rem; letter-spacing:6px; color:var(--ungu-terang); font-weight:700; margin:0; }
+  .kop .nama-sekolah{ font-family:'Poppins', 'Segoe UI', sans-serif; font-size:2.5rem; font-weight:900; color:var(--ungu-tua); margin:2px 0 4px; line-height:1.05; letter-spacing:.3px; -webkit-text-stroke:0.6px var(--ungu-tua); }
+  .kop .alamat{ font-size:1.02rem; color:#3a3350; font-weight:600; line-height:1.35; }
+  .divider{ position:absolute; top:35%; left:29%; right:6%; display:flex; align-items:center; gap:10px; }
+  .divider .line{flex:1; height:2px; background:linear-gradient(90deg,transparent,var(--emas),transparent);}
+  .divider .diamond{width:9px;height:9px; background:var(--emas); transform:rotate(45deg);}
+  .foto-wrap{ position:absolute; left:6.8%; top:44%; width:19%; aspect-ratio:1/1.28; border-radius:14px; border:3px solid var(--emas); overflow:hidden; background:#ddd6ee; box-shadow:0 8px 18px rgba(0,0,0,.25); }
+  .foto-wrap img{ position:absolute; top:50%; left:50%; max-width:none; }
+  .foto-wrap .placeholder{ width:100%;height:100%; display:flex;align-items:center;justify-content:center; color:#8f7fc9; font-size:.75rem; text-align:center; padding:8px; }
+  .data{ position:absolute; top:41%; left:29%; right:20%; font-size:1.02rem; font-family:var(--font-data, inherit); }
+  .data .baris{ display:grid; grid-template-columns:145px 14px 1fr; margin-bottom:7px; align-items:baseline; }
+  .data .baris .k{font-weight:800; color:#2a2140; letter-spacing:.3px; font-size:calc(.92rem * var(--skala-data, 1));}
+  .data .baris .titik{color:#2a2140;}
+  .data .baris .v{ color:#3a3350; border-bottom:1.5px dotted #7a6ea3; padding-bottom:2px; min-height:1.3em; font-weight:500; font-size:calc(1rem * var(--skala-data, 1)); }
+  .data .baris.isi .v{ color:var(--ungu-terang); font-weight:800; border-bottom:none; }
+  .kelas-badge{ position:absolute; top:41%; right:5.5%; width:16%; background:linear-gradient(160deg,var(--ungu-terang),var(--ungu-tua)); border:2px solid var(--emas); border-radius:14px; text-align:center; padding:12px 6px 16px; box-shadow:0 8px 16px rgba(0,0,0,.3); }
+  .kelas-badge .lbl{ color:#f2e9ff; font-size:.72rem; font-weight:800; letter-spacing:2px; }
+  .kelas-badge .garis{ width:60%; height:2px; background:var(--emas); margin:6px auto; }
+  .kelas-badge .val{ color:#fff; font-size:1.9rem; font-weight:900; margin-top:2px; }
+  .footer-bar{ position:absolute; left:0; right:0; bottom:0; height:11.5%; background:linear-gradient(90deg,var(--ungu-tua),var(--ungu)); border-top:2px solid var(--emas); display:flex; align-items:center; justify-content:center; gap:26px; color:#fff; font-weight:700; font-size:.82rem; letter-spacing:.5px; }
+  .footer-bar .item{display:flex; align-items:center; gap:6px;}
+  .footer-bar .sep{color:var(--emas); opacity:.6;}
+  .footer-bar svg{width:15px;height:15px;fill:none;stroke:var(--emas-terang);stroke-width:2;}
+
+  .catatan{ color:#8f81b3; font-size:.76rem; text-align:center; max-width:900px; }
+  .progress{ width:100%; background:#140f22; border-radius:8px; overflow:hidden; height:8px; margin-top:10px; display:none; }
+  .progress .bar{ height:100%; width:0%; background:linear-gradient(90deg,var(--emas),var(--emas-terang)); transition:width .2s; }
+  .progress.show{display:block;}
+  .progress-label{font-size:.7rem; color:#8f81b3; margin-top:4px; text-align:center;}
+
+  /* ===== TEMA WARNA ===== */
+  .kartu.tema-merah{ --ungu-tua:#5c0a1f; --ungu:#7a0f2b; --ungu-terang:#9c1a3f; }
+  .kartu.tema-biru{ --ungu-tua:#0a2a52; --ungu:#0f3f7a; --ungu-terang:#1a5a96; --emas:#cdd9ec; --emas-terang:#eef3fb; }
+  .kartu.tema-hijau{ --ungu-tua:#0a3d2a; --ungu:#0f5c3f; --ungu-terang:#1a8a5a; }
+
+  /* ===== UKURAN & ORIENTASI ===== */
+  .kartu.landscape{ aspect-ratio:900/560; }
+  .kartu.portrait{ aspect-ratio:640/1010; }
+
+  /* ===== KODE (QR / BARCODE) ===== */
+  .kode-wrap{
+    position:absolute; display:flex; align-items:center; justify-content:center;
+    background:#fff; padding:5px; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,.2);
+  }
+  .kode-wrap img, .kode-wrap canvas{ width:100%; height:100%; object-fit:contain; display:block; }
+  .kartu.landscape .kode-wrap{ top:64%; right:5.5%; width:13%; aspect-ratio:1/1; }
+  .kartu.portrait .kode-wrap{ top:83%; left:6%; transform:none; width:14%; aspect-ratio:1/1; }
+
+  /* ===== OVERRIDE LAYOUT UNTUK PORTRAIT ===== */
+  .kartu.portrait .logo-wrap{ top:4%; left:50%; transform:translateX(-50%); width:20%; }
+  .kartu.portrait .kop{ top:19%; left:8%; right:8%; text-align:center; }
+  .kartu.portrait .kop .kartu-siswa{ font-size:.85rem; letter-spacing:4px; }
+  .kartu.portrait .kop .nama-sekolah{ font-size:1.55rem; }
+  .kartu.portrait .kop .alamat{ font-size:.8rem; }
+  .kartu.portrait .divider{ top:31%; left:8%; right:8%; }
+  .kartu.portrait .foto-wrap{ left:50%; top:33%; width:38%; transform:translateX(-50%); }
+  .kartu.portrait .data{ top:67%; left:9%; right:9%; font-size:calc(.76rem * var(--skala-data, 1)); }
+  .kartu.portrait .data .baris{ grid-template-columns:82px 10px 1fr; margin-bottom:6px; }
+  .kartu.portrait .data .baris .k{ font-size:calc(.64rem * var(--skala-data, 1)); }
+  .kartu.portrait .kelas-badge{ top:4%; right:4%; width:22%; padding:6px 4px 8px; }
+  .kartu.portrait .kelas-badge .lbl{ font-size:.55rem; letter-spacing:1px; }
+  .kartu.portrait .kelas-badge .val{ font-size:1.15rem; }
+  .kartu.portrait .footer-bar{ height:6.5%; gap:10px; font-size:.55rem; }
+  .kartu.portrait .footer-bar svg{ width:10px; height:10px; }
+
+  /* ===== FONT JUDUL ===== */
+  .kartu.font-poppins .nama-sekolah{ font-family:'Poppins', sans-serif; }
+  .kartu.font-montserrat .nama-sekolah{ font-family:'Montserrat', sans-serif; }
+
+  /* ===== TANDA TANGAN & STEMPEL ===== */
+  .ttd-wrap{ position:absolute; text-align:center; }
+  .kartu.landscape .ttd-wrap{ left:29%; top:76%; bottom:auto; width:18%; }
+  .kartu.portrait .ttd-wrap{ top:83.5%; right:6%; left:auto; bottom:auto; width:28%; }
+  .ttd-wrap .ttd-label{ font-size:.6rem; color:#3a3350; font-weight:700; line-height:1.2; margin-bottom:1px; }
+  .ttd-wrap .ttd-gambar{ position:relative; height:26px; }
+  .ttd-wrap .ttd-img{ position:absolute; top:0; left:42%; transform:translateX(-50%); height:24px; object-fit:contain; z-index:2; }
+  .ttd-wrap .stempel-img{ position:absolute; width:36px; height:36px; object-fit:contain; opacity:.75; top:-4px; left:42%; transform:translateX(-50%); mix-blend-mode:multiply; z-index:1; }
+  .ttd-wrap .ttd-nama{ margin-top:1px; font-size:.62rem; color:#2a2140; font-weight:800; line-height:1.2; }
+  .ttd-wrap .ttd-nip{ border-top:1.3px solid #3a3350; margin-top:1px; padding-top:1px; font-size:.55rem; color:#3a3350; font-weight:600; line-height:1.2; }
+  .kartu.portrait .ttd-wrap .ttd-label{ font-size:.5rem; }
+  .kartu.portrait .ttd-wrap .stempel-img{ width:40px; height:40px; top:-6px; }
+  .kartu.portrait .ttd-wrap .ttd-img{ height:28px; }
+  .kartu.portrait .ttd-wrap .ttd-gambar{ height:30px; }
+  .kartu.portrait .ttd-wrap .ttd-nama{ font-size:.54rem; }
+  .kartu.portrait .ttd-wrap .ttd-nip{ font-size:.48rem; }
+
+  /* ===== PENCARIAN & FILTER ===== */
+  .search-row{ display:flex; gap:8px; margin-bottom:10px; }
+  .search-row input, .search-row select{ font-size:.8rem; }
+
+  /* ===== GALERI PREVIEW ===== */
+  .galeri-overlay{
+    display:none; position:fixed; inset:0; background:rgba(10,7,18,.92); z-index:50;
+    padding:24px; overflow-y:auto;
+  }
+  .galeri-overlay.show{ display:block; }
+  .galeri-head{ display:flex; align-items:center; justify-content:space-between; max-width:1200px; margin:0 auto 18px; }
+  .galeri-head h2{ color:var(--emas-terang); font-size:1.1rem; margin:0; }
+  .galeri-grid{ max-width:1200px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; }
+  .galeri-item{ cursor:pointer; border-radius:12px; overflow:hidden; border:2px solid #392a5c; background:#1e1730; transition:border-color .15s; }
+  .galeri-item:hover{ border-color:var(--emas); }
+  .galeri-item .thumb{ width:100%; aspect-ratio:900/560; position:relative; overflow:hidden; }
+  .galeri-item .thumb.pv{ aspect-ratio:640/1010; }
+  .galeri-item .thumb .kartu{ position:absolute; top:0; left:0; width:900px; transform-origin:top left; }
+  .galeri-item .thumb.pv .kartu{ width:640px; }
+  .galeri-item .cap{ padding:8px 10px; font-size:.76rem; color:#e7e0f7; }
+  .galeri-item .cap b{ display:block; color:#f7e199; font-size:.8rem; }
+  .galeri-item .warn{ color:#ff9db0; font-size:.68rem; margin-top:2px; }
+
+  /* ===== SISI BELAKANG KARTU ===== */
+  .watermark-logo{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:52%; opacity:.10; object-fit:contain; filter:grayscale(1);
+    pointer-events:none;
+  }
+  .belakang-isi{
+    position:absolute; inset:9%; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; text-align:center;
+  }
+  .belakang-judul{ font-family:'Poppins','Segoe UI',sans-serif; font-weight:900; font-size:1.5rem; color:var(--ungu-tua); margin:0 0 6px; letter-spacing:.5px; }
+  .belakang-alamat{ font-size:calc(.82rem * var(--skala-belakang, 1)); color:#3a3350; margin:0 0 14px; font-weight:700; font-family:var(--font-belakang, inherit); }  .belakang-garis{ width:70px; height:2px; background:var(--emas); margin-bottom:16px; }
+  .belakang-teks{ font-size:calc(.86rem * var(--skala-belakang, 1)); color:#3a3350; line-height:1.65; max-width:82%; white-space:pre-line; font-weight:500; font-family:var(--font-belakang, inherit); }
+  .belakang-kontak{ font-size:calc(.78rem * var(--skala-belakang, 1)); color:var(--ungu-terang); font-weight:700; line-height:1.5; max-width:82%; margin-top:10px; font-family:var(--font-belakang, inherit); }
+  .belakang-isi .kode-wrap{ position:static; margin-top:12px; }
+  .kartu.portrait .belakang-judul{ font-size:1.15rem; }
+  .kartu.portrait .belakang-alamat{ font-size:calc(.7rem * var(--skala-belakang, 1)); }
+  .kartu.portrait .belakang-teks{ font-size:calc(.74rem * var(--skala-belakang, 1)); max-width:88%; }
+  .kartu.portrait .belakang-kontak{ font-size:calc(.62rem * var(--skala-belakang, 1)); max-width:88%; }
+  .kartu.portrait .watermark-logo{ width:65%; }
+
+  /* ===== TOGGLE SISI KARTU ===== */
+  .toggle-sisi{ display:flex; gap:8px; background:#1e1730; padding:6px; border-radius:10px; border:1px solid #392a5c; }
+  .toggle-sisi button{
+    flex:1; padding:8px 16px; border:none; border-radius:7px; background:transparent;
+    color:#c9bfe0; font-weight:700; font-size:.8rem; cursor:pointer; letter-spacing:.3px;
+  }
+  .toggle-sisi button.aktif{ background:linear-gradient(135deg,var(--emas-terang),var(--emas)); color:#2e0a52; }
+
+  /* ===== LATAR BELAKANG KUSTOM ===== */
+  .kartu.kustom-bg{ background-repeat:no-repeat; background-position:center; }
+  .konten-kustom{
+    position:absolute; display:flex; flex-direction:column; align-items:center;
+    overflow:hidden; gap:2%;
+  }
+  .konten-kustom.konten-belakang{ justify-content:center; }
+  #kartuHost .konten-kustom{ outline:2px dashed rgba(255,45,155,.65); outline-offset:2px; }
+  .konten-kustom.teks-terang{ color:#fff; }
+  .konten-kustom.teks-terang .kop-kustom .nama-sekolah-kustom{ color:#fff; -webkit-text-stroke:0; }
+  .konten-kustom.teks-terang .kop-kustom .kartu-siswa-kustom{ color:var(--emas-terang); }
+  .konten-kustom.teks-terang .kop-kustom .alamat-kustom,
+  .konten-kustom.teks-terang .data-kustom .baris .k,
+  .konten-kustom.teks-terang .data-kustom .baris .v,
+  .konten-kustom.teks-terang .data-kustom .baris .titik{ color:#f0ecfa; }
+  .logo-kustom{ width:24%; max-height:24%; object-fit:contain; flex-shrink:0; }
+  .kop-kustom{ text-align:center; flex-shrink:0; }
+  .kop-kustom .kartu-siswa-kustom{ font-size:.95rem; letter-spacing:3px; color:var(--ungu-terang); font-weight:700; margin:0; }
+  .kop-kustom .nama-sekolah-kustom{ font-family:'Poppins','Segoe UI',sans-serif; font-size:1.75rem; font-weight:900; color:var(--ungu-tua); margin:2px 0; -webkit-text-stroke:0.4px var(--ungu-tua); }
+  .kop-kustom .alamat-kustom{ font-size:.88rem; color:#3a3350; font-weight:600; line-height:1.3; }
+  .foto-kustom{
+    position:relative; width:32%; aspect-ratio:1/1.28; border:3px solid var(--emas); border-radius:10px;
+    overflow:hidden; background:#ddd6ee; flex-shrink:0; box-shadow:0 6px 14px rgba(0,0,0,.2);
+  }
+  .foto-kustom img{ position:absolute; top:50%; left:50%; max-width:none; }
+  .foto-kustom .placeholder{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#8f7fc9; font-size:.8rem; text-align:center; }
+  .data-kustom{ width:92%; font-size:.88rem; flex-shrink:0; font-family:var(--font-data, inherit); }
+  .data-kustom .baris{ display:grid; grid-template-columns:96px 10px 1fr; margin-bottom:6px; align-items:baseline; }
+  .data-kustom .baris .k{ font-weight:800; color:#2a2140; font-size:calc(.8rem * var(--skala-data, 1)); letter-spacing:.2px; }
+  .data-kustom .baris .titik{ color:#2a2140; }
+  .data-kustom .baris .v{ color:#3a3350; border-bottom:1.2px dotted #7a6ea3; padding-bottom:1px; font-weight:500; font-size:calc(.88rem * var(--skala-data, 1)); }
+  .data-kustom .baris.isi .v{ color:var(--ungu-terang); font-weight:800; border-bottom:none; }
+  .konten-kustom .kode-wrap{ position:static; width:20%; aspect-ratio:1/1; flex-shrink:0; }
+  .konten-kustom .ttd-wrap{ position:static; width:34%; flex-shrink:0; }
+  .konten-kustom .ttd-wrap .ttd-nama, .konten-kustom .ttd-wrap .ttd-label, .konten-kustom .ttd-wrap .ttd-nip{ color:inherit; }
+  .kop-kustom .alamat-kustom{ margin:0; }
+  .belakang-teks-kustom{ width:86%; font-size:calc(.9rem * var(--skala-belakang, 1)); line-height:1.5; text-align:center; white-space:pre-line; font-weight:500; word-wrap:break-word; font-family:var(--font-belakang, inherit); }
+  .belakang-kontak-kustom{ font-size:calc(.82rem * var(--skala-belakang, 1)); font-weight:700; text-align:center; line-height:1.4; font-family:var(--font-belakang, inherit); }
+
+  #renderStage{ position:fixed; left:-99999px; top:0; }
+
+  @media print{
+    body *{ visibility:hidden; }
+    #cetakArea, #cetakArea *{ visibility:visible; }
+    #cetakArea{ position:absolute; top:0; left:0; width:100%; }
+    #cetakArea .lembar{ page-break-after:always; }
+  }
+</style>
+</head>
+<body>
+
+<h1>✨ Pembuat Kartu Siswa Premium</h1>
+<div class="sub">Isi satu-satu atau import massal — kartu otomatis rapi, siap unduh atau cetak banyak sekaligus.</div>
+
+<div class="wrap">
+
+  <!-- PANEL FORM -->
+  <div>
+    <div class="panel" style="border-color:#e9c766;">
+      <h2>💾 Simpan &amp; Pulihkan Pekerjaan</h2>
+      <div class="hint" style="margin-top:0;">Semua data sekolah dan siswa (nama, NISN, foto, dll) <b>otomatis tersimpan</b> di perangkat/browser ini setiap kali Boss mengetik — jadi kalau tab tidak sengaja tertutup, tinggal buka lagi filenya, data akan otomatis kembali. Cocok buat kerja bertahap (isi data dulu, foto menyusul belakangan).</div>
+      <div id="statusSimpan" style="font-size:.78rem; font-weight:700; margin:8px 0; color:#8be08b;">✓ Tersimpan otomatis di perangkat ini</div>
+      <div class="btn-row">
+        <button class="btn small" id="btnUnduhCadangan">⬇ Unduh Cadangan (.json)</button>
+        <button class="btn secondary small" id="btnMuatCadanganTrigger">⬆ Muat Cadangan</button>
+      </div>
+      <input type="file" id="inpMuatCadangan" accept="application/json" style="display:none;">
+      <div class="hint">Auto-save di atas hanya berlaku di browser &amp; perangkat yang sama. Kalau mau pindah ke HP/laptop lain, atau sekadar jaga-jaga, unduh cadangan file <b>.json</b> ini sesekali — nanti tinggal "Muat Cadangan" untuk memulihkan semuanya persis seperti semula, termasuk foto.</div>
+      <div id="peringatanKuota" style="display:none; margin-top:10px; padding:10px; background:#3a2a1a; border:1px solid #ffb84d; border-radius:8px; font-size:.72rem; color:#ffd699;">
+        ⚠️ Penyimpanan otomatis di browser sudah penuh (biasanya karena banyak foto beresolusi besar), jadi sebagian foto mungkin tidak ikut ter-auto-save. Data lain tetap aman. Segera klik "Unduh Cadangan" di atas untuk menyimpan semuanya secara manual ke file.
+      </div>
+      <div style="border-top:1px solid #392a5c; margin:14px 0 10px;"></div>
+      <div style="font-size:.72rem; color:#8f81b3; font-weight:700; text-transform:uppercase; letter-spacing:.4px; margin-bottom:4px;">🧪 Percobaan: Koneksi Cloud (Supabase)</div>
+      <div id="statusCloud" style="font-size:.78rem; font-weight:700; color:#c9bfe0;">⏳ Mengecek koneksi...</div>
+      <div id="statusAutoSync" style="font-size:.72rem; margin-top:4px; color:#8f81b3;"></div>
+      <div class="hint" style="margin-top:6px;">Mulai sekarang, setiap kali Boss ubah data siswa, aplikasi otomatis mengirim ke cloud sendiri (beberapa detik setelah berhenti mengetik) — tidak perlu klik apa-apa lagi. Tombol di bawah ini cuma cadangan manual kalau mau paksa kirim/ambil sewaktu-waktu.</div>
+      <button class="btn secondary small" id="btnSyncCloud" style="margin-top:10px;">☁️ Paksa Kirim Sekarang (Manual)</button>
+      <div id="statusSyncCloud" style="font-size:.72rem; margin-top:6px; color:#8f81b3;"></div>
+      <div class="hint">Data siswa di Supabase akan <b>diganti total</b> dengan data yang ada di aplikasi saat ini.</div>
+      <button class="btn secondary small" id="btnAmbilCloud" style="margin-top:12px;">📥 Ambil Data Siswa dari Cloud</button>
+      <div id="statusAmbilCloud" style="font-size:.72rem; margin-top:6px; color:#8f81b3;"></div>
+      <div class="hint">Kebalikannya: data siswa di <b>aplikasi ini</b> akan diganti total dengan data yang tersimpan di Supabase. Cocok dipakai di HP/laptop lain buat menarik data yang sudah dikirim sebelumnya. Belum otomatis — masih manual per klik.</div>
+    </div>
+
+    <div class="panel">
+      <h2>1. Data Sekolah <small>tersimpan otomatis</small></h2>
+      <label>Nama Sekolah</label>
+      <input type="text" id="inpSekolah" value="SDN TAMBERU 1">
+      <label>Kecamatan</label>
+      <input type="text" id="inpKec" value="KEC. BATU MARMAR">
+      <label>Kabupaten</label>
+      <input type="text" id="inpKab" value="KAB. PAMEKASAN">
+      <label>Logo Sekolah</label>
+      <input type="file" id="inpLogo" accept="image/*">
+      <div class="hint">Data ini otomatis tersimpan di perangkat ini, jadi tidak perlu isi ulang tiap buka file.</div>
+    </div>
+
+    <div class="panel">
+      <h2>2. Pengaturan Kartu</h2>
+      <label>Template / Tema Warna</label>
+      <select id="selTema">
+        <option value="tema-ungu">Ungu Emas (Default)</option>
+        <option value="tema-merah">Merah Emas</option>
+        <option value="tema-biru">Biru Perak</option>
+        <option value="tema-hijau">Hijau Emas</option>
+      </select>
+      <div class="row2">
+        <div>
+          <label>Ukuran Kartu</label>
+          <select id="selUkuran">
+            <option value="kecil">Kecil (8,6 × 5,4 cm)</option>
+            <option value="besar">Besar (10,5 × 7,4 cm)</option>
+            <option value="b2">Plastik ID Card B2 (10,5 × 6,5 cm)</option>
+            <option value="b3">Plastik ID Card B3 (10,5 × 8 cm)</option>
+            <option value="b4">Plastik ID Card B4 (13 × 9 cm)</option>
+            <option value="custom">Custom...</option>
+          </select>
+        </div>
+        <div>
+          <label>Orientasi</label>
+          <select id="selOrientasi">
+            <option value="landscape">Landscape</option>
+            <option value="portrait">Portrait</option>
+          </select>
+        </div>
+      </div>
+      <div class="row2" id="rowUkuranCustom" style="display:none;">
+        <div>
+          <label>Lebar (cm)</label>
+          <input type="text" id="inpUkuranW" placeholder="Contoh: 9" inputmode="decimal">
+        </div>
+        <div>
+          <label>Tinggi (cm)</label>
+          <input type="text" id="inpUkuranH" placeholder="Contoh: 6" inputmode="decimal">
+        </div>
+      </div>
+      <div class="hint" id="hintUkuranCustom" style="display:none;">Ukuran custom ini berlaku sebagai sisi terpanjang × terpendek kartu, otomatis mengikuti orientasi Landscape/Portrait yang dipilih.</div>
+
+      <div style="border-top:1px solid #392a5c; margin:14px 0 10px;"></div>
+      <div style="font-size:.72rem; color:#8f81b3; font-weight:700; text-transform:uppercase; letter-spacing:.4px; margin-bottom:4px;">Font &amp; Ukuran Teks (Identitas &amp; Bagian Belakang)</div>
+      <div class="row2">
+        <div>
+          <label>Font Identitas Siswa</label>
+          <select id="selFontData">
+            <option value="default">Default</option>
+            <option value="system">Sesuai Perangkat (System UI)</option>
+            <option value="arial">Arial</option>
+            <option value="times">Times New Roman</option>
+            <option value="georgia">Georgia</option>
+            <option value="verdana">Verdana</option>
+            <option value="tahoma">Tahoma</option>
+            <option value="trebuchet">Trebuchet MS</option>
+            <option value="courier">Courier New</option>
+            <option value="poppins">Poppins</option>
+            <option value="montserrat">Montserrat</option>
+          </select>
+        </div>
+        <div>
+          <label>Font Bagian Belakang</label>
+          <select id="selFontBelakang">
+            <option value="default">Default</option>
+            <option value="system">Sesuai Perangkat (System UI)</option>
+            <option value="arial">Arial</option>
+            <option value="times">Times New Roman</option>
+            <option value="georgia">Georgia</option>
+            <option value="verdana">Verdana</option>
+            <option value="tahoma">Tahoma</option>
+            <option value="trebuchet">Trebuchet MS</option>
+            <option value="courier">Courier New</option>
+            <option value="poppins">Poppins</option>
+            <option value="montserrat">Montserrat</option>
+          </select>
+        </div>
+      </div>
+      <div class="row2">
+        <div>
+          <label>Ukuran Teks Identitas (%)</label>
+          <input type="text" id="inpSkalaData" inputmode="numeric" placeholder="100">
+        </div>
+        <div>
+          <label>Ukuran Teks Belakang (%)</label>
+          <input type="text" id="inpSkalaBelakang" inputmode="numeric" placeholder="100">
+        </div>
+      </div>
+      <div class="hint">Isi contoh 120 untuk teks 20% lebih besar dari ukuran standar, atau 80 untuk lebih kecil. "Sesuai Perangkat" otomatis memakai font bawaan HP/laptop Boss tanpa perlu internet.</div>
+      <div class="row2">
+        <div>
+          <label>Kode di Kartu</label>
+          <select id="selKode">
+            <option value="tidak">Tidak Ada</option>
+            <option value="qr">QR Code</option>
+            <option value="barcode">Barcode</option>
+          </select>
+        </div>
+        <div>
+          <label>Isi Kode Dari</label>
+          <select id="selKodeSumber">
+            <option value="nisn">NISN</option>
+            <option value="nama">Nama</option>
+            <option value="kelas">Kelas</option>
+            <option value="gabungan">Gabungan (Nama+NISN+Sekolah)</option>
+          </select>
+        </div>
+      </div>
+      <div class="hint">Ukuran menentukan dimensi fisik saat dicetak/diunduh. QR/Barcode berguna untuk absensi digital. Kode akan tampil di sisi Depan maupun Belakang.</div>
+      <label style="display:flex; align-items:center; gap:8px; margin-top:14px; text-transform:none; letter-spacing:0;">
+        <input type="checkbox" id="chkTampilkanFooter" style="width:auto;"> Tampilkan teks footer (TAQWA/AKTIF/MANDIRI/UNGGUL)
+      </label>
+      <div class="row2" id="rowFooterTeks1" style="margin-top:8px;">
+        <div><input type="text" id="inpFooter1" placeholder="TAQWA"></div>
+        <div><input type="text" id="inpFooter2" placeholder="AKTIF"></div>
+      </div>
+      <div class="row2" id="rowFooterTeks2">
+        <div><input type="text" id="inpFooter3" placeholder="MANDIRI"></div>
+        <div><input type="text" id="inpFooter4" placeholder="UNGGUL"></div>
+      </div>
+      <div class="hint">Kosongkan centang di atas kalau tidak mau menampilkan baris ini sama sekali.</div>
+      <div class="btn-row">
+        <button class="btn secondary small" id="btnEksporSetting">⬇ Ekspor Template</button>
+        <button class="btn secondary small" id="btnImporSettingTrigger">⬆ Impor Template</button>
+      </div>
+      <div class="hint">⚠️ Tombol ini khusus file <b>.json</b> (pengaturan). Untuk logo/foto/tanda tangan (PNG/JPG), upload di kolom masing-masing pada panel di bawah.</div>
+      <input type="file" id="inpImporSetting" accept="application/json" style="display:none;">
+    </div>
+
+    <div class="panel">
+      <h2>3. Latar Belakang Kustom (PNG/JPG)</h2>
+      <label>Upload Desain Kartu (gambar utuh)</label>
+      <input type="file" id="inpBgKustom" accept="image/*">
+      <div class="hint">Contoh: desain dari Canva/Photoshop yang sudah jadi. Nama, foto, NISN dll akan ditumpuk otomatis di atasnya.</div>
+      <label style="display:flex; align-items:center; gap:8px; margin-top:12px; text-transform:none; letter-spacing:0;">
+        <input type="checkbox" id="chkPakaiBgKustom" style="width:auto;"> Gunakan gambar ini sebagai latar (bukan desain bawaan)
+      </label>
+      <div class="row2" style="margin-top:10px;">
+        <div>
+          <label>Mode Tampilan</label>
+          <select id="selBgFit">
+            <option value="contain">Utuh (Contain)</option>
+            <option value="cover">Penuh, bisa terpotong (Cover)</option>
+          </select>
+        </div>
+        <div>
+          <label>Warna Teks Data</label>
+          <select id="selBgTeksWarna">
+            <option value="gelap">Gelap (untuk latar terang)</option>
+            <option value="terang">Terang (untuk latar gelap)</option>
+          </select>
+        </div>
+      </div>
+      <label>Atur Posisi Area Data (%)</label>
+      <div class="row2">
+        <div><label>Jarak Atas</label><input type="text" id="inpMarginAtas" inputmode="numeric" placeholder="30"></div>
+        <div><label>Jarak Bawah</label><input type="text" id="inpMarginBawah" inputmode="numeric" placeholder="16"></div>
+      </div>
+      <div class="row2">
+        <div><label>Jarak Kiri</label><input type="text" id="inpMarginKiri" inputmode="numeric" placeholder="8"></div>
+        <div><label>Jarak Kanan</label><input type="text" id="inpMarginKanan" inputmode="numeric" placeholder="8"></div>
+      </div>
+      <div class="hint">Kotak putus-putus <b style="color:#ff2d9b;">merah muda</b> di preview kanan menandai area data (hanya tampil di layar, tidak ikut ke hasil unduhan). Kalau NAMA/QR/tanda tangan sampai keluar dari kotak, kecilkan angka Jarak Bawah atau nonaktifkan QR/tanda tangan.</div>
+      <button class="btn danger small" id="btnHapusBgKustom" style="margin-top:10px;">Hapus Latar Kustom</button>
+      <div style="border-top:1px solid #392a5c; margin:16px 0 14px;"></div>
+      <label>Latar Belakang Khusus untuk Sisi Belakang (opsional)</label>
+      <input type="file" id="inpBgKustomBelakang" accept="image/*">
+      <div class="hint">Kalau tidak diisi, sisi belakang tetap pakai desain bawaan (watermark logo + teks). Margin & mode tampilan di atas berlaku juga untuk gambar ini.</div>
+      <label style="display:flex; align-items:center; gap:8px; margin-top:10px; text-transform:none; letter-spacing:0;">
+        <input type="checkbox" id="chkPakaiBgKustomBelakang" style="width:auto;"> Gunakan gambar ini untuk sisi belakang
+      </label>
+      <button class="btn danger small" id="btnHapusBgKustomBelakang" style="margin-top:10px;">Hapus Latar Belakang (Sisi Belakang)</button>
+    </div>
+
+    <div class="panel">
+      <h2>4. Tanda Tangan, Stempel &amp; Masa Berlaku</h2>
+      <label>Font Judul Nama Sekolah</label>
+      <select id="selFont">
+        <option value="default">Default</option>
+        <option value="poppins">Poppins</option>
+        <option value="montserrat">Montserrat</option>
+      </select>
+      <div class="row2">
+        <div>
+          <label>Tanda Tangan Kepala Sekolah</label>
+          <input type="file" id="inpTtd" accept="image/*">
+        </div>
+        <div>
+          <label>Stempel Sekolah</label>
+          <input type="file" id="inpStempel" accept="image/*">
+        </div>
+      </div>
+      <div class="row2">
+        <div>
+          <label>Nama Kepala Sekolah</label>
+          <input type="text" id="inpNamaKS" placeholder="Contoh: Siti Aminah, S.Pd.">
+        </div>
+        <div>
+          <label>NIP</label>
+          <input type="text" id="inpNipKS" placeholder="Contoh: 198001012005011001">
+        </div>
+      </div>
+      <label style="display:flex; align-items:center; gap:8px; margin-top:12px; text-transform:none; letter-spacing:0;">
+        <input type="checkbox" id="chkTampilTtd" style="width:auto;"> Tampilkan tanda tangan &amp; stempel di kartu
+      </label>
+      <label>Kartu Berlaku Sampai</label>
+      <input type="text" id="inpBerlaku" placeholder="Contoh: Juni 2027 (kosongkan jika tidak perlu)">
+    </div>
+
+    <div class="panel">
+      <h2>5. Bagian Belakang Kartu</h2>
+      <label>Kontak Sekolah (opsional)</label>
+      <input type="text" id="inpKontak" placeholder="Contoh: 0812-3456-7890 / sdntamberu1@gmail.com">
+      <label>Teks Bagian Belakang</label>
+      <textarea id="inpTeksBelakang" rows="4" style="width:100%; padding:9px 11px; border-radius:9px; border:1px solid #4a3873; background:#140f22; color:#f0ecfa; font-size:.85rem; font-family:inherit; resize:vertical;" placeholder="Contoh: Kartu ini adalah identitas resmi siswa. Jika ditemukan, mohon dikembalikan ke alamat sekolah."></textarea>
+      <div class="hint">Logo sekolah otomatis tampil sebagai watermark transparan di bagian belakang kartu. Nomor kontak akan otomatis ditampilkan sebagai kalimat "Jika menemukan kartu ini, harap hubungi..." di bawah teks di atas — tidak digabung dengan baris kecamatan/kabupaten.</div>
+    </div>
+
+    <div class="panel">
+      <h2>6. Import &amp; Ekspor Massal Siswa</h2>
+      <label>Upload File Excel/CSV (untuk Import)</label>
+      <input type="file" id="inpCsv" accept=".xlsx,.xls,.csv,text/csv">
+      <div class="hint">Format kolom terpisah: <b>A=nama</b> | <b>B=nisn</b> | <b>C=absen</b> | <b>D=kelas</b> | <b>E=tahun_pelajaran</b> — tinggal copy-paste kolom masing-masing dari data siswa yang sudah ada. Mendukung file Excel (.xlsx) maupun CSV.</div>
+      <div class="btn-row" style="margin-top:8px;">
+        <button class="btn secondary small" id="btnTemplate">⬇ Unduh Template Excel</button>
+        <button class="btn secondary small" id="btnEksporCsv">⬇ Ekspor Data Saat Ini ke Excel</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>7. Upload Foto Massal (per No. Absen)</h2>
+      <div class="hint" style="margin-top:0;">Siapkan foto siswa, beri nama file sesuai <b>nomor absen</b> masing-masing (contoh: <code>1.jpg</code>, <code>2.jpg</code> ... <code>26.jpg</code>). Nomor absen yang tidak ada fotonya otomatis dilewati.</div>
+      <label>Upload File ZIP (berisi banyak foto) atau Pilih Banyak Foto Sekaligus</label>
+      <input type="file" id="inpFotoMassal" accept=".zip,image/*" multiple>
+      <div class="hint">
+        💡 Kalau sekolah punya <b>lebih dari satu kelas dengan nomor absen yang sama</b> (misal absen 1-30 di tiap kelas), pilih dulu kelasnya lewat kotak "Semua Kelas" di panel Daftar Siswa di bawah ini <b>sebelum</b> upload — supaya foto tidak salah pasang ke siswa kelas lain.
+      </div>
+      <div id="statusFotoMassal" style="font-size:.78rem; margin-top:6px; color:#8f81b3;"></div>
+    </div>
+
+    <div class="panel">
+      <h2>8. Daftar Siswa <small id="jmlSiswa">0 siswa</small></h2>
+      <div class="search-row">
+        <input type="text" id="inpCari" placeholder="Cari nama siswa...">
+        <select id="selFilterKelas" style="max-width:110px;"><option value="">Semua Kelas</option></select>
+      </div>
+      <div class="toolbar">
+        <button class="btn small" id="btnTambah">+ Tambah Siswa</button>
+        <button class="btn secondary small" id="btnAutoAbsen">No. Absen Otomatis</button>
+        <button class="btn danger small" id="btnHapusSemua">Hapus Semua</button>
+      </div>
+      <div class="list-siswa">
+        <table id="tabelSiswa">
+          <thead><tr><th>Nama</th><th>Kelas</th><th></th></tr></thead>
+          <tbody id="tbodySiswa"></tbody>
+        </table>
+        <div class="kosong" id="pesanKosong">Belum ada siswa. Klik "+ Tambah Siswa" atau import CSV.</div>
+      </div>
+    </div>
+
+    <div class="panel" id="panelDetail" style="display:none;">
+      <h2>9. Detail Siswa Terpilih</h2>
+      <label>Nama Lengkap</label>
+      <input type="text" id="inpNama" placeholder="Contoh: Ahmad Fauzan">
+      <div class="row2">
+        <div><label>NISN</label><input type="text" id="inpNisn" placeholder="00123456"></div>
+        <div><label>No. Absen</label><input type="text" id="inpAbsen" placeholder="12"></div>
+      </div>
+      <div class="row2">
+        <div><label>Kelas</label><input type="text" id="inpKelas" placeholder="3A"></div>
+        <div><label>Tahun Pelajaran</label><input type="text" id="inpTahun" placeholder="2026/2027"></div>
+      </div>
+
+      <label>Foto Siswa (seret file, geser untuk atur posisi, gunakan slider untuk zoom)</label>
+      <div class="foto-edit" id="fotoEdit">
+        <div class="fp" id="fotoEditPlaceholder">Seret foto ke sini<br>atau klik untuk pilih</div>
+        <img id="fotoEditImg" style="display:none;" draggable="false">
+        <div class="foto-nudge" id="fotoNudge" style="display:none;">
+          <button type="button" data-arah="atas" title="Naikkan gambar">▲</button>
+          <button type="button" data-arah="kiri" title="Geser ke kiri">◀</button>
+          <button type="button" data-arah="kanan" title="Geser ke kanan">▶</button>
+          <button type="button" data-arah="bawah" title="Turunkan gambar">▼</button>
+        </div>
+      </div>
+      <input type="file" id="inpFoto" accept="image/*" style="margin-top:6px;">
+      <div class="zoom-row">
+        <span>Zoom</span>
+        <input type="range" id="rangeZoom" min="100" max="250" value="100">
+      </div>
+      <div class="zoom-row">
+        <span>Naik/Turun</span>
+        <input type="range" id="rangeVertikal" min="0" max="100" value="50">
+      </div>
+      <div class="zoom-row">
+        <span>Kiri/Kanan</span>
+        <input type="range" id="rangeHorizontal" min="0" max="100" value="50">
+      </div>
+      <div class="hint" style="margin-top:2px;">Bisa juga langsung klik-tahan foto di atas lalu seret ke arah yang diinginkan.</div>
+    </div>
+
+    <div class="panel">
+      <h2>10. Ekspor</h2>
+      <button class="btn secondary" id="btnGaleri">🖼 Preview Galeri Semua Kartu</button>
+      <div class="hint" style="margin-top:0; margin-bottom:8px;">Sertakan sisi belakang saat ekspor massal:</div>
+      <label style="display:flex; align-items:center; gap:8px; margin:0 0 10px; text-transform:none; letter-spacing:0;">
+        <input type="checkbox" id="chkSertakanBelakang" style="width:auto;"> Sertakan sisi belakang (ZIP &amp; Cetak A4)
+      </label>
+      <div class="row2">
+        <div>
+          <label>Ukuran Kertas Cetak</label>
+          <select id="selUkuranKertas">
+            <option value="a4">A4 (210 × 297 mm)</option>
+            <option value="b4">B4 (250 × 353 mm)</option>
+            <option value="b3">B3 (353 × 500 mm)</option>
+            <option value="b2">B2 (500 × 707 mm)</option>
+          </select>
+        </div>
+        <div>
+          <label>Balik Kertas Saat Cetak Bolak-balik</label>
+          <select id="selMirrorBelakang">
+            <option value="panjang">Membalik sisi panjang (kiri-kanan)</option>
+            <option value="pendek">Membalik sisi pendek (atas-bawah)</option>
+          </select>
+        </div>
+      </div>
+      <div class="hint">Pilih sesuai kertas yang tersedia di printer/mesin fotokopi Boss. Pengaturan "balik kertas" menentukan urutan sisi belakang supaya presisi menumpuk pas dengan sisi depan saat kertas dibalik fisik untuk cetak bolak-balik.</div>
+      <button class="btn" id="btnUnduhSatu">⬇ Unduh Sisi yang Tampil (PNG)</button>
+      <div class="btn-row">
+        <button class="btn secondary" id="btnUnduhZip">⬇ Unduh Semua (ZIP)</button>
+        <button class="btn secondary" id="btnCetakA4">🖨 Cetak Semua</button>
+      </div>
+      <div class="hint">Cetak memakai fitur "Print → Save as PDF" bawaan browser — gratis, tanpa aplikasi tambahan.</div>
+      <div class="progress" id="progressWrap"><div class="bar" id="progressBar"></div></div>
+      <div class="progress-label" id="progressLabel"></div>
+    </div>
+  </div>
+
+  <!-- STAGE KARTU -->
+  <div class="stage">
+    <div class="toggle-sisi" style="width:280px;">
+      <button class="aktif" id="btnSisiDepan">Tampilan Depan</button>
+      <button id="btnSisiBelakang">Tampilan Belakang</button>
+    </div>
+    <div id="kartuViewport"><div id="kartuHost"></div></div>
+    <div class="catatan">Tips: gunakan foto rasio potret agar hasil crop rapi. Geser foto langsung di kotak preview di panel kiri untuk mengatur posisi wajah.</div>
+  </div>
+
+</div>
+
+<div id="renderStage"></div>
+<div id="cetakArea" style="display:none;"></div>
+
+<div class="galeri-overlay" id="galeriOverlay">
+  <div class="galeri-head">
+    <h2>🖼 Preview Semua Kartu (<span id="galeriJml">0</span> siswa)</h2>
+    <button class="btn secondary small" id="btnTutupGaleri">✕ Tutup</button>
+  </div>
+  <div class="galeri-grid" id="galeriGrid"></div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => (s||'').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ================= KONEKSI CLOUD (SUPABASE) - PERCOBAAN TAHAP AWAL ================= */
+const SUPABASE_URL = 'https://mhrctljhbcbdlgnedukd.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ocmN0bGpoYmNiZGxnbmVkdWtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4Mjc0MTgsImV4cCI6MjEwMzQwMzQxOH0.xrovMX2peXOvgc3ztveEs41YOZZ9yD6eSuGmt_lt3lI';
+let cloudSiap = false;
+let dbClient = null;
+try{
+  dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}catch(e){ /* pustaka Supabase gagal dimuat, mungkin tidak ada internet */ }
+
+let localKosongSaatMuat = false;
+async function cekKoneksiCloud(){
+  const status = document.getElementById('statusCloud');
+  if(!dbClient){
+    status.textContent = '✖ Pustaka Supabase gagal dimuat (cek koneksi internet)';
+    status.style.color = '#ff9db0';
+    return;
+  }
+  try{
+    const { error } = await dbClient.from('siswa').select('id').limit(1);
+    if(error){
+      status.textContent = '✖ Terhubung ke server, tapi tabel "siswa" bermasalah: ' + error.message;
+      status.style.color = '#ff9db0';
+      return;
+    }
+    cloudSiap = true;
+    status.textContent = '✓ Terhubung ke Supabase';
+    status.style.color = '#8be08b';
+    if(localKosongSaatMuat){
+      await autoPullJikaKosong();
+    }
+  }catch(e){
+    status.textContent = '✖ Gagal terhubung: ' + e.message;
+    status.style.color = '#ff9db0';
+  }
+}
+cekKoneksiCloud();
+
+async function autoPullJikaKosong(){
+  const statusAuto = document.getElementById('statusAutoSync');
+  try{
+    const { data, error } = await dbClient.from('siswa').select('*').order('id', { ascending: true });
+    if(error || !data || !data.length) return; // tidak ada data di cloud juga, biarkan default kosong apa adanya
+
+    students = data.map(row => ({
+      id: row.id,
+      nama: row.nama || '', nisn: row.nisn || '', absen: row.absen || '',
+      kelas: row.kelas || '', tahun: row.tahun || '',
+      foto: row.foto || null, zoom: row.zoom || 100,
+      posX: row.pos_x || 50, posY: row.pos_y || 50
+    }));
+    uid = Math.max(...students.map(s => s.id || 0), 0) + 1;
+    currentId = students[0].id;
+    renderList(); loadDetail(); renderPreview();
+    try{ localStorage.setItem('kartuSiswaStudents', JSON.stringify(students)); }catch(e){}
+    if(statusAuto){
+      statusAuto.textContent = `✓ Perangkat ini kosong, ${students.length} siswa otomatis dimuat dari cloud`;
+      statusAuto.style.color = '#8be08b';
+    }
+  }catch(e){ /* diamkan saja, tidak fatal - perangkat tetap bisa dipakai dengan data default kosong */ }
+}
+
+document.getElementById('btnSyncCloud').addEventListener('click', async () => {
+  const statusSync = document.getElementById('statusSyncCloud');
+  if(!dbClient || !cloudSiap){
+    statusSync.textContent = '✖ Belum terhubung ke Supabase. Cek koneksi internet dulu.';
+    statusSync.style.color = '#ff9db0';
+    return;
+  }
+  if(!students.length){
+    statusSync.textContent = 'Belum ada data siswa untuk dikirim.';
+    statusSync.style.color = '#ffb84d';
+    return;
+  }
+  if(!confirm(`Ini akan MENGGANTI semua data siswa yang ada di Supabase dengan ${students.length} siswa dari aplikasi ini sekarang. Lanjutkan?`)) return;
+
+  statusSync.textContent = '⏳ Mengirim data...';
+  statusSync.style.color = '#c9bfe0';
+  try{
+    // Kosongkan dulu tabel siswa di cloud, baru isi ulang dengan data terbaru dari aplikasi
+    const { error: errHapus } = await dbClient.from('siswa').delete().gte('id', 0);
+    if(errHapus) throw errHapus;
+
+    const dataKirim = students.map(s => ({
+      nama: s.nama || '', nisn: s.nisn || '', absen: s.absen || '',
+      kelas: s.kelas || '', tahun: s.tahun || '',
+      foto: s.foto || null, zoom: s.zoom || 100, pos_x: s.posX || 50, pos_y: s.posY || 50
+    }));
+    const { error: errIsi } = await dbClient.from('siswa').insert(dataKirim);
+    if(errIsi) throw errIsi;
+
+    statusSync.textContent = `✓ Berhasil! ${students.length} siswa terkirim ke Supabase.`;
+    statusSync.style.color = '#8be08b';
+  }catch(e){
+    statusSync.textContent = '✖ Gagal mengirim: ' + (e.message || e);
+    statusSync.style.color = '#ff9db0';
+  }
+});
+
+document.getElementById('btnAmbilCloud').addEventListener('click', async () => {
+  const statusAmbil = document.getElementById('statusAmbilCloud');
+  if(!dbClient || !cloudSiap){
+    statusAmbil.textContent = '✖ Belum terhubung ke Supabase. Cek koneksi internet dulu.';
+    statusAmbil.style.color = '#ff9db0';
+    return;
+  }
+  if(!confirm('Ini akan MENGGANTI semua data siswa yang ada di aplikasi ini sekarang dengan data yang tersimpan di Supabase. Lanjutkan?')) return;
+
+  statusAmbil.textContent = '⏳ Mengambil data...';
+  statusAmbil.style.color = '#c9bfe0';
+  try{
+    const { data, error } = await dbClient.from('siswa').select('*').order('id', { ascending: true });
+    if(error) throw error;
+    if(!data || !data.length){
+      statusAmbil.textContent = 'Tidak ada data siswa di Supabase untuk diambil.';
+      statusAmbil.style.color = '#ffb84d';
+      return;
+    }
+
+    students = data.map(row => ({
+      id: row.id,
+      nama: row.nama || '', nisn: row.nisn || '', absen: row.absen || '',
+      kelas: row.kelas || '', tahun: row.tahun || '',
+      foto: row.foto || null, zoom: row.zoom || 100,
+      posX: row.pos_x || 50, posY: row.pos_y || 50
+    }));
+    uid = Math.max(...students.map(s => s.id || 0), 0) + 1;
+    currentId = students[0].id;
+    renderList(); loadDetail(); renderPreview(); saveStudents();
+
+    statusAmbil.textContent = `✓ Berhasil! ${students.length} siswa diambil dari Supabase.`;
+    statusAmbil.style.color = '#8be08b';
+  }catch(e){
+    statusAmbil.textContent = '✖ Gagal mengambil: ' + (e.message || e);
+    statusAmbil.style.color = '#ff9db0';
+  }
+});
+
+/* ================= STATE ================= */
+let profile = {
+  sekolah:'SDN TAMBERU 1', kec:'KEC. BATU MARMAR', kab:'KAB. PAMEKASAN', logo:null,
+  tema:'tema-ungu', ukuran:'kecil', orientasi:'landscape', kodeType:'tidak', kodeSumber:'nisn',
+  fontKop:'default', ttd:null, stempel:null, showTtd:false, berlaku:'',
+  namaKS:'', nipKS:'',
+  kontak:'', teksBelakang:'Kartu ini adalah identitas resmi siswa. Jika ditemukan, mohon dikembalikan ke alamat sekolah di atas. Terima kasih.',
+  customWcm:'9', customHcm:'6',
+  bgKustom:null, pakaiBgKustom:false, bgFit:'contain', bgTeksWarna:'gelap',
+  bgKustomBelakang:null, pakaiBgKustomBelakang:false,
+  marginAtas:18, marginBawah:12, marginKiri:8, marginKanan:8,
+  tampilkanFooter:true, footerTeks:['TAQWA','AKTIF','MANDIRI','UNGGUL'],
+  sertakanBelakangCetak:false, mirrorBelakang:'panjang', ukuranKertas:'a4',
+  fontData:'default', fontBelakang:'default', skalaData:100, skalaBelakang:100
+};
+const FONT_STACKS = {
+  default: "'Segoe UI', sans-serif",
+  system: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+  arial: "Arial, Helvetica, sans-serif",
+  times: "'Times New Roman', Times, serif",
+  georgia: "Georgia, serif",
+  verdana: "Verdana, sans-serif",
+  tahoma: "Tahoma, Geneva, sans-serif",
+  trebuchet: "'Trebuchet MS', sans-serif",
+  courier: "'Courier New', Courier, monospace",
+  poppins: "'Poppins', sans-serif",
+  montserrat: "'Montserrat', sans-serif"
+};
+function styleVariabelFont(){
+  const fData = FONT_STACKS[profile.fontData] || FONT_STACKS.default;
+  const fBlk = FONT_STACKS[profile.fontBelakang] || FONT_STACKS.default;
+  const sData = (parseFloat(profile.skalaData) || 100) / 100;
+  const sBlk = (parseFloat(profile.skalaBelakang) || 100) / 100;
+  return `--font-data:${fData}; --font-belakang:${fBlk}; --skala-data:${sData}; --skala-belakang:${sBlk};`;
+}
+const UKURAN_MM = {
+  kecil:{w:85.6,h:54}, besar:{w:105,h:74},
+  b2:{w:105,h:65}, b3:{w:105,h:80}, b4:{w:130,h:90}
+};
+const LEMBAR_MM = {
+  a4:{w:210,h:297,label:'A4 (210 × 297 mm)'},
+  b4:{w:250,h:353,label:'B4 (250 × 353 mm)'},
+  b3:{w:353,h:500,label:'B3 (353 × 500 mm)'},
+  b2:{w:500,h:707,label:'B2 (500 × 707 mm)'}
+};
+function getLembarMM(){ return LEMBAR_MM[profile.ukuranKertas] || LEMBAR_MM.a4; }
+function getUkuranMM(){
+  if(profile.ukuran === 'custom'){
+    const w = (parseFloat((profile.customWcm||'').toString().replace(',','.')) || 9) * 10;
+    const h = (parseFloat((profile.customHcm||'').toString().replace(',','.')) || 6) * 10;
+    return { w, h };
+  }
+  return UKURAN_MM[profile.ukuran] || UKURAN_MM.kecil;
+}
+let students = [];
+let currentId = null;
+let uid = 1;
+
+function loadProfile(){
+  try{
+    const raw = localStorage.getItem('kartuSiswaProfile');
+    if(raw){ profile = Object.assign(profile, JSON.parse(raw)); }
+  }catch(e){ /* localStorage tidak tersedia di lingkungan ini, lanjut pakai default */ }
+  $('inpSekolah').value = profile.sekolah;
+  $('inpKec').value = profile.kec;
+  $('inpKab').value = profile.kab;
+  $('selTema').value = profile.tema;
+  $('selUkuran').value = profile.ukuran;
+  $('selOrientasi').value = profile.orientasi;
+  $('selKode').value = profile.kodeType;
+  $('selKodeSumber').value = profile.kodeSumber;
+  $('selFont').value = profile.fontKop;
+  $('chkTampilTtd').checked = !!profile.showTtd;
+  $('inpBerlaku').value = profile.berlaku || '';
+  $('inpKontak').value = profile.kontak || '';
+  $('inpTeksBelakang').value = profile.teksBelakang || '';
+  $('inpUkuranW').value = profile.customWcm || '9';
+  $('inpUkuranH').value = profile.customHcm || '6';
+  $('chkPakaiBgKustom').checked = !!profile.pakaiBgKustom;
+  $('selBgFit').value = profile.bgFit || 'contain';
+  $('selBgTeksWarna').value = profile.bgTeksWarna || 'gelap';
+  $('inpMarginAtas').value = profile.marginAtas;
+  $('inpMarginBawah').value = profile.marginBawah;
+  $('inpMarginKiri').value = profile.marginKiri;
+  $('inpMarginKanan').value = profile.marginKanan;
+  $('inpNamaKS').value = profile.namaKS || '';
+  $('inpNipKS').value = profile.nipKS || '';
+  $('chkPakaiBgKustomBelakang').checked = !!profile.pakaiBgKustomBelakang;
+  $('chkTampilkanFooter').checked = profile.tampilkanFooter !== false;
+  const ft = profile.footerTeks || ['TAQWA','AKTIF','MANDIRI','UNGGUL'];
+  $('inpFooter1').value = ft[0]; $('inpFooter2').value = ft[1];
+  $('inpFooter3').value = ft[2]; $('inpFooter4').value = ft[3];
+  $('chkSertakanBelakang').checked = !!profile.sertakanBelakangCetak;
+  $('selUkuranKertas').value = profile.ukuranKertas || 'a4';
+  $('selMirrorBelakang').value = profile.mirrorBelakang || 'panjang';
+  $('selFontData').value = profile.fontData || 'default';
+  $('selFontBelakang').value = profile.fontBelakang || 'default';
+  $('inpSkalaData').value = profile.skalaData || 100;
+  $('inpSkalaBelakang').value = profile.skalaBelakang || 100;
+  toggleUkuranCustom();
+  toggleFooterInputs();
+}
+function toggleFooterInputs(){
+  const tampil = $('chkTampilkanFooter').checked;
+  $('rowFooterTeks1').style.display = tampil ? 'grid' : 'none';
+  $('rowFooterTeks2').style.display = tampil ? 'grid' : 'none';
+}
+function toggleUkuranCustom(){
+  const tampil = $('selUkuran').value === 'custom';
+  $('rowUkuranCustom').style.display = tampil ? 'grid' : 'none';
+  $('hintUkuranCustom').style.display = tampil ? 'block' : 'none';
+}
+function saveProfile(){
+  try{ localStorage.setItem('kartuSiswaProfile', JSON.stringify(profile)); }catch(e){}
+}
+
+/* ================= AUTO-SIMPAN DATA SISWA ================= */
+let peringatanKuotaTampil = false;
+let saveStudentsTimer = null;
+function saveStudents(){
+  try{
+    localStorage.setItem('kartuSiswaStudents', JSON.stringify(students));
+    $('statusSimpan').textContent = '✓ Tersimpan otomatis di perangkat ini';
+    $('statusSimpan').style.color = '#8be08b';
+  }catch(e){
+    // Kemungkinan kuota localStorage penuh (biasanya karena banyak foto beresolusi besar).
+    try{
+      const ringan = students.map(s => { const {foto, ...rest} = s; return rest; });
+      localStorage.setItem('kartuSiswaStudents', JSON.stringify(ringan));
+    }catch(e2){ /* tetap gagal, biarkan saja - tidak fatal, cadangan manual tetap tersedia */ }
+    if(!peringatanKuotaTampil){
+      peringatanKuotaTampil = true;
+      $('peringatanKuota').style.display = 'block';
+    }
+    $('statusSimpan').textContent = '⚠️ Penyimpanan otomatis penuh — unduh cadangan manual';
+    $('statusSimpan').style.color = '#ffb84d';
+  }
+  autoSyncCloudDebounced();
+}
+function saveStudentsDebounced(){
+  clearTimeout(saveStudentsTimer);
+  saveStudentsTimer = setTimeout(saveStudents, 500);
+}
+
+/* ================= AUTO-SINKRON KE CLOUD (di belakang layar) ================= */
+let autoSyncTimer = null;
+let autoSyncSedangJalan = false;
+function autoSyncCloudDebounced(){
+  clearTimeout(autoSyncTimer);
+  autoSyncTimer = setTimeout(autoSyncKeCloud, 1500);
+}
+async function autoSyncKeCloud(){
+  const statusAuto = document.getElementById('statusAutoSync');
+  if(!dbClient || !cloudSiap || !statusAuto) return;
+  if(autoSyncSedangJalan){ autoSyncCloudDebounced(); return; } // tunggu giliran, jangan tabrakan
+  if(!students.length) return;
+  autoSyncSedangJalan = true;
+  statusAuto.textContent = '⏳ Menyinkronkan ke cloud...';
+  statusAuto.style.color = '#c9bfe0';
+  try{
+    const { error: errHapus } = await dbClient.from('siswa').delete().gte('id', 0);
+    if(errHapus) throw errHapus;
+    const dataKirim = students.map(s => ({
+      nama: s.nama || '', nisn: s.nisn || '', absen: s.absen || '',
+      kelas: s.kelas || '', tahun: s.tahun || '',
+      foto: s.foto || null, zoom: s.zoom || 100, pos_x: s.posX || 50, pos_y: s.posY || 50
+    }));
+    const { error: errIsi } = await dbClient.from('siswa').insert(dataKirim);
+    if(errIsi) throw errIsi;
+    const jam = new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    statusAuto.textContent = `✓ Tersinkron ke cloud (${jam})`;
+    statusAuto.style.color = '#8be08b';
+  }catch(e){
+    statusAuto.textContent = '⚠️ Gagal sinkron otomatis: ' + (e.message || e);
+    statusAuto.style.color = '#ffb84d';
+  }finally{
+    autoSyncSedangJalan = false;
+  }
+}
+
+function loadStudents(){
+  try{
+    const raw = localStorage.getItem('kartuSiswaStudents');
+    if(raw){
+      const arr = JSON.parse(raw);
+      if(Array.isArray(arr) && arr.length){
+        students = arr;
+        uid = Math.max(...arr.map(s => s.id || 0)) + 1;
+        currentId = arr[0].id;
+        return true;
+      }
+    }
+  }catch(e){}
+  return false;
+}
+
+function newStudent(data){
+  return Object.assign({
+    id: uid++, nama:'', nisn:'', absen:'', kelas:'', tahun:'2026/2027',
+    foto:null, zoom:100, posX:50, posY:50
+  }, data||{});
+}
+
+/* ================= TEMPLATE KARTU ================= */
+function kartuKustomHTML(s, fotoHTML, kodeHTML, ttdHTML, berlakuHTML){
+  const kelasOrientasi = profile.orientasi === 'portrait' ? 'portrait' : 'landscape';
+  const warnaKelas = profile.bgTeksWarna === 'terang' ? 'teks-terang' : '';
+  const logoHTML = profile.logo ? `<img class="logo-kustom" src="${profile.logo}">` : '';
+  const fit = profile.bgFit === 'cover' ? 'cover' : 'contain';
+  const m = {
+    atas: parseFloat(profile.marginAtas) || 0,
+    bawah: parseFloat(profile.marginBawah) || 0,
+    kiri: parseFloat(profile.marginKiri) || 0,
+    kanan: parseFloat(profile.marginKanan) || 0
+  };
+  return `
+    <div class="kartu ${kelasOrientasi} ${profile.tema} kustom-bg" style="background-image:url('${profile.bgKustom}'); background-size:${fit}; ${styleVariabelFont()}">
+      <div class="konten-kustom ${warnaKelas}" style="top:${m.atas}%; bottom:${m.bawah}%; left:${m.kiri}%; right:${m.kanan}%;">
+        ${logoHTML}
+        <div class="kop-kustom">
+          <p class="kartu-siswa-kustom">KARTU SISWA</p>
+          <p class="nama-sekolah-kustom">${esc(profile.sekolah)}</p>
+          <p class="alamat-kustom">${esc(profile.kec)}, ${esc(profile.kab)}</p>
+        </div>
+        <div class="foto-kustom">${fotoHTML}</div>
+        <div class="data-kustom">
+          <div class="baris"><span class="k">NAMA</span><span class="titik">:</span><span class="v">${esc(s.nama)||'&nbsp;'}</span></div>
+          <div class="baris"><span class="k">NISN</span><span class="titik">:</span><span class="v">${esc(s.nisn)||'&nbsp;'}</span></div>
+          <div class="baris"><span class="k">NO ABSEN</span><span class="titik">:</span><span class="v">${esc(s.absen)||'&nbsp;'}</span></div>
+          <div class="baris isi"><span class="k">KELAS</span><span class="titik">:</span><span class="v">${esc(s.kelas)||'-'}</span></div>
+          <div class="baris isi"><span class="k">TAHUN</span><span class="titik">:</span><span class="v">${esc(s.tahun)||'-'}</span></div>
+          ${berlakuHTML}
+        </div>
+        ${ttdHTML}
+        ${kodeHTML}
+      </div>
+    </div>`;
+}
+
+function footerBarHTML(){
+  if(!profile.tampilkanFooter) return '';
+  const t = (profile.footerTeks && profile.footerTeks.length === 4) ? profile.footerTeks : ['TAQWA','AKTIF','MANDIRI','UNGGUL'];
+  const ikon = [
+    '<svg viewBox="0 0 24 24"><path d="M12 21s-7-4.35-9.5-8.5C.7 8.8 2.4 5 6 5c2 0 3.3 1.1 4 2.2C10.7 6.1 12 5 14 5c3.6 0 5.3 3.8 3.5 7.5C19 16.65 12 21 12 21z"/></svg>',
+    '<svg viewBox="0 0 24 24"><path d="M2 5c3-1 6-1 9 1 3-2 6-2 9-1v13c-3-1-6-1-9 1-3-2-6-2-9-1z"/></svg>',
+    '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"/></svg>',
+    '<svg viewBox="0 0 24 24"><path d="M12 2l2.8 6.5L21 9l-5 4.6L17.4 21 12 17.3 6.6 21 8 13.6 3 9l6.2-.5z"/></svg>'
+  ];
+  const items = t.map((teks,i) => `<div class="item">${ikon[i]}${esc(teks)}</div>`).join('<span class="sep">|</span>');
+  return `<div class="footer-bar">${items}</div>`;
+}
+
+function kartuHTML(s, opt){
+  opt = opt || {};
+  const logoHTML = profile.logo
+    ? `<img src="${profile.logo}">`
+    : `<div class="logo-placeholder">LOGO<br>SEKOLAH</div>`;
+  const fotoHTML = s.foto
+    ? `<img src="${s.foto}" style="width:${s.zoom}%; height:${s.zoom}%; object-fit:cover; transform:translate(-${s.posX}%, -${s.posY}%);">`
+    : `<div class="placeholder">Foto<br>Siswa</div>`;
+  const kelasOrientasi = profile.orientasi === 'portrait' ? 'portrait' : 'landscape';
+  const kodeHTML = profile.kodeType !== 'tidak' ? `<div class="kode-wrap"></div>` : '';
+  const fontClass = profile.fontKop && profile.fontKop !== 'default' ? `font-${profile.fontKop}` : '';
+  const berlakuHTML = profile.berlaku
+    ? `<div class="baris"><span class="k">BERLAKU S.D.</span><span class="titik">:</span><span class="v">${esc(profile.berlaku)}</span></div>`
+    : '';
+  const ttdHTML = (profile.showTtd && (profile.ttd || profile.stempel || profile.namaKS || profile.nipKS))
+    ? `<div class="ttd-wrap">
+         <div class="ttd-label">Kepala Sekolah</div>
+         <div class="ttd-gambar">
+           ${profile.stempel ? `<img class="stempel-img" src="${profile.stempel}">` : ''}
+           ${profile.ttd ? `<img class="ttd-img" src="${profile.ttd}">` : ''}
+         </div>
+         <div class="ttd-nama">${esc(profile.namaKS) || '&nbsp;'}</div>
+         ${profile.nipKS ? `<div class="ttd-nip">NIP. ${esc(profile.nipKS)}</div>` : ''}
+       </div>`
+    : '';
+  if(profile.pakaiBgKustom && profile.bgKustom){
+    return kartuKustomHTML(s, fotoHTML, kodeHTML, ttdHTML, berlakuHTML);
+  }
+  return `
+    <div class="kartu ${kelasOrientasi} ${profile.tema} ${fontClass}" style="${styleVariabelFont()}">
+      <div class="bg-ungu"></div>
+      <div class="bg-dots"></div>
+      <div class="ribbon ribbon-tl"></div>
+      <div class="ribbon ribbon-br"></div>
+      <div class="curve"></div>
+      <div class="white-panel"></div>
+      <div class="logo-wrap">${logoHTML}</div>
+      <div class="kop">
+        <p class="kartu-siswa">KARTU SISWA</p>
+        <p class="nama-sekolah">${esc(profile.sekolah)}</p>
+        <p class="alamat">${esc(profile.kec)}<br>${esc(profile.kab)}</p>
+      </div>
+      <div class="divider"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+      <div class="foto-wrap">${fotoHTML}</div>
+      <div class="data">
+        <div class="baris"><span class="k">NAMA</span><span class="titik">:</span><span class="v">${esc(s.nama)||'&nbsp;'}</span></div>
+        <div class="baris"><span class="k">NISN</span><span class="titik">:</span><span class="v">${esc(s.nisn)||'&nbsp;'}</span></div>
+        <div class="baris"><span class="k">NO ABSEN</span><span class="titik">:</span><span class="v">${esc(s.absen)||'&nbsp;'}</span></div>
+        <div class="baris isi"><span class="k">KELAS</span><span class="titik">:</span><span class="v">${esc(s.kelas)||'-'}</span></div>
+        <div class="baris isi"><span class="k">TAHUN PELAJARAN</span><span class="titik">:</span><span class="v">${esc(s.tahun)||'-'}</span></div>
+        ${berlakuHTML}
+      </div>
+      <div class="kelas-badge">
+        <div class="lbl">KELAS</div><div class="garis"></div>
+        <div class="val">${esc(s.kelas)||'-'}</div>
+      </div>
+      ${footerBarHTML()}
+      ${ttdHTML}
+      ${kodeHTML}
+    </div>`;
+}
+
+function renderKode(container, s){
+  const wrap = container.querySelector('.kode-wrap');
+  if(!wrap) return;
+  wrap.innerHTML = '';
+  if(profile.kodeType === 'tidak') return;
+  const sumberMap = {
+    nisn:s.nisn, nama:s.nama, kelas:s.kelas,
+    gabungan: `Nama:${s.nama||'-'};NISN:${s.nisn||'-'};Sekolah:${profile.sekolah||'-'}`
+  };
+  const nilai = (sumberMap[profile.kodeSumber] || s.nisn || s.nama || 'SISWA').toString().trim() || 'SISWA';
+  if(profile.kodeType === 'qr'){
+    if(typeof QRCode === 'undefined'){
+      wrap.innerHTML = '<div style="font-size:.5rem;color:#900;text-align:center;padding:2px;">Gagal memuat QR.<br>Cek koneksi internet lalu muat ulang halaman.</div>';
+      return;
+    }
+    try{
+      new QRCode(wrap, { text:nilai, width:160, height:160, correctLevel: QRCode.CorrectLevel.M });
+    }catch(e){
+      wrap.innerHTML = '<div style="font-size:.5rem;color:#900;text-align:center;padding:2px;">QR gagal dibuat</div>';
+    }
+  }else{
+    if(typeof JsBarcode === 'undefined'){
+      wrap.innerHTML = '<div style="font-size:.5rem;color:#900;text-align:center;padding:2px;">Gagal memuat Barcode.<br>Cek koneksi internet lalu muat ulang halaman.</div>';
+      return;
+    }
+    const canvas = document.createElement('canvas');
+    wrap.appendChild(canvas);
+    try{
+      JsBarcode(canvas, nilai, { format:'CODE128', displayValue:false, margin:0, height:60, width:3 });
+    }catch(e){
+      wrap.innerHTML = '<div style="font-size:.55rem;color:#900;text-align:center;">Data kosong</div>';
+    }
+  }
+}
+
+function kartuBackHTML(){
+  if(profile.pakaiBgKustomBelakang && profile.bgKustomBelakang){
+    return kartuBackKustomHTML();
+  }
+  const kelasOrientasi = profile.orientasi === 'portrait' ? 'portrait' : 'landscape';
+  const watermarkHTML = profile.logo ? `<img class="watermark-logo" src="${profile.logo}">` : '';
+  const teks = esc(profile.teksBelakang || '');
+  const kontakHTML = profile.kontak
+    ? `<p class="belakang-kontak">Jika menemukan kartu ini, harap hubungi: <b>${esc(profile.kontak)}</b></p>`
+    : '';
+  const kodeHTML = profile.kodeType !== 'tidak' ? `<div class="kode-wrap"></div>` : '';
+  return `
+    <div class="kartu ${kelasOrientasi} ${profile.tema}" style="${styleVariabelFont()}">
+      <div class="bg-ungu"></div>
+      <div class="bg-dots"></div>
+      <div class="ribbon ribbon-tl"></div>
+      <div class="ribbon ribbon-br"></div>
+      <div class="curve"></div>
+      <div class="white-panel">
+        ${watermarkHTML}
+        <div class="belakang-isi">
+          <p class="belakang-judul">${esc(profile.sekolah)}</p>
+          <p class="belakang-alamat">${esc(profile.kec)}, ${esc(profile.kab)}</p>
+          <div class="belakang-garis"></div>
+          <p class="belakang-teks">${teks}</p>
+          ${kontakHTML}
+          ${kodeHTML}
+        </div>
+      </div>
+      ${footerBarHTML()}
+    </div>`;
+}
+
+function kartuBackKustomHTML(){
+  const kelasOrientasi = profile.orientasi === 'portrait' ? 'portrait' : 'landscape';
+  const fit = profile.bgFit === 'cover' ? 'cover' : 'contain';
+  const warnaKelas = profile.bgTeksWarna === 'terang' ? 'teks-terang' : '';
+  const logoHTML = profile.logo ? `<img class="logo-kustom" src="${profile.logo}">` : '';
+  const watermarkHTML = profile.logo ? `<img class="watermark-logo" src="${profile.logo}">` : '';
+  const teks = esc(profile.teksBelakang || '');
+  const kontakHTML = profile.kontak
+    ? `<p class="belakang-kontak-kustom">Jika menemukan kartu ini, harap hubungi:<br><b>${esc(profile.kontak)}</b></p>`
+    : '';
+  const kodeHTML = profile.kodeType !== 'tidak' ? `<div class="kode-wrap"></div>` : '';
+  const m = {
+    atas: parseFloat(profile.marginAtas) || 0,
+    bawah: parseFloat(profile.marginBawah) || 0,
+    kiri: parseFloat(profile.marginKiri) || 0,
+    kanan: parseFloat(profile.marginKanan) || 0
+  };
+  return `
+    <div class="kartu ${kelasOrientasi} ${profile.tema} kustom-bg" style="background-image:url('${profile.bgKustomBelakang}'); background-size:${fit}; position:relative; ${styleVariabelFont()}">
+      ${watermarkHTML}
+      <div class="konten-kustom konten-belakang ${warnaKelas}" style="top:${m.atas}%; bottom:${m.bawah}%; left:${m.kiri}%; right:${m.kanan}%;">
+        ${logoHTML}
+        <div class="kop-kustom">
+          <p class="nama-sekolah-kustom">${esc(profile.sekolah)}</p>
+          <p class="alamat-kustom">${esc(profile.kec)}, ${esc(profile.kab)}</p>
+        </div>
+        <p class="belakang-teks-kustom">${teks}</p>
+        ${kontakHTML}
+        ${kodeHTML}
+      </div>
+    </div>`;
+}
+
+let sisiAktif = 'depan';
+function updateScale(){
+  const viewport = $('kartuViewport');
+  const host = $('kartuHost');
+  const baseWidth = profile.orientasi === 'portrait' ? 640 : 900;
+  const scale = viewport.clientWidth / baseWidth;
+  host.style.transform = `scale(${scale})`;
+  const kartuEl = host.querySelector('.kartu');
+  if(kartuEl){
+    viewport.style.height = Math.ceil(kartuEl.offsetHeight * scale) + 'px';
+  }
+}
+window.addEventListener('resize', () => { updateScale(); });
+
+function renderPreview(){
+  const s = students.find(x => x.id === currentId);
+  const data = s || newStudent();
+  $('kartuHost').innerHTML = sisiAktif === 'depan' ? kartuHTML(data) : kartuBackHTML();
+  $('kartuHost').classList.toggle('mode-portrait', profile.orientasi === 'portrait');
+  renderKode($('kartuHost'), data);
+  updateScale();
+}
+$('btnSisiDepan').addEventListener('click', () => {
+  sisiAktif = 'depan';
+  $('btnSisiDepan').classList.add('aktif'); $('btnSisiBelakang').classList.remove('aktif');
+  renderPreview();
+});
+$('btnSisiBelakang').addEventListener('click', () => {
+  sisiAktif = 'belakang';
+  $('btnSisiBelakang').classList.add('aktif'); $('btnSisiDepan').classList.remove('aktif');
+  renderPreview();
+});
+
+/* ================= DAFTAR SISWA ================= */
+function renderList(){
+  const tbody = $('tbodySiswa');
+  tbody.innerHTML = '';
+  $('jmlSiswa').textContent = students.length + ' siswa';
+  $('pesanKosong').style.display = students.length ? 'none' : 'block';
+  $('panelDetail').style.display = students.length ? 'block' : 'none';
+
+  // Perbarui opsi filter kelas berdasarkan kelas yang ada
+  const kelasSet = Array.from(new Set(students.map(s => (s.kelas||'').trim()).filter(Boolean))).sort();
+  const filterSel = $('selFilterKelas');
+  const kelasSekarang = filterSel.value;
+  filterSel.innerHTML = '<option value="">Semua Kelas</option>' + kelasSet.map(k => `<option value="${esc(k)}">${esc(k)}</option>`).join('');
+  filterSel.value = kelasSet.includes(kelasSekarang) ? kelasSekarang : '';
+
+  const kataKunci = ($('inpCari').value || '').toLowerCase().trim();
+  const filterKelas = filterSel.value;
+  const tampil = students.filter(s => {
+    const cocokNama = !kataKunci || (s.nama||'').toLowerCase().includes(kataKunci);
+    const cocokKelas = !filterKelas || (s.kelas||'') === filterKelas;
+    return cocokNama && cocokKelas;
+  });
+
+  if(students.length && !tampil.length){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="3" style="text-align:center; color:#6f6390; padding:14px;">Tidak ada siswa yang cocok dengan pencarian/filter.</td>`;
+    tbody.appendChild(tr);
+  }
+
+  tampil.forEach(s => {
+    const tr = document.createElement('tr');
+    tr.className = s.id === currentId ? 'aktif' : '';
+    const peringatan = (!s.nama || !s.foto) ? ' ⚠️' : '';
+    tr.innerHTML = `<td>${esc(s.nama)||'<i style="color:#6f6390">(tanpa nama)</i>'}${peringatan}</td><td>${esc(s.kelas)||'-'}</td><td class="hapus" title="Hapus">✕</td>`;
+    tr.addEventListener('click', e => {
+      if(e.target.classList.contains('hapus')){
+        students = students.filter(x => x.id !== s.id);
+        if(currentId === s.id){ currentId = students.length ? students[0].id : null; }
+        renderList(); loadDetail(); renderPreview(); saveStudents();
+        return;
+      }
+      currentId = s.id;
+      renderList(); loadDetail(); renderPreview();
+    });
+    tbody.appendChild(tr);
+  });
+}
+$('inpCari').addEventListener('input', renderList);
+$('selFilterKelas').addEventListener('change', renderList);
+
+$('btnAutoAbsen').addEventListener('click', () => {
+  if(!students.length){ alert('Belum ada data siswa.'); return; }
+  let terisi = 0;
+  const perKelas = {};
+  students.forEach(s => {
+    if(s.absen && s.absen.toString().trim()) return;
+    const kunci = s.kelas || '(tanpa kelas)';
+    perKelas[kunci] = (perKelas[kunci] || 0) + 1;
+    s.absen = perKelas[kunci].toString();
+    terisi++;
+  });
+  renderList(); loadDetail(); renderPreview(); saveStudents();
+  alert(terisi ? `${terisi} nomor absen berhasil diisi otomatis (urut per kelas).` : 'Semua siswa sudah punya nomor absen.');
+});
+
+function loadDetail(){
+  const s = students.find(x => x.id === currentId);
+  if(!s) return;
+  $('inpNama').value = s.nama;
+  $('inpNisn').value = s.nisn;
+  $('inpAbsen').value = s.absen;
+  $('inpKelas').value = s.kelas;
+  $('inpTahun').value = s.tahun;
+  $('rangeZoom').value = s.zoom;
+  $('rangeVertikal').value = s.posY;
+  $('rangeHorizontal').value = s.posX;
+  if(s.foto){
+    $('fotoEditImg').src = s.foto;
+    $('fotoEditImg').style.display = 'block';
+    $('fotoEditPlaceholder').style.display = 'none';
+    $('fotoNudge').style.display = 'grid';
+    updateFotoEditTransform(s);
+  }else{
+    $('fotoEditImg').style.display = 'none';
+    $('fotoEditPlaceholder').style.display = 'flex';
+    $('fotoNudge').style.display = 'none';
+  }
+}
+
+function updateFotoEditTransform(s){
+  const img = $('fotoEditImg');
+  img.style.width = s.zoom + '%';
+  img.style.height = s.zoom + '%';
+  img.style.objectFit = 'cover';
+  img.style.transform = `translate(-${s.posX}%, -${s.posY}%)`;
+}
+
+$('rangeVertikal').addEventListener('input', () => {
+  const s = students.find(x => x.id === currentId);
+  if(!s) return;
+  s.posY = parseInt($('rangeVertikal').value, 10);
+  updateFotoEditTransform(s); renderPreview(); saveStudentsDebounced();
+});
+$('rangeHorizontal').addEventListener('input', () => {
+  const s = students.find(x => x.id === currentId);
+  if(!s) return;
+  s.posX = parseInt($('rangeHorizontal').value, 10);
+  updateFotoEditTransform(s); renderPreview(); saveStudentsDebounced();
+});
+
+$('fotoNudge').querySelectorAll('button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const s = students.find(x => x.id === currentId);
+    if(!s || !s.foto) return;
+    const langkah = 4;
+    const arah = btn.dataset.arah;
+    if(arah === 'atas') s.posY = Math.max(0, s.posY - langkah);
+    if(arah === 'bawah') s.posY = Math.min(100, s.posY + langkah);
+    if(arah === 'kiri') s.posX = Math.max(0, s.posX - langkah);
+    if(arah === 'kanan') s.posX = Math.min(100, s.posX + langkah);
+    $('rangeVertikal').value = s.posY;
+    $('rangeHorizontal').value = s.posX;
+    updateFotoEditTransform(s); renderPreview(); saveStudentsDebounced();
+  });
+});
+
+['inpNama','inpNisn','inpAbsen','inpKelas','inpTahun'].forEach(id => {
+  $(id).addEventListener('input', () => {
+    const s = students.find(x => x.id === currentId);
+    if(!s) return;
+    s.nama = $('inpNama').value; s.nisn = $('inpNisn').value; s.absen = $('inpAbsen').value;
+    s.kelas = $('inpKelas').value; s.tahun = $('inpTahun').value;
+    renderList(); renderPreview(); saveStudentsDebounced();
+  });
+});
+
+/* ================= FOTO: drag&drop + geser + zoom ================= */
+const fotoEdit = $('fotoEdit');
+fotoEdit.addEventListener('click', () => $('inpFoto').click());
+['dragover','dragenter'].forEach(ev => fotoEdit.addEventListener(ev, e => { e.preventDefault(); fotoEdit.classList.add('dragover'); }));
+['dragleave','drop'].forEach(ev => fotoEdit.addEventListener(ev, e => { e.preventDefault(); fotoEdit.classList.remove('dragover'); }));
+fotoEdit.addEventListener('drop', e => {
+  const file = e.dataTransfer.files[0];
+  if(file) setFotoSiswa(file);
+});
+$('inpFoto').addEventListener('change', e => { if(e.target.files[0]) setFotoSiswa(e.target.files[0]); });
+
+/* ================= KOMPRESI FOTO (biar hemat penyimpanan & anti-timeout cloud) ================= */
+function kompresDariDataUrl(dataUrl, maxDimensi = 800, kualitas = 0.8){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      let { width, height } = img;
+      if(width > maxDimensi || height > maxDimensi){
+        if(width >= height){ height = Math.round(height * (maxDimensi / width)); width = maxDimensi; }
+        else{ width = Math.round(width * (maxDimensi / height)); height = maxDimensi; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      try{
+        resolve(canvas.toDataURL('image/jpeg', kualitas));
+      }catch(e){
+        resolve(dataUrl); // kalau gagal (jarang terjadi), pakai gambar asli saja daripada gagal total
+      }
+    };
+    img.onerror = () => reject(new Error('Gagal memuat gambar, mungkin file rusak'));
+    img.src = dataUrl;
+  });
+}
+
+function setFotoSiswa(file){
+  const s = students.find(x => x.id === currentId);
+  if(!s) return;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    kompresDariDataUrl(evt.target.result).then(hasil => {
+      s.foto = hasil; s.zoom = 100; s.posX = 50; s.posY = 50;
+      loadDetail(); renderPreview(); saveStudents();
+    }).catch(() => {
+      alert('Gagal memproses foto ini. Coba pakai foto lain.');
+    });
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ================= UPLOAD FOTO MASSAL (berdasarkan No. Absen) ================= */
+async function ambilDaftarFotoDariInput(files){
+  // files: FileList atau array File. Kembalikan [{nama (tanpa ekstensi), dataUrl}] — semua foto dikompres dulu.
+  const arr = Array.from(files);
+  const hasil = [];
+  const EKS_GAMBAR = ['jpg','jpeg','png','webp'];
+
+  if(arr.length === 1 && arr[0].name.toLowerCase().endsWith('.zip')){
+    const zip = await JSZip.loadAsync(arr[0]);
+    const entries = Object.values(zip.files).filter(e => !e.dir);
+    for(const entry of entries){
+      const namaFile = entry.name.split('/').pop();
+      const titik = namaFile.lastIndexOf('.');
+      if(titik === -1) continue;
+      const ext = namaFile.slice(titik+1).toLowerCase();
+      if(!EKS_GAMBAR.includes(ext)) continue;
+      const base64 = await entry.async('base64');
+      const mime = ext === 'png' ? 'image/png' : (ext === 'webp' ? 'image/webp' : 'image/jpeg');
+      const dataUrlMentah = `data:${mime};base64,${base64}`;
+      const dataUrlKecil = await kompresDariDataUrl(dataUrlMentah).catch(() => dataUrlMentah);
+      hasil.push({ nama: namaFile.slice(0, titik), dataUrl: dataUrlKecil });
+    }
+  }else{
+    for(const f of arr){
+      if(!f.type.startsWith('image/')) continue;
+      const dataUrlMentah = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result);
+        r.onerror = rej;
+        r.readAsDataURL(f);
+      });
+      const dataUrlKecil = await kompresDariDataUrl(dataUrlMentah).catch(() => dataUrlMentah);
+      const titik = f.name.lastIndexOf('.');
+      const namaTanpaExt = titik === -1 ? f.name : f.name.slice(0, titik);
+      hasil.push({ nama: namaTanpaExt, dataUrl: dataUrlKecil });
+    }
+  }
+  return hasil;
+}
+
+$('inpFotoMassal').addEventListener('change', async e => {
+  const files = e.target.files;
+  if(!files || !files.length) return;
+  const status = $('statusFotoMassal');
+  status.textContent = '⏳ Memproses foto...';
+  status.style.color = '#c9bfe0';
+
+  try{
+    const daftarFoto = await ambilDaftarFotoDariInput(files);
+    if(!daftarFoto.length){
+      status.textContent = '✖ Tidak ada file gambar yang terbaca dari file yang dipilih.';
+      status.style.color = '#ff9db0';
+      $('inpFotoMassal').value = '';
+      return;
+    }
+
+    const kelasAktif = $('selFilterKelas').value; // '' berarti semua kelas
+    const kandidat = kelasAktif ? students.filter(s => (s.kelas||'') === kelasAktif) : students;
+
+    let berhasil = 0;
+    const dilewati = [];
+    const ambigu = [];
+
+    daftarFoto.forEach(f => {
+      const absenTarget = parseInt(f.nama, 10);
+      if(isNaN(absenTarget)){ dilewati.push(`"${f.nama}" (nama file bukan angka absen)`); return; }
+      const cocok = kandidat.filter(s => parseInt(s.absen, 10) === absenTarget);
+      if(cocok.length === 0){ dilewati.push(String(absenTarget)); return; }
+      if(cocok.length > 1){ ambigu.push(String(absenTarget)); return; }
+      const s = cocok[0];
+      s.foto = f.dataUrl; s.zoom = 100; s.posX = 50; s.posY = 50;
+      berhasil++;
+    });
+
+    renderList(); loadDetail(); renderPreview(); saveStudents();
+
+    let pesan = `✓ ${berhasil} foto berhasil dipasang otomatis`;
+    pesan += kelasAktif ? ` (kelas ${kelasAktif}).` : '.';
+    if(dilewati.length) pesan += ` Dilewati: ${dilewati.join(', ')}.`;
+    if(ambigu.length) pesan += ` ⚠️ Absen ganda (perlu filter kelas dulu): ${ambigu.join(', ')}.`;
+    status.textContent = pesan;
+    status.style.color = ambigu.length ? '#ffb84d' : '#8be08b';
+  }catch(err){
+    status.textContent = '✖ Gagal memproses: ' + (err.message || err) + '. Pastikan file ZIP tidak rusak.';
+    status.style.color = '#ff9db0';
+  }
+  $('inpFotoMassal').value = '';
+});
+
+$('rangeZoom').addEventListener('input', () => {
+  const s = students.find(x => x.id === currentId);
+  if(!s) return;
+  s.zoom = parseInt($('rangeZoom').value, 10);
+  updateFotoEditTransform(s); renderPreview(); saveStudentsDebounced();
+});
+
+let dragging = false, dragStart = {x:0,y:0}, posStart = {x:50,y:50};
+fotoEdit.addEventListener('pointerdown', e => {
+  if(e.target.closest('.foto-nudge')) return;
+  const s = students.find(x => x.id === currentId);
+  if(!s || !s.foto) return;
+  dragging = true; fotoEdit.style.cursor = 'grabbing';
+  dragStart = {x:e.clientX, y:e.clientY}; posStart = {x:s.posX, y:s.posY};
+  fotoEdit.setPointerCapture(e.pointerId);
+});
+fotoEdit.addEventListener('pointermove', e => {
+  if(!dragging) return;
+  const s = students.find(x => x.id === currentId);
+  if(!s) return;
+  const rect = fotoEdit.getBoundingClientRect();
+  const dx = (e.clientX - dragStart.x) / rect.width * 100;
+  const dy = (e.clientY - dragStart.y) / rect.height * 100;
+  s.posX = Math.min(100, Math.max(0, posStart.x - dx));
+  s.posY = Math.min(100, Math.max(0, posStart.y - dy));
+  $('rangeVertikal').value = s.posY;
+  $('rangeHorizontal').value = s.posX;
+  updateFotoEditTransform(s); renderPreview(); saveStudentsDebounced();
+});
+['pointerup','pointerleave'].forEach(ev => fotoEdit.addEventListener(ev, () => { dragging=false; fotoEdit.style.cursor='grab'; saveStudents(); }));
+
+/* ================= LOGO & PROFIL SEKOLAH ================= */
+['inpSekolah','inpKec','inpKab'].forEach(id => {
+  $(id).addEventListener('input', () => {
+    profile.sekolah = $('inpSekolah').value; profile.kec = $('inpKec').value; profile.kab = $('inpKab').value;
+    saveProfile(); renderPreview();
+  });
+});
+$('inpLogo').addEventListener('change', e => {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => { profile.logo = evt.target.result; saveProfile(); renderPreview(); };
+  reader.readAsDataURL(file);
+});
+
+/* ================= PENGATURAN KARTU: tema, ukuran, orientasi, kode ================= */
+['selTema','selUkuran','selOrientasi','selKode','selKodeSumber'].forEach(id => {
+  $(id).addEventListener('change', () => {
+    profile.tema = $('selTema').value;
+    profile.ukuran = $('selUkuran').value;
+    profile.orientasi = $('selOrientasi').value;
+    profile.kodeType = $('selKode').value;
+    profile.kodeSumber = $('selKodeSumber').value;
+    saveProfile(); renderPreview();
+    toggleUkuranCustom();
+  });
+});
+['inpUkuranW','inpUkuranH'].forEach(id => {
+  $(id).addEventListener('input', () => {
+    profile.customWcm = $('inpUkuranW').value;
+    profile.customHcm = $('inpUkuranH').value;
+    saveProfile();
+  });
+});
+
+$('btnEksporSetting').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(profile, null, 2)], {type:'application/json'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'template-kartu-siswa.json';
+  link.click();
+});
+
+$('btnImporSettingTrigger').addEventListener('click', () => $('inpImporSetting').click());
+$('inpImporSetting').addEventListener('change', e => {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    try{
+      const data = JSON.parse(evt.target.result);
+      profile = Object.assign(profile, data);
+      saveProfile(); loadProfile(); renderPreview();
+      alert('Template berhasil dimuat.');
+    }catch(err){
+      alert('File ini bukan file template (.json) yang valid.\n\nKalau Boss mau upload logo/foto/tanda tangan (PNG/JPG), gunakan kolom upload gambar di panel masing-masing, bukan tombol Impor Template ini.');
+    }
+    $('inpImporSetting').value = '';
+  };
+  reader.readAsText(file);
+});
+
+/* ================= LATAR BELAKANG KUSTOM ================= */
+$('inpBgKustom').addEventListener('change', e => {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    profile.bgKustom = evt.target.result;
+    profile.pakaiBgKustom = true;
+    $('chkPakaiBgKustom').checked = true;
+    saveProfile(); renderPreview();
+  };
+  reader.readAsDataURL(file);
+});
+$('chkPakaiBgKustom').addEventListener('change', () => {
+  if($('chkPakaiBgKustom').checked && !profile.bgKustom){
+    alert('Upload gambar desain kartu terlebih dahulu sebelum mengaktifkan opsi ini.');
+    $('chkPakaiBgKustom').checked = false;
+    return;
+  }
+  profile.pakaiBgKustom = $('chkPakaiBgKustom').checked;
+  saveProfile(); renderPreview();
+});
+['selBgFit','selBgTeksWarna'].forEach(id => {
+  $(id).addEventListener('change', () => {
+    profile.bgFit = $('selBgFit').value;
+    profile.bgTeksWarna = $('selBgTeksWarna').value;
+    saveProfile(); renderPreview();
+  });
+});
+['inpMarginAtas','inpMarginBawah','inpMarginKiri','inpMarginKanan'].forEach(id => {
+  $(id).addEventListener('input', () => {
+    profile.marginAtas = $('inpMarginAtas').value;
+    profile.marginBawah = $('inpMarginBawah').value;
+    profile.marginKiri = $('inpMarginKiri').value;
+    profile.marginKanan = $('inpMarginKanan').value;
+    saveProfile(); renderPreview();
+  });
+});
+$('btnHapusBgKustom').addEventListener('click', () => {
+  if(!profile.bgKustom){ return; }
+  if(confirm('Hapus latar belakang kustom dan kembali ke desain bawaan?')){
+    profile.bgKustom = null;
+    profile.pakaiBgKustom = false;
+    $('chkPakaiBgKustom').checked = false;
+    $('inpBgKustom').value = '';
+    saveProfile(); renderPreview();
+  }
+});
+
+/* ================= FONT, TTD, STEMPEL, BERLAKU ================= */
+$('selFont').addEventListener('change', () => { profile.fontKop = $('selFont').value; saveProfile(); renderPreview(); });
+$('chkTampilTtd').addEventListener('change', () => { profile.showTtd = $('chkTampilTtd').checked; saveProfile(); renderPreview(); });
+$('inpBerlaku').addEventListener('input', () => { profile.berlaku = $('inpBerlaku').value; saveProfile(); renderPreview(); });
+$('inpKontak').addEventListener('input', () => { profile.kontak = $('inpKontak').value; saveProfile(); renderPreview(); });
+$('inpTeksBelakang').addEventListener('input', () => { profile.teksBelakang = $('inpTeksBelakang').value; saveProfile(); renderPreview(); });
+$('inpTtd').addEventListener('change', e => {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => { profile.ttd = evt.target.result; saveProfile(); renderPreview(); };
+  reader.readAsDataURL(file);
+});
+$('inpStempel').addEventListener('change', e => {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => { profile.stempel = evt.target.result; saveProfile(); renderPreview(); };
+  reader.readAsDataURL(file);
+});
+$('inpNamaKS').addEventListener('input', () => { profile.namaKS = $('inpNamaKS').value; saveProfile(); renderPreview(); });
+$('inpNipKS').addEventListener('input', () => { profile.nipKS = $('inpNipKS').value; saveProfile(); renderPreview(); });
+
+/* ================= FOOTER TEKS (bisa diedit / dimatikan) ================= */
+$('chkTampilkanFooter').addEventListener('change', () => {
+  profile.tampilkanFooter = $('chkTampilkanFooter').checked;
+  saveProfile(); renderPreview(); toggleFooterInputs();
+});
+['inpFooter1','inpFooter2','inpFooter3','inpFooter4'].forEach(id => {
+  $(id).addEventListener('input', () => {
+    profile.footerTeks = [$('inpFooter1').value || 'TAQWA', $('inpFooter2').value || 'AKTIF', $('inpFooter3').value || 'MANDIRI', $('inpFooter4').value || 'UNGGUL'];
+    saveProfile(); renderPreview();
+  });
+});
+
+/* ================= LATAR BELAKANG KUSTOM - SISI BELAKANG ================= */
+$('inpBgKustomBelakang').addEventListener('change', e => {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    profile.bgKustomBelakang = evt.target.result;
+    profile.pakaiBgKustomBelakang = true;
+    $('chkPakaiBgKustomBelakang').checked = true;
+    saveProfile(); renderPreview();
+  };
+  reader.readAsDataURL(file);
+});
+$('chkPakaiBgKustomBelakang').addEventListener('change', () => {
+  if($('chkPakaiBgKustomBelakang').checked && !profile.bgKustomBelakang){
+    alert('Upload gambar untuk sisi belakang terlebih dahulu.');
+    $('chkPakaiBgKustomBelakang').checked = false;
+    return;
+  }
+  profile.pakaiBgKustomBelakang = $('chkPakaiBgKustomBelakang').checked;
+  saveProfile(); renderPreview();
+});
+$('btnHapusBgKustomBelakang').addEventListener('click', () => {
+  if(!profile.bgKustomBelakang) return;
+  if(confirm('Hapus latar belakang kustom untuk sisi belakang?')){
+    profile.bgKustomBelakang = null;
+    profile.pakaiBgKustomBelakang = false;
+    $('chkPakaiBgKustomBelakang').checked = false;
+    $('inpBgKustomBelakang').value = '';
+    saveProfile(); renderPreview();
+  }
+});
+
+/* ================= TAMBAH / HAPUS SISWA ================= */
+$('btnTambah').addEventListener('click', () => {
+  const s = newStudent({ tahun: $('inpTahun') && $('inpTahun').value || '2026/2027' });
+  students.push(s); currentId = s.id;
+  renderList(); loadDetail(); renderPreview(); saveStudents();
+});
+$('btnHapusSemua').addEventListener('click', () => {
+  if(!students.length) return;
+  if(confirm('Hapus semua data siswa yang sudah diisi?')){
+    students = []; currentId = null;
+    renderList(); renderPreview(); saveStudents();
+  }
+});
+
+/* ================= IMPORT CSV ================= */
+$('btnTemplate').addEventListener('click', () => {
+  const data = [
+    ['nama','nisn','absen','kelas','tahun_pelajaran'],
+    ['Ahmad Fauzan','0012345678','12','3A','2026/2027'],
+    ['Siti Aisyah','0012345679','13','3A','2026/2027']
+  ];
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  ws['!cols'] = [{wch:22},{wch:14},{wch:9},{wch:8},{wch:16}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Siswa');
+  XLSX.writeFile(wb, 'template_data_siswa.xlsx');
+});
+
+$('btnEksporCsv').addEventListener('click', () => {
+  if(!students.length){ alert('Belum ada data siswa untuk diekspor.'); return; }
+  const data = [['nama','nisn','absen','kelas','tahun_pelajaran']];
+  students.forEach(s => data.push([s.nama||'', s.nisn||'', s.absen||'', s.kelas||'', s.tahun||'']));
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  ws['!cols'] = [{wch:22},{wch:14},{wch:9},{wch:8},{wch:16}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Siswa');
+  XLSX.writeFile(wb, 'data_siswa.xlsx');
+});
+
+function deteksiPemisahCSV(baris){
+  // Excel versi Indonesia biasanya pakai titik-koma (;) sebagai pemisah kolom, bukan koma.
+  const jmlTitikKoma = (baris.match(/;/g) || []).length;
+  const jmlKoma = (baris.match(/,/g) || []).length;
+  return jmlTitikKoma > jmlKoma ? ';' : ',';
+}
+
+function parseCSVLine(line, pemisah){
+  // parser CSV sederhana yang tetap menangani nilai berisi tanda kutip
+  const out = []; let cur = ''; let inQ = false;
+  for(let i=0;i<line.length;i++){
+    const c = line[i];
+    if(c === '"'){ inQ = !inQ; }
+    else if(c === pemisah && !inQ){ out.push(cur); cur=''; }
+    else{ cur += c; }
+  }
+  out.push(cur);
+  return out.map(v => v.trim());
+}
+
+function prosesBarisImpor(rows){
+  // rows: array-of-array, baris pertama header, sisanya data
+  if(!rows.length){ alert('File kosong.'); return; }
+  const header = rows[0].map(h => (h||'').toString().trim().toLowerCase());
+  const idx = {
+    nama: header.indexOf('nama'), nisn: header.indexOf('nisn'),
+    absen: header.indexOf('absen'), kelas: header.indexOf('kelas'),
+    tahun: header.findIndex(h => h.includes('tahun'))
+  };
+  if(idx.nama === -1 && idx.nisn === -1 && idx.kelas === -1){
+    alert('Kolom tidak terbaca dengan benar. Pastikan file memakai format seperti template (kolom nama, nisn, absen, kelas, tahun_pelajaran).');
+    return;
+  }
+  let ditambah = 0;
+  for(let i=1;i<rows.length;i++){
+    const cols = rows[i].map(c => (c===undefined||c===null) ? '' : c.toString().trim());
+    if(!cols.some(c => c.length)) continue;
+    const s = newStudent({
+      nama: idx.nama>-1 ? cols[idx.nama]||'' : '',
+      nisn: idx.nisn>-1 ? cols[idx.nisn]||'' : '',
+      absen: idx.absen>-1 ? cols[idx.absen]||'' : '',
+      kelas: idx.kelas>-1 ? cols[idx.kelas]||'' : '',
+      tahun: idx.tahun>-1 ? cols[idx.tahun]||'2026/2027' : '2026/2027'
+    });
+    students.push(s); ditambah++;
+  }
+  if(!currentId && students.length) currentId = students[0].id;
+  renderList(); loadDetail(); renderPreview(); saveStudents();
+  alert(`${ditambah} siswa berhasil diimpor.`);
+}
+
+$('inpCsv').addEventListener('change', e => {
+  const file = e.target.files[0]; if(!file) return;
+  const namaFile = file.name.toLowerCase();
+
+  if(namaFile.endsWith('.csv')){
+    // File CSV teks biasa
+    const reader = new FileReader();
+    reader.onload = evt => {
+      const teks = evt.target.result.replace(/^\uFEFF/, ''); // buang BOM kalau ada
+      const lines = teks.split(/\r?\n/).filter(l => l.trim().length);
+      if(!lines.length){ alert('File CSV kosong.'); $('inpCsv').value=''; return; }
+      const pemisah = deteksiPemisahCSV(lines[0]);
+      const rows = lines.map(l => parseCSVLine(l, pemisah));
+      prosesBarisImpor(rows);
+      $('inpCsv').value = '';
+    };
+    reader.readAsText(file);
+  }else{
+    // File Excel asli (.xlsx / .xls)
+    const reader = new FileReader();
+    reader.onload = evt => {
+      try{
+        const wb = XLSX.read(evt.target.result, {type:'array'});
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+        prosesBarisImpor(rows);
+      }catch(err){
+        alert('Gagal membaca file Excel. Pastikan file tidak rusak dan formatnya .xlsx/.xls.');
+      }
+      $('inpCsv').value = '';
+    };
+    reader.readAsArrayBuffer(file);
+  }
+});
+
+/* ================= VALIDASI SEBELUM EKSPOR ================= */
+function validasiSiswa(){
+  return students.filter(s => !s.nama.trim() || !s.foto || !s.nisn.trim());
+}
+function konfirmasiSebelumEkspor(label){
+  const masalah = validasiSiswa();
+  if(!masalah.length) return true;
+  const daftar = masalah.slice(0,10).map(s => `- ${s.nama.trim() || '(tanpa nama)'}${s.kelas ? ' ('+s.kelas+')' : ''}`).join('\n');
+  const lebih = masalah.length > 10 ? `\n...dan ${masalah.length-10} lainnya` : '';
+  return confirm(`⚠️ Ada ${masalah.length} siswa dengan data belum lengkap (nama/foto/NISN kosong):\n${daftar}${lebih}\n\nLanjutkan ${label}?`);
+}
+
+/* ================= GALERI PREVIEW ================= */
+function bukaGaleri(){
+  if(!students.length){ alert('Belum ada data siswa.'); return; }
+  const grid = $('galeriGrid'); grid.innerHTML = '';
+  $('galeriJml').textContent = students.length;
+  students.forEach(s => {
+    const item = document.createElement('div'); item.className = 'galeri-item';
+    const thumb = document.createElement('div');
+    thumb.className = 'thumb' + (profile.orientasi === 'portrait' ? ' pv' : '');
+    thumb.innerHTML = kartuHTML(s);
+    item.appendChild(thumb);
+    const cap = document.createElement('div'); cap.className = 'cap';
+    const warn = (!s.nama.trim() || !s.foto || !s.nisn.trim()) ? '<div class="warn">⚠️ Data belum lengkap</div>' : '';
+    cap.innerHTML = `<b>${esc(s.nama)||'(tanpa nama)'}</b>${esc(s.kelas)||'-'} • NISN ${esc(s.nisn)||'-'}${warn}`;
+    item.appendChild(cap);
+    item.addEventListener('click', () => {
+      currentId = s.id; renderList(); loadDetail(); renderPreview(); tutupGaleri();
+    });
+    grid.appendChild(item);
+    requestAnimationFrame(() => {
+      const kartuEl = thumb.querySelector('.kartu');
+      if(!kartuEl) return;
+      const scale = thumb.clientWidth / kartuEl.offsetWidth;
+      kartuEl.style.transform = `scale(${scale})`;
+      renderKode(thumb, s);
+    });
+  });
+  $('galeriOverlay').classList.add('show');
+}
+function tutupGaleri(){ $('galeriOverlay').classList.remove('show'); }
+$('btnGaleri').addEventListener('click', bukaGaleri);
+
+$('chkSertakanBelakang').addEventListener('change', () => {
+  profile.sertakanBelakangCetak = $('chkSertakanBelakang').checked;
+  saveProfile();
+});
+$('selUkuranKertas').addEventListener('change', () => {
+  profile.ukuranKertas = $('selUkuranKertas').value;
+  saveProfile();
+});
+$('selMirrorBelakang').addEventListener('change', () => {
+  profile.mirrorBelakang = $('selMirrorBelakang').value;
+  saveProfile();
+});
+$('selFontData').addEventListener('change', () => { profile.fontData = $('selFontData').value; saveProfile(); renderPreview(); });
+$('selFontBelakang').addEventListener('change', () => { profile.fontBelakang = $('selFontBelakang').value; saveProfile(); renderPreview(); });
+$('inpSkalaData').addEventListener('input', () => { profile.skalaData = $('inpSkalaData').value; saveProfile(); renderPreview(); });
+$('inpSkalaBelakang').addEventListener('input', () => { profile.skalaBelakang = $('inpSkalaBelakang').value; saveProfile(); renderPreview(); });
+$('btnTutupGaleri').addEventListener('click', tutupGaleri);
+
+/* ================= EKSPOR PNG (satu / render offscreen) ================= */
+async function renderToCanvas(student, sisi){
+  sisi = sisi || 'depan';
+  const stage = $('renderStage');
+  const lebar = profile.orientasi === 'portrait' ? 640 : 900;
+  const html = sisi === 'depan' ? kartuHTML(student) : kartuBackHTML();
+  stage.innerHTML = `<div style="width:${lebar}px;">${html}</div>`;
+  const node = stage.firstElementChild;
+  renderKode(node, student);
+  const canvas = await html2canvas(node, { scale:4, useCORS:true, backgroundColor:null });
+  stage.innerHTML = '';
+  return canvas;
+}
+
+$('btnUnduhSatu').addEventListener('click', async () => {
+  const s = students.find(x => x.id === currentId);
+  if(!s){ alert('Pilih atau tambah siswa terlebih dahulu.'); return; }
+  const canvas = await renderToCanvas(s, sisiAktif);
+  const link = document.createElement('a');
+  const namaFile = (s.nama.trim() || 'kartu-siswa').replace(/\s+/g,'_');
+  link.download = `kartu-siswa-${namaFile}-${sisiAktif}.png`;
+  link.href = canvas.toDataURL('image/png', 1.0);
+  link.click();
+});
+
+function showProgress(pct, label){
+  $('progressWrap').classList.add('show');
+  $('progressBar').style.width = pct + '%';
+  $('progressLabel').textContent = label;
+}
+function hideProgress(){ $('progressWrap').classList.remove('show'); $('progressLabel').textContent=''; }
+
+$('btnUnduhZip').addEventListener('click', async () => {
+  if(!students.length){ alert('Belum ada data siswa.'); return; }
+  if(!konfirmasiSebelumEkspor('mengunduh ZIP')) return;
+  const sertakanBelakang = $('chkSertakanBelakang').checked;
+  const zip = new JSZip();
+  for(let i=0;i<students.length;i++){
+    const s = students[i];
+    showProgress(Math.round((i/students.length)*100), `Memproses ${i+1} dari ${students.length} kartu...`);
+    const namaFile = (s.nama.trim() || ('siswa-'+(i+1))).replace(/\s+/g,'_');
+    const canvasDepan = await renderToCanvas(s, 'depan');
+    zip.file(`kartu-siswa-${namaFile}-depan.png`, canvasDepan.toDataURL('image/png', 1.0).split(',')[1], {base64:true});
+    if(sertakanBelakang){
+      const canvasBelakang = await renderToCanvas(s, 'belakang');
+      zip.file(`kartu-siswa-${namaFile}-belakang.png`, canvasBelakang.toDataURL('image/png', 1.0).split(',')[1], {base64:true});
+    }
+  }
+  showProgress(100, 'Menyusun file ZIP...');
+  const blob = await zip.generateAsync({type:'blob'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob); link.download = 'kartu-siswa-semua.zip'; link.click();
+  hideProgress();
+});
+
+/* ================= CETAK A4 GRID ================= */
+$('btnCetakA4').addEventListener('click', async () => {
+  if(!students.length){ alert('Belum ada data siswa.'); return; }
+  if(!konfirmasiSebelumEkspor('mencetak')) return;
+  const cetakArea = $('cetakArea');
+  cetakArea.innerHTML = '';
+  const sertakanBelakang = $('chkSertakanBelakang').checked;
+
+  // Hitung dimensi fisik kartu (mm) sesuai ukuran + orientasi yang dipilih
+  const dasar = getUkuranMM();
+  const cardW = profile.orientasi === 'portrait' ? dasar.h : dasar.w;
+  const cardH = profile.orientasi === 'portrait' ? dasar.w : dasar.h;
+  const lembarMM = getLembarMM();
+  const kolom = Math.max(1, Math.floor((lembarMM.w - 20) / (cardW + 6)));
+  const baris = Math.max(1, Math.floor((lembarMM.h - 20) / (cardH + 6)));
+  const perLembar = kolom * baris;
+
+  // Urutan khusus sisi belakang, supaya presisi menumpuk dengan sisi depan
+  // saat kertas dibalik fisik untuk cetak bolak-balik.
+  function urutanBelakang(list){
+    const hasil = [];
+    for(let p = 0; p < list.length; p += perLembar){
+      const halaman = list.slice(p, p + perLembar);
+      if(profile.mirrorBelakang === 'pendek'){
+        // Balik sisi pendek: urutan baris dibalik (baris terakhir jadi duluan), kolom tetap.
+        const jumlahBaris = Math.ceil(halaman.length / kolom);
+        for(let r = jumlahBaris - 1; r >= 0; r--){
+          const mulai = r * kolom;
+          hasil.push(...halaman.slice(mulai, mulai + kolom));
+        }
+      }else{
+        // Balik sisi panjang (default): tiap baris dicerminkan kiri-kanan, urutan baris tetap.
+        for(let i = 0; i < halaman.length; i += kolom){
+          hasil.push(...halaman.slice(i, i + kolom).reverse());
+        }
+      }
+    }
+    return hasil;
+  }
+
+  async function buatLembar(sisi, labelProgress, daftarSiswa){
+    let lembar;
+    for(let i=0;i<daftarSiswa.length;i++){
+      const s = daftarSiswa[i];
+      showProgress(Math.round((i/daftarSiswa.length)*100), `${labelProgress} ${i+1} dari ${daftarSiswa.length}...`);
+      if(i % perLembar === 0){
+        lembar = document.createElement('div');
+        lembar.className = 'lembar';
+        lembar.style.cssText = `width:${lembarMM.w}mm; min-height:${lembarMM.h}mm; padding:10mm; display:grid; grid-template-columns:repeat(${kolom}, ${cardW}mm); grid-auto-rows:${cardH}mm; gap:6mm; box-sizing:border-box; justify-content:center;`;
+        cetakArea.appendChild(lembar);
+      }
+      const canvas = await renderToCanvas(s, sisi);
+      const img = document.createElement('img');
+      img.src = canvas.toDataURL('image/png', 1.0);
+      img.style.cssText = 'width:100%; height:100%; object-fit:contain; border:0.3mm solid #ccc; border-radius:3mm;';
+      lembar.appendChild(img);
+    }
+  }
+
+  await buatLembar('depan', 'Menyiapkan sisi depan', students);
+  if(sertakanBelakang){
+    await buatLembar('belakang', 'Menyiapkan sisi belakang', urutanBelakang(students));
+  }
+
+  hideProgress();
+  cetakArea.style.display = 'block';
+  setTimeout(() => {
+    window.print();
+    cetakArea.style.display = 'none';
+  }, 200);
+});
+
+/* ================= CADANGAN LENGKAP (PROFIL + SISWA) ================= */
+$('btnUnduhCadangan').addEventListener('click', () => {
+  const paket = { profile, students, versi: 1, disimpanPada: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(paket, null, 2)], {type:'application/json'});
+  const link = document.createElement('a');
+  const tanggal = new Date().toISOString().slice(0,10);
+  link.href = URL.createObjectURL(blob);
+  link.download = `cadangan-kartu-siswa-${tanggal}.json`;
+  link.click();
+});
+$('btnMuatCadanganTrigger').addEventListener('click', () => $('inpMuatCadangan').click());
+$('inpMuatCadangan').addEventListener('change', e => {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    try{
+      const paket = JSON.parse(evt.target.result);
+      if(!paket || !Array.isArray(paket.students)){
+        alert('File ini bukan file cadangan yang valid dari aplikasi ini.');
+        return;
+      }
+      if(!confirm(`File ini berisi ${paket.students.length} siswa. Memuatnya akan MENGGANTI semua data siswa yang sedang ada saat ini. Lanjutkan?`)) return;
+      profile = Object.assign(profile, paket.profile || {});
+      students = paket.students;
+      uid = Math.max(...students.map(s => s.id || 0), 0) + 1;
+      currentId = students.length ? students[0].id : null;
+      saveProfile(); saveStudents();
+      loadProfile(); renderList(); loadDetail(); renderPreview();
+      alert('Cadangan berhasil dimuat.');
+    }catch(err){
+      alert('Gagal membaca file cadangan. Pastikan file tidak rusak.');
+    }
+    $('inpMuatCadangan').value = '';
+  };
+  reader.readAsText(file);
+});
+
+/* ================= INIT ================= */
+loadProfile();
+if(!loadStudents()){
+  localKosongSaatMuat = true;
+  const s0 = newStudent();
+  students.push(s0); currentId = s0.id;
+}
+renderList(); loadDetail(); renderPreview();
+</script>
+
+</body>
+</html>
