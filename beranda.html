@@ -348,6 +348,18 @@
     all: unset; position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
     font-size: 0.78rem; font-weight: 800; color: var(--navy); cursor: pointer; padding: 4px 6px;
   }
+
+  .kk-info { font-size: 0.78rem; color: #7A6A45; margin-bottom: 8px; line-height: 1.5; }
+  .kk-row { display: flex; align-items: center; gap: 8px; padding: 7px 4px; border-bottom: 1.5px dashed #DCC98A; font-size: 0.85rem; font-weight: 700; color: var(--navy); }
+  .kk-ikon { width: 22px; text-align: center; flex: none; }
+  .kk-nama { flex: 1; min-width: 0; }
+  .kk-ket { font-size: 0.74rem; font-weight: 700; text-align: right; max-width: 46%; }
+  .kk-ok .kk-ket { color: var(--green); }
+  .kk-gagal .kk-ket { color: var(--red); }
+  .kk-perhatian .kk-ket { color: #B26A00; }
+  .kk-simpul { margin-top: 10px; padding: 10px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 800; line-height: 1.4; }
+  .kk-simpul.ok { background: #E3F6E8; color: #1D6B34; }
+  .kk-simpul.err { background: #FCE4E1; color: #9B2A1D; }
 </style>
 </head>
 <body>
@@ -455,6 +467,14 @@
       </div>
 
       <div class="modal-msg show ok" id="pengaturan-msg" style="margin-top:14px;">Tersimpan otomatis di perangkat ini.</div>
+
+      <div class="admin-section">
+        <h3>Cek Koneksi</h3>
+        <p style="font-size:0.82rem;color:#7A6A45;margin-bottom:10px;">Kalau game terasa lambat atau gagal memuat, tekan tombol ini untuk melihat bagian mana yang bermasalah.</p>
+        <button class="btn-simpan" id="btn-cek-koneksi" onclick="cekKoneksi()">Cek Koneksi</button>
+        <div id="hasil-koneksi" style="display:none;margin-top:12px;"></div>
+        <button class="btn-simpan" id="btn-salin-koneksi" style="display:none;margin-top:10px;" onclick="salinHasilKoneksi()">Salin Hasil</button>
+      </div>
 
       <div class="admin-section">
         <h3>Ubah Password</h3>
@@ -763,6 +783,182 @@ function simpanPengaturan() {
   };
   localStorage.setItem('pengaturan_game', JSON.stringify(data));
   if (data.musik) mulaiMusikBeranda();
+}
+
+// ---------- Cek Koneksi ----------
+const BATAS_CEK = window.BATAS_CEK_KONEKSI || 10000;
+let hasilKoneksiTeks = '';
+const IKON_KK = { ok: '✅', gagal: '❌', perhatian: '⚠️', lewati: '➖', tunggu: '⏳' };
+
+function bungkusCek(nama, fn) {
+  const mulai = performance.now();
+  let selesai = false;
+  return new Promise(function (resolve) {
+    const timer = setTimeout(function () {
+      if (selesai) return;
+      selesai = true;
+      resolve({ nama: nama, status: 'gagal', timeout: true, ms: BATAS_CEK, ket: 'tidak menjawab (lebih dari ' + Math.round(BATAS_CEK / 1000) + ' detik)' });
+    }, BATAS_CEK);
+    Promise.resolve().then(fn).then(function (hasil) {
+      if (selesai) return;
+      selesai = true;
+      clearTimeout(timer);
+      const r = { nama: nama, status: 'ok', ms: Math.round(performance.now() - mulai), ket: '' };
+      if (hasil && typeof hasil === 'object') { r.status = hasil.status || 'ok'; r.ket = hasil.ket || ''; }
+      else if (hasil) { r.ket = String(hasil); }
+      resolve(r);
+    }, function (e) {
+      if (selesai) return;
+      selesai = true;
+      clearTimeout(timer);
+      let pesan = (e && e.message) ? e.message : 'gagal';
+      if (/failed to fetch|networkerror|load failed|network request failed/i.test(pesan)) pesan = 'tidak bisa tersambung';
+      resolve({ nama: nama, status: 'gagal', ms: Math.round(performance.now() - mulai), ket: pesan });
+    });
+  });
+}
+
+function tulisBarisKK(el, r) {
+  el.className = 'kk-row kk-' + r.status;
+  el.querySelector('.kk-ikon').textContent = IKON_KK[r.status];
+  const ket = el.querySelector('.kk-ket');
+  if (r.status === 'ok') ket.textContent = (r.ket ? r.ket + ' · ' : '') + r.ms + ' ms';
+  else if (r.status === 'lewati') ket.textContent = r.ket;
+  else ket.textContent = r.ket;
+}
+
+function infoKoneksiKK() {
+  const c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  let teks = navigator.onLine === false ? 'OFFLINE (tidak ada sambungan)' : 'online';
+  if (c) {
+    const bagian = [];
+    if (c.type) bagian.push(c.type);
+    if (c.effectiveType) bagian.push(c.effectiveType);
+    if (c.downlink) bagian.push('±' + c.downlink + ' Mbps');
+    if (c.rtt) bagian.push('RTT ' + c.rtt + ' ms');
+    if (bagian.length) teks += ' · ' + bagian.join(' · ');
+  }
+  return teks;
+}
+
+function kesimpulanKK(h) {
+  const semua = Object.keys(h).map(function (k) { return h[k]; });
+  const gagal = semua.filter(function (x) { return x.status === 'gagal'; });
+  const lambat = semua.filter(function (x) { return x.status !== 'lewati' && x.ms > 3000; });
+  if (h.alamat.status === 'gagal') return { ok: false, teks: 'Perangkat tidak bisa menjangkau alamat game. Periksa sinyal atau kuota, lalu coba lagi.' };
+  if (h.server.status === 'gagal') {
+    return { ok: false, teks: h.server.timeout
+      ? 'Server data tidak menjawab dari jaringan ini (sangat lambat atau diblokir). Login dan skor tidak akan jalan. Coba pindah jaringan (Wi-Fi atau operator lain).'
+      : 'Server data tidak bisa dijangkau dari jaringan ini. Login dan skor tidak akan jalan. Coba pindah jaringan (Wi-Fi atau operator lain).' };
+  }
+  if (h.sesi.status === 'gagal') return { ok: false, teks: 'Sesi login habis atau tidak valid. Tutup menu ini, tekan Keluar, lalu Masuk lagi.' };
+  if (gagal.length) return { ok: false, teks: 'Server terjangkau, tetapi ada bagian data yang gagal (lihat tanda ❌). Tekan Salin Hasil lalu kirim ke Pak Aji.' };
+  if (h.profil && h.profil.status === 'perhatian') return { ok: true, teks: 'Koneksi baik, tetapi akun belum disetujui admin sehingga sebagian game belum terbuka.' };
+  if (lambat.length) return { ok: true, teks: 'Semua berfungsi, tetapi koneksi lambat (ada pemeriksaan di atas 3 detik). Game tetap bisa dimainkan; sinyal yang lebih baik akan membantu.' };
+  return { ok: true, teks: 'Semua lancar. Koneksi dan server dalam keadaan baik.' };
+}
+
+async function cekKoneksi() {
+  const btn = document.getElementById('btn-cek-koneksi');
+  const area = document.getElementById('hasil-koneksi');
+  const btnSalin = document.getElementById('btn-salin-koneksi');
+  if (btn.dataset.sibuk === '1') return;
+  btn.dataset.sibuk = '1';
+  btn.style.opacity = '0.6';
+  btn.textContent = 'Memeriksa...';
+  btnSalin.style.display = 'none';
+  area.style.display = 'block';
+  area.innerHTML = '';
+
+  const info = document.createElement('div');
+  info.className = 'kk-info';
+  info.textContent = 'Alamat: ' + location.host + ' · Koneksi: ' + infoKoneksiKK();
+  area.appendChild(info);
+
+  let profilData = null;
+  const urutan = [
+    { k: 'alamat', nama: 'Alamat game terjangkau', fn: async function () {
+        const res = await fetch(location.href, { method: 'HEAD', cache: 'no-store' });
+        if (res.status >= 500) throw new Error('server bermasalah (HTTP ' + res.status + ')');
+      } },
+    { k: 'server', nama: 'Server data terjangkau', fn: async function () {
+        const res = await fetch(SUPABASE_URL + '/auth/v1/health', { headers: { apikey: SUPABASE_ANON_KEY }, cache: 'no-store' });
+        if (res.status >= 500) throw new Error('server bermasalah (HTTP ' + res.status + ')');
+      } },
+    { k: 'sesi', nama: 'Sesi login valid', bergantung: 'server', fn: async function () {
+        const r = await sb.auth.getUser();
+        if (r.error || !r.data || !r.data.user) throw new Error((r.error && r.error.message) || 'sesi tidak ditemukan');
+      } },
+    { k: 'kelas', nama: 'Membaca data (daftar kelas)', bergantung: 'server', fn: async function () {
+        const r = await sb.from('kelas').select('id').limit(1);
+        if (r.error) throw r.error;
+      } },
+    { k: 'profil', nama: 'Membaca profil akun', bergantung: 'sesi', fn: async function () {
+        const r = await sb.from('profil').select('nama,status,role').eq('id', currentUid).single();
+        if (r.error) throw r.error;
+        profilData = r.data;
+        if (r.data.role !== 'admin' && r.data.status !== 'approved') return { status: 'perhatian', ket: 'akun belum disetujui admin (' + r.data.status + ')' };
+      } },
+    { k: 'progres', nama: 'Membaca progres permainan', bergantung: 'sesi', fn: async function () {
+        const r = await sb.from('progres_petualangan').select('mapel').eq('id_siswa', currentUid).limit(1);
+        if (r.error) throw r.error;
+      } },
+    { k: 'simpan', nama: 'Menyimpan data', bergantung: 'sesi', fn: async function () {
+        if (!profilData || !profilData.nama) return { status: 'lewati', ket: 'dilewati (nama belum terisi)' };
+        const r = await sb.from('profil').update({ nama: profilData.nama }).eq('id', currentUid).select('id');
+        if (r.error) throw r.error;
+        if (!r.data || r.data.length === 0) throw new Error('penyimpanan ditolak server');
+      } }
+  ];
+
+  const baris = {};
+  urutan.forEach(function (t) {
+    const el = document.createElement('div');
+    el.className = 'kk-row';
+    el.innerHTML = '<span class="kk-ikon">⏳</span><span class="kk-nama"></span><span class="kk-ket">menunggu...</span>';
+    el.querySelector('.kk-nama').textContent = t.nama;
+    area.appendChild(el);
+    baris[t.k] = el;
+  });
+
+  const hasil = {};
+  for (const t of urutan) {
+    const dep = t.bergantung ? hasil[t.bergantung] : null;
+    if (dep && (dep.status === 'gagal' || dep.status === 'lewati')) {
+      const akar = dep.status === 'lewati' ? dep.akar : t.bergantung;
+      hasil[t.k] = { nama: t.nama, status: 'lewati', ms: 0, akar: akar, ket: akar === 'server' ? 'dilewati (server tidak terjangkau)' : 'dilewati (sesi login bermasalah)' };
+    } else {
+      hasil[t.k] = await bungkusCek(t.nama, t.fn);
+    }
+    tulisBarisKK(baris[t.k], hasil[t.k]);
+  }
+
+  const ks = kesimpulanKK(hasil);
+  const kotak = document.createElement('div');
+  kotak.className = 'kk-simpul ' + (ks.ok ? 'ok' : 'err');
+  kotak.textContent = ks.teks;
+  area.appendChild(kotak);
+
+  const garis = ['Cek Koneksi - Belajar Sambil Bermain', 'Waktu: ' + new Date().toLocaleString('id-ID'), 'Alamat: ' + location.host, 'Koneksi: ' + infoKoneksiKK(), ''];
+  urutan.forEach(function (t) {
+    const r = hasil[t.k];
+    const tag = r.status === 'ok' ? '[OK]     ' : r.status === 'gagal' ? '[GAGAL]  ' : r.status === 'perhatian' ? '[CATATAN]' : '[LEWATI] ';
+    garis.push(tag + ' ' + r.nama + (r.status === 'ok' ? ' - ' + r.ms + ' ms' : ' - ' + r.ket));
+  });
+  garis.push('', 'Kesimpulan: ' + ks.teks);
+  hasilKoneksiTeks = garis.join('\n');
+
+  btnSalin.style.display = 'block';
+  btn.dataset.sibuk = '0';
+  btn.style.opacity = '1';
+  btn.textContent = 'Ulangi Cek';
+}
+
+function salinHasilKoneksi() {
+  const btn = document.getElementById('btn-salin-koneksi');
+  const ok = function () { btn.textContent = 'Tersalin ✓'; setTimeout(function () { btn.textContent = 'Salin Hasil'; }, 1800); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(hasilKoneksiTeks).then(ok, function () { window.prompt('Salin teks ini:', hasilKoneksiTeks); });
+  else window.prompt('Salin teks ini:', hasilKoneksiTeks);
 }
 </script>
 <script>mulaiAplikasi();</script>
