@@ -296,6 +296,7 @@ function pilihKelas(k, awal) {
   const paAktif = paMatematika || paBindo;
   const raceAktif = (mapelAktif === 'matematika');
   const jutawanAktif = true;
+  const perangAktif = (mapelAktif === 'matematika');
   const kuisAktif = true;
   const areaMain = document.getElementById('area-main');
 
@@ -361,6 +362,21 @@ function pilihKelas(k, awal) {
       jutawanBtn.style.display = 'flex';
     } else if (jutawanBtn) {
       jutawanBtn.style.display = 'none';
+    }
+    let perangBtn = document.getElementById('btn-perang');
+    if (perangAktif) {
+      if (!perangBtn) {
+        perangBtn = document.createElement('button');
+        perangBtn.id = 'btn-perang';
+        perangBtn.className = 'menu-item';
+        perangBtn.style.marginTop = '12px';
+        perangBtn.innerHTML = '<span class="emoji">⚔️</span><span class="txt"><b>Perang Angka</b><span>Duel matematika 2 pemain, serang lawanmu!</span></span><span class="arrow">&rarr;</span>';
+        perangBtn.onclick = () => window.location.href = 'perang.html?mapel=matematika&kelas=' + k;
+        areaMain.appendChild(perangBtn);
+      }
+      perangBtn.style.display = 'flex';
+    } else if (perangBtn) {
+      perangBtn.style.display = 'none';
     }
   } else {
     areaMain.style.display = 'none';
