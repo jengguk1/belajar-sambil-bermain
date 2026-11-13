@@ -297,7 +297,6 @@ function pilihKelas(k, awal) {
   const raceAktif = (mapelAktif === 'matematika');
   const jutawanAktif = true;
   const perangAktif = (mapelAktif === 'matematika');
-  const balapAktif = true;
   const kuisAktif = true;
   const areaMain = document.getElementById('area-main');
 
@@ -379,21 +378,17 @@ function pilihKelas(k, awal) {
     } else if (perangBtn) {
       perangBtn.style.display = 'none';
     }
-    let balapBtn = document.getElementById('btn-balap');
-    if (balapAktif) {
-      if (!balapBtn) {
-        balapBtn = document.createElement('button');
-        balapBtn.id = 'btn-balap';
-        balapBtn.className = 'menu-item';
-        balapBtn.style.marginTop = '12px';
-        balapBtn.innerHTML = '<span class="emoji">🏁</span><span class="txt"><b>Race Car</b><span>Balapan kuis: sendiri lawan komputer atau berdua!</span></span><span class="arrow">&rarr;</span>';
-        balapBtn.onclick = () => window.location.href = 'race.html?mapel=' + mapelAktif + '&kelas=' + k;
-        areaMain.appendChild(balapBtn);
-      }
-      balapBtn.style.display = 'flex';
-    } else if (balapBtn) {
-      balapBtn.style.display = 'none';
+    let superAjiBtn = document.getElementById('btn-superaji');
+    if (!superAjiBtn) {
+      superAjiBtn = document.createElement('button');
+      superAjiBtn.id = 'btn-superaji';
+      superAjiBtn.className = 'menu-item';
+      superAjiBtn.style.marginTop = '12px';
+      superAjiBtn.innerHTML = '<span class="emoji">🍄</span><span class="txt"><b>Super Pak Aji</b><span>Lompat, kumpulkan koin, jawab soal di blok bonus!</span></span><span class="arrow">&rarr;</span>';
+      superAjiBtn.onclick = () => window.location.href = 'super-pak-aji.html?mapel=' + mapelAktif + '&kelas=' + k;
+      areaMain.appendChild(superAjiBtn);
     }
+    superAjiBtn.style.display = 'flex';
   } else {
     areaMain.style.display = 'none';
   }
