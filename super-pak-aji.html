@@ -112,7 +112,7 @@
   .spa-chip { background:rgba(11,42,74,.82); color:#fff; font-weight:800; font-size:1.1em; padding:.25em .75em; border-radius:999px; border:.14em solid var(--gold); white-space:nowrap; }
   .spa-chip.boost { background:#7A2CB5; border-color:#FFE28A; }
   .spa-tbl { all:unset; pointer-events:auto; box-sizing:border-box; min-width:2.6em; height:2.6em; display:flex; align-items:center; justify-content:center; font-size:1.2em; background:rgba(11,42,74,.82); border:.14em solid var(--gold); border-radius:50%; color:#fff; cursor:pointer; }
-  #spa-prog { position:absolute; left:30%; right:30%; top:.9em; height:.7em; background:rgba(255,255,255,.45); border-radius:999px; overflow:hidden; border:.1em solid rgba(11,42,74,.7); pointer-events:none; }
+  #spa-prog { position:absolute; left:22%; right:22%; top:4em; height:.7em; background:rgba(255,255,255,.45); border-radius:999px; overflow:hidden; border:.1em solid rgba(11,42,74,.7); pointer-events:none; }
   #spa-prog i { display:block; height:100%; width:0; background:var(--gold); }
   #spa-kontrol { position:absolute; left:0; right:0; bottom:0; display:flex; justify-content:space-between; padding:0 .8em .6em; pointer-events:none; }
   .spa-pad { all:unset; pointer-events:auto; box-sizing:border-box; width:5em; height:5em; border-radius:50%; background:rgba(255,255,255,.3); border:.2em solid rgba(11,42,74,.7); color:var(--navy); font-size:1.15em; font-weight:900; display:flex; align-items:center; justify-content:center; touch-action:none; }
@@ -127,7 +127,7 @@
   .spa-soal .pot canvas { width:100%; height:auto; }
   .spa-soal .isi { flex:1; min-width:0; }
   .spa-label { font-weight:800; color:var(--gold2); font-size:.95em; }
-  #spa-tanya { font-weight:800; color:var(--navy); line-height:1.25; margin:.2em 0 .6em; max-height:9em; overflow:auto; word-break:break-word; }
+  #spa-tanya { font-weight:800; color:var(--navy); line-height:1.25; margin:.1em 0 .45em; max-height:9em; overflow:auto; word-break:break-word; }
   #spa-opsi { display:grid; grid-template-columns:1fr 1fr; gap:.5em; }
   .spa-opsi-b { all:unset; box-sizing:border-box; min-height:3.2em; padding:.5em .8em; background:#fff; border:.16em solid var(--navy); border-radius:.9em; font-weight:800; color:var(--navy); font-size:1.05em; cursor:pointer; display:flex; align-items:center; word-break:break-word; line-height:1.2; }
   .spa-opsi-b:active { background:#FFF0BF; }
@@ -136,10 +136,10 @@
   #spa-angka { display:flex; gap:.8em; align-items:flex-start; }
   #spa-layar { flex:1; min-width:0; min-height:2.2em; background:#fff; border:.16em solid var(--navy); border-radius:.9em; font-size:1.9em; font-weight:900; display:flex; align-items:center; justify-content:flex-end; padding:0 .5em; color:var(--navy); overflow:hidden; }
   #spa-pad-angka { flex:0 0 14em; display:grid; grid-template-columns:repeat(3,1fr); gap:.35em; }
-  #spa-pad-angka button { all:unset; box-sizing:border-box; min-height:2.6em; text-align:center; background:var(--navy2); color:#fff; border-radius:.7em; font-weight:900; font-size:1.2em; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  #spa-pad-angka button { all:unset; box-sizing:border-box; min-height:2.2em; text-align:center; background:var(--navy2); color:#fff; border-radius:.7em; font-weight:900; font-size:1.2em; cursor:pointer; display:flex; align-items:center; justify-content:center; }
   #spa-pad-angka button:active { background:var(--gold); color:var(--navy); }
   #spa-pad-angka button.ok { grid-column:span 3; background:var(--green); }
-  #spa-umpan { font-weight:900; font-size:1.2em; min-height:1.4em; margin-top:.5em; }
+  #spa-umpan { font-weight:900; font-size:1.2em; min-height:1.2em; margin-top:.3em; }
   #spa-umpan.benar { color:var(--green); }
   #spa-umpan.salah { color:var(--red); }
   .spa-stat { display:grid; grid-template-columns:repeat(3,1fr); gap:.4em; margin:.6em 0 .2em; }
@@ -154,6 +154,14 @@
   #spa-putar { position:fixed; inset:0; z-index:30; display:flex; background:#0B2A4A; color:#fff; flex-direction:column; align-items:center; justify-content:center; text-align:center; font-weight:800; font-size:20px; gap:.5em; padding:1em; }
   #spa-putar .ikon { font-size:3em; }
   #spa-putar[hidden] { display:none !important; }
+
+  #spa-stage-pilih { display:inline-flex; gap:.4em; }
+  .spa-stg { all:unset; box-sizing:border-box; min-width:2.6em; height:2.6em; display:flex; align-items:center; justify-content:center; border-radius:50%; border:.14em solid var(--navy); background:#fff; color:var(--navy); font-weight:900; font-size:1.05em; cursor:pointer; }
+  .spa-stg.on { background:var(--gold); border-color:#7A5A12; }
+  .spa-stg.kunci { opacity:.55; background:#ddd; }
+  .spa-aksi { flex-wrap:wrap; }
+  .spa-aksi .spa-btn { flex:1 1 30%; padding:.5em .6em; font-size:1.05em; }
+  .spa-cara { font-size:.95em; }
 </style>
 </head>
 <body>
@@ -162,7 +170,8 @@
 
   <div id="spa-hud" hidden>
     <div class="spa-hud-grup">
-      <span class="spa-chip" id="spa-h-nyawa">❤ 3</span>
+      <span class="spa-chip" id="spa-h-stage">🏁 1</span>
+      <span class="spa-chip" id="spa-h-nyawa">❤ 5</span>
       <span class="spa-chip" id="spa-h-koin">🪙 0</span>
       <span class="spa-chip" id="spa-h-bintang">⭐ 0/5</span>
       <span class="spa-chip boost" id="spa-h-boost" hidden>⚡ 8</span>
@@ -191,15 +200,13 @@
         <h1>SUPER PAK AJI</h1>
         <div class="spa-info"><span id="spa-i-mapel">-</span> · <span id="spa-i-kelas">-</span> · <span id="spa-i-nama"></span></div>
         <ul class="spa-cara">
-          <li>🏃 Lari dan lompati jurang air. Kumpulkan koin 🪙</li>
-          <li>❓ Lompat dan sundul blok ❓ dari bawah, lalu jawab soalnya</li>
-          <li>✅ Benar: bonus keluar (nyawa, bintang super, koin). ❌ Salah: bonus gagal</li>
-          <li>⭐ Butuh minimal <b id="spa-i-target">5</b> jawaban benar untuk membuka istana di ujung!</li>
+          <li>🏃 Lari, lompati jurang air, kumpulkan koin 🪙</li>
+          <li>❓ Sundul blok ❓ dari bawah &amp; jawab soal: benar = bonus, salah = bonus gagal</li>
+          <li>🐢 Injak kura-kura dari atas, hindari 🐦 burung! Bintang super = kebal</li>
+          <li>🏰 Kumpulkan cukup jawaban benar untuk membuka istana. Makin tinggi stage, makin sulit soalnya!</li>
         </ul>
-        <div class="spa-pilih">Suasana:
-          <button id="spa-s-siang" class="on">☀️ Siang</button>
-          <button id="spa-s-senja">🌇 Senja</button>
-        </div>
+        <div class="spa-pilih">Stage: <span id="spa-stage-pilih"></span></div>
+        <div class="spa-info" id="spa-stage-info" style="margin:.2em 0 .1em"></div>
         <div class="spa-pesan" id="spa-pesan-setup"></div>
         <div class="spa-aksi">
           <button class="spa-btn" id="spa-b-mulai" disabled>Memuat...</button>
@@ -251,8 +258,9 @@
           <div><b id="spa-r-skor">0</b><span>Skor</span></div>
         </div>
         <div class="spa-aksi">
-          <button class="spa-btn" id="spa-b-lagi">Main Lagi</button>
-          <button class="spa-btn sek" id="spa-b-ubah">Ubah Pengaturan</button>
+          <button class="spa-btn" id="spa-b-lanjutst" hidden>Lanjut Stage</button>
+          <button class="spa-btn" id="spa-b-lagi">Ulangi Stage</button>
+          <button class="spa-btn sek" id="spa-b-ubah">Pilih Stage</button>
           <button class="spa-btn sek" id="spa-b-selesai">Selesai</button>
         </div>
       </div>
@@ -270,10 +278,12 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ================= KONSTANTA =================
 const SPA_BASE = 'aset-super-pak-aji/';
-const SPA_POS = {"dunia":{"tiang":[0,0,70,357],"istana":[72,0,285,336],"pohon":[359,0,286,306],"palem":[647,0,177,297],"tangga":[826,0,190,259],"pilar":[0,359,183,175],"papan":[185,359,118,151],"pulau3":[305,359,348,144],"lorong":[655,359,136,134],"air":[793,359,194,122],"pagar":[0,536,240,122],"pulau":[242,536,195,107],"bintang":[439,536,117,106],"koin":[558,536,78,94],"jamur":[638,536,92,83],"tanah":[0,660,912,80],"bata":[914,660,78,80],"tanya":[0,742,71,71],"kosong":[73,742,71,71]},"pak":{"diam":[0,0,104,188],"loncat":[106,0,108,186],"pikir":[216,0,95,186],"kaget":[313,0,102,186],"sisi":[417,0,82,185],"jalan":[501,0,130,185],"jatuh":[633,0,171,185],"pusing":[806,0,175,185],"menang":[0,190,129,185],"loncat2":[131,190,117,182],"jempol":[250,190,100,177],"finish":[352,190,125,176],"tunjuk":[479,190,129,174],"teriak":[610,190,107,174],"piala":[719,190,122,174],"lari":[843,190,152,155],"sedih":[0,377,108,138]}};
+const SPA_POS = {"dunia":{"tiang":[0,0,70,357],"istana":[72,0,285,336],"pohon":[359,0,286,306],"palem":[647,0,177,297],"tangga":[826,0,190,259],"pilar":[0,359,183,175],"papan":[185,359,118,151],"pulau3":[305,359,348,144],"lorong":[655,359,136,134],"air":[793,359,194,122],"pagar":[0,536,240,122],"pulau":[242,536,195,107],"bintang":[439,536,117,106],"koin":[558,536,78,94],"jamur":[638,536,92,83],"tanah":[0,660,888,80],"bata":[890,660,78,80],"tanya":[0,742,71,71],"kosong":[73,742,71,71]},"pak":{"diam":[0,0,104,188],"loncat":[106,0,108,186],"pikir":[216,0,95,186],"kaget":[313,0,102,186],"sisi":[417,0,82,185],"jalan":[501,0,130,185],"jatuh":[633,0,171,185],"pusing":[806,0,175,185],"menang":[0,190,129,185],"loncat2":[131,190,117,182],"jempol":[250,190,100,177],"finish":[352,190,125,176],"tunjuk":[479,190,129,174],"teriak":[610,190,107,174],"piala":[719,190,122,174],"lari":[843,190,152,155],"sedih":[0,377,108,138]}};
 const VW = 960, VH = 540, GY = 470;          // lebar, tinggi panggung, tinggi permukaan tanah
 const PW = 34, PH = 90;                       // ukuran kotak tabrak Pak Aji
-const TARGET = 5, NYAWA_AWAL = 3, NYAWA_MAX = 5, JUMLAH_BLOK = 10;
+const TARGET_STAGE = [5, 5, 6, 6, 7], NYAWA_AWAL = 5, NYAWA_MAX = 7, JUMLAH_BLOK = 10, STAGE_MAKS = 5;
+const NAMA_STAGE = ['Padang Hijau', 'Bukit Sore', 'Senja Berangin', 'Malam Bintang', 'Istana Juara'], TIER = ['Mudah', 'Sedang', 'Sulit', 'HOTS', 'HOTS+'];
+function targetStage() { return TARGET_STAGE[(S.stage || 1) - 1]; }
 const NAMA_MAPEL = { matematika: 'Matematika', bahasa_indonesia: 'Bahasa Indonesia', ipas: 'IPAS', pendidikan_pancasila: 'Pendidikan Pancasila' };
 const PARAM = new URLSearchParams(location.search);
 const MAPEL = NAMA_MAPEL[PARAM.get('mapel')] ? PARAM.get('mapel') : 'matematika';
@@ -290,7 +300,7 @@ function mmss(d) { d = Math.floor(d); return Math.floor(d / 60) + ':' + ('0' + (
 
 // ================= STATE =================
 const S = { status: 'setup', kelas: 3, admin: false, nama: 'Siswa', siap: false, gambarSiap: false, pool: [], antrean: [], terakhirIdx: -1, terakhirTeks: '',
-  suasana: 'siang', nyawa: NYAWA_AWAL, koin: 0, benar: 0, salah: 0, skor: 0, waktu: 0, streak: 0, boost: 0, sesi: 0, cam: 0, t: 0,
+  stage: 1, stagePilih: 1, bukaMaks: 1, uid: '', tBenar: 0, tSalah: 0, tWaktu: 0, snap: null, poolStage: [], hasilJenis: '', nyawa: NYAWA_AWAL, koin: 0, benar: 0, salah: 0, skor: 0, waktu: 0, streak: 0, boost: 0, sesi: 0, cam: 0, t: 0,
   hitungT: 0, soal: null, blok: null, kunciJawab: false, ketik: '', akhir: null, blokDibuka: 0 };
 let L = null, P = null;
 const K = { kiri: false, kanan: false, lompat: false, lompatBaru: false };
@@ -321,6 +331,8 @@ const Suara = {
     else if (n === 'cebur') { this.nada(420, 0.5, 'sine', 0, 0.14, 90); }
     else if (n === 'menang') { [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => this.nada(f, 0.2, 'sine', i * 0.13, 0.14)); }
     else if (n === 'klik') this.nada(660, 0.05, 'square', 0, 0.05);
+    else if (n === 'injak') { this.nada(260, 0.14, 'square', 0, 0.1, 620); }
+    else if (n === 'luka') { this.nada(190, 0.3, 'sawtooth', 0, 0.12, 70); }
     else if (n === 'hitung') this.nada(520, 0.12, 'square', 0, 0.08);
     else if (n === 'mulai') this.nada(1040, 0.3, 'square', 0, 0.09);
   },
@@ -347,9 +359,9 @@ function gambarKe(cv, nama) {
 
 // ================= LEVEL =================
 const SK = { pohon: 0.8, palem: 0.8, papan: 0.7, istana: 0.8, tiang: 0.8, pilar: 0.75, tangga: 0.75, pulau: 0.75, pagar: 0.75 };
-function bangunLevel() {
+function levelSatu() {
   const l = { lebar: 7400, seg: [[0, 1500], [1650, 2780], [2940, 4020], [4190, 5300], [5470, 7400]], lubang: [[1500, 1650], [2780, 2940], [4020, 4190], [5300, 5470]],
-    solid: [], plat: [], koin: [], dekor: [], gbr: [], blok: [], item: [], tiangX: 6700, istanaX: 6930, bendera: 0 };
+    solid: [], plat: [], koin: [], dekor: [], gbr: [], blok: [], item: [], musuh: [], stage: 1, tiangX: 6700, istanaX: 6930, bendera: 0 };
   l.seg.forEach(function (s) { l.solid.push({ k: 'tanah', x: s[0], y: GY, w: s[1] - s[0], h: 140 }); });
   // dekor di belakang
   [[380, 'pohon'], [1250, 'palem'], [2480, 'pohon'], [3480, 'palem'], [3830, 'pohon'], [5000, 'pohon'], [5600, 'palem'], [6250, 'pohon'], [6430, 'palem'],
@@ -386,7 +398,148 @@ function bangunLevel() {
   koinBaris(2170, 296, 3); koinBusur(2330, 2430, 100, 4); koinBusur(2780, 2940, 120, 5); koinBaris(3560 - 20, 410, 1); koinBusur(3540, 3650, 100, 4);
   koinBaris(3770, 322, 3); koinBusur(4020, 4190, 120, 5); koinBaris(4335, 296, 3); koinBaris(4620, 410, 3); koinBusur(4690, 4800, 100, 4);
   koinBaris(4920, 296, 3); koinBusur(5300, 5470, 120, 5); koinBusur(5740, 5860, 90, 4); koinBaris(6150, 296, 3); koinBaris(6300, 410, 6);
+  l.musuh.push(buatKura(1230, 1440, 55), buatKura(2480, 2720, 60));
   return l;
+}
+
+function bangunLevel(stage) { return stage === 1 ? levelSatu() : rakit(stage); }
+// ================= MUSUH & LEVEL STAGE 2-5 =================
+function buatKura(x0, x1, v) { return { t: 'kura', x: x0 + 20, y: GY - 40, w: 52, h: 40, x0: x0, x1: x1, dir: -1, v: v || 55, state: 'jalan', lt: 0, an: Math.random() * 6 }; }
+function buatBurung(trigX, tipe) { return { t: 'burung', tipe: tipe, trigX: trigX, state: 'tunggu', x: -999, y: 0, y0: 0, w: 58, h: 38, vx: 0, vy: 0, an: 0, lt: 0 }; }
+
+const RESEP = [null, null,
+  // stage 2: kura-kura + satu burung rendah
+  ['jalan:250', 'baris', 'kura:1', 'pipa:70', 'pulauBlok', 'lubang:160', 'baris', 'kura:2', 'pagarBlok', 'burung:rendah', 'baris', 'lubang:170', 'pulauBlok', 'kura:1', 'tangga', 'baris',
+   'pagarBlok', 'lubang:165', 'baris', 'pulauBlok', 'jalan:250'],
+  // stage 3: lebih banyak burung (rendah & sedang)
+  ['jalan:250', 'baris', 'kura:1', 'burung:rendah', 'pulauBlok', 'lubang:165', 'baris', 'kura:2', 'burung:sedang', 'pagarBlok', 'baris', 'pilar', 'burung:rendah', 'lubang:170', 'pulauBlok',
+   'kura:1', 'pipa:100', 'baris', 'burung:sedang', 'pagarBlok', 'lubang:175', 'baris', 'kura:1', 'pulauBlok', 'jalan:250'],
+  // stage 4: burung menukik, jurang lebar (dua pulau)
+  ['jalan:250', 'baris', 'kura:2', 'burung:terjun', 'pulauBlok', 'lubang:230', 'baris', 'kura:1', 'burung:rendah', 'pagarBlok', 'lubang:170', 'baris', 'tangga', 'burung:terjun', 'pulauBlok',
+   'kura:2', 'baris', 'lubang:230', 'burung:sedang', 'pagarBlok', 'pipa:100', 'baris', 'burung:terjun', 'pulauBlok', 'kura:1', 'jalan:250'],
+  // stage 5: paling padat
+  ['jalan:250', 'baris', 'kura:2', 'burung:terjun', 'pagarBlok', 'lubang:230', 'kura:2', 'baris', 'pipa:100', 'burung:rendah', 'pulauBlok', 'kura:2', 'lubang:175', 'baris', 'burung:terjun',
+   'pagarBlok', 'kura:2', 'lubang:230', 'burung:sedang', 'pulauBlok', 'pilar', 'kura:2', 'baris', 'burung:terjun', 'pagarBlok', 'lubang:175', 'burung:terjun', 'pulauBlok', 'kura:1', 'jalan:250']];
+
+function rakit(stage) {
+  const l = { stage: stage, lebar: 0, seg: [], lubang: [], solid: [], plat: [], koin: [], dekor: [], gbr: [], blok: [], item: [], musuh: [], tiangX: 0, istanaX: 0, bendera: 0 };
+  let x = 0; const BY = GY - 230;
+  function bata(bx, by) { l.solid.push({ k: 'bata', x: bx, y: by, w: 60, h: 60, bump: 0 }); }
+  function tanya(bx, by) { const b = { k: 'tanya', x: bx, y: by, w: 60, h: 60, bump: 0, state: 'baru' }; l.solid.push(b); l.blok.push(b); }
+  function koinBaris(cx, cy, n) { for (let i = 0; i < n; i++) l.koin.push({ x: cx + i * 42, y: cy, ambil: false }); }
+  function koinBusur(x0, x1, tinggi, n) { for (let i = 0; i < n; i++) { const t = n === 1 ? 0.5 : i / (n - 1); l.koin.push({ x: x0 + (x1 - x0) * t, y: GY - 70 - Math.sin(Math.PI * t) * tinggi, ambil: false }); } }
+  function pulau(px, berdiriY) { const w = 195 * SK.pulau, h = 107 * SK.pulau; l.plat.push({ x: px + 14, y: berdiriY, w: w - 28, n: 'pulau', gx: px, gy: berdiriY - 11, gw: w, gh: h }); }
+  function pagarP(px, berdiriY) { const w = 240 * SK.pagar, h = 122 * SK.pagar; l.plat.push({ x: px + 8, y: berdiriY, w: w - 16, n: 'pagar', gx: px, gy: berdiriY - 52, gw: w, gh: h }); }
+  const SEG = {
+    jalan: function (n) { koinBaris(x + Math.max(40, n / 2 - 80), 410, 4); x += n; },
+    baris: function () { const x0 = x + 160; bata(x0, BY); tanya(x0 + 60, BY); bata(x0 + 120, BY); koinBaris(x0 - 20, 410, 3); x += 480; },
+    pipa: function (h) { const px = x + 200; l.solid.push({ k: 'pipa', x: px + 4, y: GY - h, w: 80, h: h, gx: px, gh: h }); koinBusur(px - 30, px + 118, h * 0.6 + 20, 4); x += 480; },
+    lubang: function (w) { x += 200; const a = x, b = x + w; l.lubang.push([a, b]); l.dekor.push({ n: 'papan', x: a - 150 });
+      if (w <= 180) pulau(a + (w - 146) / 2, GY - 95); else { pulau(a - 10, GY - 90); pulau(b - 136, GY - 120); } koinBusur(a, b, w > 180 ? 130 : 110, 5); x = b; },
+    pilar: function () { const px = x + 200, w = 183 * SK.pilar, h = 175 * SK.pilar; l.solid.push({ k: 'pilar', x: px + 2, y: GY - h + 3, w: w - 4, h: h - 3, gx: px, gy: GY - h, gw: w, gh: h }); koinBaris(px + 15, 296, 3); x += 480; },
+    tangga: function () { const x0 = x + 150, sw = 190 * SK.tangga, sh = 259 * SK.tangga, cw = sw / 3 - 1, bh = sh / 5; l.gbr.push({ n: 'tangga', x: x0, y: GY - sh, w: sw, h: sh });
+      [3, 4, 5].forEach(function (n, i) { l.solid.push({ k: 'tangga', x: x0 + i * (sw / 3), y: GY - n * bh + 3, w: cw + 1, h: n * bh - 3 }); }); x += 560; },
+    pagarBlok: function () { const px = x + 150; pagarP(px, GY - 130); tanya(px + 60, GY - 130 - 230); koinBaris(px + 25, 296, 2); x += 500; },
+    pulauBlok: function () { const px = x + 150; pulau(px, GY - 100); tanya(px + 43, GY - 100 - 230); x += 470; },
+    kura: function (n) { for (let i = 0; i < n; i++) { const a = x + 60 + i * 300; l.musuh.push(buatKura(a, a + 240, 55 + stage * 8)); koinBaris(a + 90, 350, 2); } x += 120 + n * 300; },
+    burung: function (tipe) { l.musuh.push(buatBurung(x, tipe)); }
+  };
+  RESEP[stage].forEach(function (tok) { const p = tok.split(':'); SEG[p[0]](p[1] === undefined ? undefined : (isNaN(+p[1]) ? p[1] : +p[1])); });
+  l.tiangX = x + 200; l.istanaX = l.tiangX + 230; l.lebar = l.istanaX + 450;
+  // tanah di antara lubang
+  let mulai = 0; l.lubang.forEach(function (lb) { l.seg.push([mulai, lb[0]]); mulai = lb[1]; }); l.seg.push([mulai, l.lebar]);
+  l.seg.forEach(function (s) { l.solid.push({ k: 'tanah', x: s[0], y: GY, w: s[1] - s[0], h: 140 }); });
+  // dekor pohon & palem di tempat aman (di belakang, tidak menghalangi)
+  for (let dx = 240, i = 0; dx < l.tiangX - 150; dx += 430 + (i * 53) % 160, i++) {
+    if (l.lubang.some(function (lb) { return dx > lb[0] - 120 && dx < lb[1] + 20; })) continue; l.dekor.push({ n: i % 3 === 0 ? 'palem' : 'pohon', x: dx });
+  }
+  return l;
+}
+
+// ================= PERILAKU MUSUH =================
+function kalahkan(e) {
+  if (e.t === 'kura') { e.state = 'kalah'; e.lt = 0; S.skor += 50; tampilTeks(e.x + 22, e.y - 6, '+50', '#fff'); }
+  else { e.state = 'jatuh'; e.vy = -220; e.vx = 120; S.skor += 100; tampilTeks(e.x + 20, e.y - 6, '+100', '#fff'); }
+  for (let i = 0; i < 8; i++) efek.partikel.push({ x: e.x + e.w / 2, y: e.y + e.h / 2, vx: (Math.random() - 0.5) * 260, vy: -150 - Math.random() * 180, t: 0, w: '#FFE28A' });
+  perbaruiHud();
+}
+function terluka(e) {
+  if (P.kedip > 0 || P.mati) return;
+  S.nyawa--; S.streak = 0; Suara.main('luka'); perbaruiHud(); tampilTeks(P.x + 10, P.y - 8, 'Aduh!', '#ff9a9a');
+  if (S.nyawa <= 0) { P.mati = { t: 0, luka: true }; resetKunci(); return; }
+  P.kedip = 1.8; P.vy = -380; P.vx = (P.x + PW / 2 < e.x + e.w / 2 ? -1 : 1) * 260; P.tanah = false; P.reaksi = 'kaget'; P.reaksiT = 0.6;
+}
+function cekTabrakMusuh(e) {
+  if (e.hapus || P.mati) return;
+  if (e.t === 'kura' && e.state === 'kalah') return; if (e.t === 'burung' && (e.state === 'tunggu' || e.state === 'jatuh')) return;
+  const r = { x: e.x + 5, y: e.y + 4, w: e.w - 10, h: e.h - 6 };
+  if (!overlap(kotak(P), r)) return;
+  if (S.boost > 0) { kalahkan(e); Suara.main('injak'); return; }
+  if (P.vy > 60 && (P.y + PH) - e.y < 28) { kalahkan(e); P.vy = -520; P.tanah = false; P.tahanLompat = false; Suara.main('injak'); return; }
+  terluka(e);
+}
+function updateBurung(e, dt) {
+  if (e.state === 'tunggu') {
+    if (P.x > e.trigX) { e.state = 'terbang'; e.x = S.cam + VW + 50; e.y0 = e.tipe === 'rendah' ? GY - 80 : e.tipe === 'sedang' ? GY - 140 : 90; e.y = e.y0; e.vx = e.tipe === 'terjun' ? -200 : -230; e.vy = 0; e.lt = 0; }
+    return;
+  }
+  e.an += dt * 14; e.lt += dt;
+  if (e.state === 'terbang') {
+    e.x += e.vx * dt; e.y = e.y0 + Math.sin(e.lt * 3) * 10;
+    if (e.tipe === 'terjun' && e.x < S.cam + VW - 40 && e.x - (P.x + PW / 2) < 380 && e.x > P.x) {
+      const dx = (P.x + PW / 2) - (e.x + 23), dy = (P.y + PH / 2) - (e.y + 15), len = Math.sqrt(dx * dx + dy * dy) || 1; e.vx = dx / len * 340; e.vy = dy / len * 340; e.state = 'terjun'; e.lt = 0;
+    }
+  } else if (e.state === 'terjun') {
+    e.x += e.vx * dt; e.y += e.vy * dt; if (e.lt > 0.8 || e.y > GY - 20) { e.state = 'naik'; e.vx = -200; e.vy = -260; }
+  } else if (e.state === 'naik') { e.x += e.vx * dt; e.y += e.vy * dt; }
+  else if (e.state === 'jatuh') { e.vy += 900 * dt; e.x += e.vx * dt; e.y += e.vy * dt; if (e.y > VH + 60) e.hapus = true; }
+  if (e.x < S.cam - 160 || e.y < -120) e.hapus = true;
+}
+function updateMusuh(dt) {
+  L.musuh.forEach(function (e) {
+    if (e.t === 'kura') {
+      if (e.state === 'jalan') { e.x += e.dir * e.v * dt; if (e.x < e.x0) { e.x = e.x0; e.dir = 1; } if (e.x + e.w > e.x1) { e.x = e.x1 - e.w; e.dir = -1; } e.an += dt * 8; }
+      else { e.lt += dt; e.an += dt * 16; if (e.lt > 0.7) e.hapus = true; }
+    } else updateBurung(e, dt);
+    cekTabrakMusuh(e);
+  });
+  L.musuh = L.musuh.filter(function (e) { return !e.hapus; });
+}
+
+// ================= GAMBAR MUSUH =================
+function gambarKura(e) {
+  ctx.save(); ctx.translate(e.x, e.y); const arah = e.dir > 0 ? 1 : -1, sk = e.w / 44; ctx.scale(sk, sk);
+  if (e.state === 'kalah') { ctx.translate(22, 24); ctx.rotate(e.an); ctx.globalAlpha = Math.max(0, 1 - e.lt / 0.7); ctx.fillStyle = '#B8692A'; ctx.beginPath(); ctx.ellipse(0, 0, 18, 14, 0, 0, 7); ctx.fill(); ctx.strokeStyle = '#5a2f0c'; ctx.lineWidth = 3; ctx.stroke(); ctx.restore(); return; }
+  if (arah < 0) { ctx.translate(44, 0); ctx.scale(-1, 1); }
+  ctx.translate(0, 4); const k = Math.sin(e.an) * 4;
+  ctx.fillStyle = '#7CC95A'; ctx.strokeStyle = '#2f6b1c'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.ellipse(12 + k, 31, 6.5, 4.5, 0, 0, 7); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.ellipse(30 - k, 31, 6.5, 4.5, 0, 0, 7); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(41, 16, 8.5, 8.5, 0, 0, 7); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(44, 14, 3.3, 0, 7); ctx.fill(); ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(45, 14, 1.7, 0, 7); ctx.fill();
+  ctx.fillStyle = '#B8692A'; ctx.strokeStyle = '#5a2f0c'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(22, 24, 20, 18, 0, Math.PI, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#F3E3B0'; ctx.fillRect(4, 24, 36, 6);
+  ctx.strokeStyle = '#E8A860'; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(11, 23); ctx.lineTo(16, 11); ctx.lineTo(28, 11); ctx.lineTo(33, 23); ctx.moveTo(22, 6); ctx.lineTo(22, 11); ctx.stroke();
+  ctx.restore();
+}
+function gambarBurung(e) {
+  const t = S.t; ctx.save(); ctx.translate(e.x, e.y); const sk = e.w / 46; ctx.scale(sk, sk); if (e.state === 'jatuh') { ctx.translate(23, 15); ctx.rotate(t * 8); ctx.translate(-23, -15); }
+  ctx.translate(46, 0); ctx.scale(-1, 1);
+  const sayap = Math.sin(e.an) * 0.9;
+  ctx.fillStyle = '#F26B4B'; ctx.strokeStyle = '#7a2a14'; ctx.lineWidth = 2.2;
+  ctx.beginPath(); ctx.moveTo(6, 16); ctx.lineTo(-5, 10); ctx.lineTo(-3, 21); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(22, 17, 16, 11, 0, 0, 7); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#FFD9B0'; ctx.beginPath(); ctx.ellipse(24, 21, 10, 6, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = '#F26B4B'; ctx.beginPath(); ctx.arc(36, 12, 8.5, 0, 7); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#FFD23C'; ctx.beginPath(); ctx.moveTo(43, 9); ctx.lineTo(53, 14); ctx.lineTo(43, 17); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(37, 10, 3.4, 0, 7); ctx.fill(); ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(38.2, 10, 1.7, 0, 7); ctx.fill();
+  ctx.strokeStyle = '#222'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(33, 5.5); ctx.lineTo(40, 7.5); ctx.stroke();
+  ctx.fillStyle = '#C94A2E'; ctx.strokeStyle = '#7a2a14'; ctx.lineWidth = 2.2; ctx.save(); ctx.translate(20, 12); ctx.rotate(-sayap); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-12, -19); ctx.lineTo(11, -15); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+  ctx.restore();
+}
+function gambarPeringatan() {
+  L.musuh.forEach(function (e) { if (e.t === 'burung' && (e.state === 'terbang') && e.x > S.cam + VW) {
+    const y = klem(e.y + 15, 70, 430), p = 1 + Math.sin(S.t * 14) * 0.15; ctx.save(); ctx.translate(VW - 30, y); ctx.scale(p, p); ctx.fillStyle = '#E0393E'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(0, 0, 16, 0, 7); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#fff'; ctx.font = 'bold 22px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('!', 0, 1); ctx.restore(); } });
 }
 
 // ================= SOAL =================
@@ -417,24 +570,95 @@ function pilihOperasi(k) {
     : k === 4 ? [['tambah', 2], ['kurang', 2], ['kali', 3], ['bagi', 3]] : [['tambah', 2], ['kurang', 2], ['kali', 3], ['bagi', 3], ['dua', 3]];
   let total = 0; bobot.forEach(function (b) { total += b[1]; }); let r = Math.random() * total;
   for (let i = 0; i < bobot.length; i++) { r -= bobot[i][1]; if (r <= 0) return bobot[i][0]; } return bobot[0][0]; }
-function buatSoalAngka(kelas) {
-  const k = klem(kelas | 0 || 3, 1, 6); const op = pilihOperasi(k);
-  if (op === 'tambah') return soalTambah(k); if (op === 'kurang') return soalKurang(k); if (op === 'kali') return soalKali(k); if (op === 'bagi') return soalBagi(k); return soalDuaLangkah(k);
+// ----- soal bertingkat: stage 1 = standar kelas, stage 2-5 makin menantang (HOTS) -----
+const NAMA_ORANG = ['Budi', 'Siti', 'Ani', 'Dedi', 'Rina', 'Joko', 'Wati', 'Agus', 'Lina', 'Dimas', 'Tika', 'Bayu', 'Pak Aji'];
+const BENDA = ['kelereng', 'apel', 'buku', 'pensil', 'kue', 'stiker', 'bola', 'permen', 'jeruk', 'telur'];
+function rb(k) { return rint([0, 2, 3, 5, 10, 20, 50][k], [0, 9, 20, 60, 200, 500, 900][k]); }      // bilangan dasar menurut kelas
+function rKecil(k) { return rint([0, 2, 2, 3, 6, 12, 15][k], [0, 5, 6, 9, 25, 40, 60][k]); }          // pengali besar
+function rKecil2(k) { return rint([0, 2, 2, 2, 3, 4, 6][k], [0, 3, 5, 9, 9, 15, 25][k]); }           // pengali kecil
+function pakaiOrang() { return acakDari(NAMA_ORANG); }
+function wTambah(k) { const n = pakaiOrang(), b = acakDari(BENDA), a = rb(k), c = rb(k);
+  return { teks: n + ' punya ' + a + ' ' + b + '. Ia diberi ' + c + ' ' + b + ' lagi. Berapa ' + b + ' ' + n + ' sekarang?', jawab: a + c, rumus: a + '+' + c }; }
+function wKurang(k) { const n = pakaiOrang(), b = acakDari(BENDA), c = rb(k), a = c + rb(k) + 1;
+  return { teks: n + ' memiliki ' + a + ' ' + b + '. Sebanyak ' + c + ' ' + b + ' diberikan kepada adiknya. Berapa sisa ' + b + ' ' + n + '?', jawab: a - c, rumus: a + '-' + c }; }
+function wKali(k) { const n = pakaiOrang(), b = acakDari(BENDA), p = rKecil2(k), q = rKecil(k);
+  return { teks: n + ' mempunyai ' + p + ' kotak. Setiap kotak berisi ' + q + ' ' + b + '. Berapa jumlah ' + b + ' seluruhnya?', jawab: p * q, rumus: p + '*' + q }; }
+function wBagi(k) { const b = acakDari(BENDA), p = rKecil2(k), q = rKecil2(k) + rint(0, k * 2);
+  return { teks: 'Ada ' + (p * q) + ' ' + b + ' dibagi sama banyak kepada ' + p + ' anak. Berapa ' + b + ' yang diterima setiap anak?', jawab: q, rumus: (p * q) + '/' + p }; }
+function wKurang2(k) { const n = pakaiOrang(), b = acakDari(BENDA), p = rKecil2(k), q = rKecil(k), tot = p * q, c = rint(1, tot - 1);
+  return { teks: n + ' membeli ' + p + ' kotak ' + b + '. Setiap kotak berisi ' + q + ' ' + b + '. Sebanyak ' + c + ' ' + b + ' diberikan kepada teman. Berapa sisa ' + b + '?', jawab: tot - c, rumus: p + '*' + q + '-' + c }; }
+function wBagiSetelah(k) { const b = acakDari(BENDA), g = rKecil2(k), q = rKecil2(k) + rint(0, k * 2), c = rb(k), a = c + g * q;
+  return { teks: 'Ibu punya ' + a + ' ' + b + '. Sebanyak ' + c + ' ' + b + ' dijual, sisanya dibagi sama banyak ke ' + g + ' keranjang. Berapa ' + b + ' di tiap keranjang?', jawab: q, rumus: '(' + a + '-' + c + ')/' + g }; }
+function wGabung(k) { const g = rKecil2(k) + 1, q = rKecil2(k) + rint(1, k * 2), tot = g * q, a = rint(1, tot - 1), c = tot - a, n = pakaiOrang();
+  return { teks: n + ' punya ' + a + ' kelereng merah dan ' + c + ' kelereng biru. Semua kelereng dibagi sama banyak ke ' + g + ' temannya. Berapa kelereng yang diterima tiap teman?', jawab: q, rumus: '(' + a + '+' + c + ')/' + g }; }
+function wBelanja3(k) { const n = pakaiOrang(), p = rint(2, 6), h = rint(2, 9) * (k >= 5 ? 5 : 1), r = rint(2, 5), s = rint(2, 9) * (k >= 5 ? 5 : 1), sum = p * h + r * s, E = Math.ceil((sum + 1) / 10) * 10;
+  return { teks: n + ' membeli ' + p + ' buku seharga ' + h + ' ribu rupiah per buah dan ' + r + ' pulpen seharga ' + s + ' ribu rupiah per buah. Ia membayar dengan uang ' + E + ' ribu rupiah. Berapa ribu rupiah kembaliannya?', jawab: E - sum, rumus: E + '-(' + p + '*' + h + '+' + r + '*' + s + ')' }; }
+function wBanding(k) { const n = pakaiOrang(), q = rKecil(k), p = rint(2, 4);
+  return { teks: 'Adik punya ' + q + ' kelereng. ' + n + ' punya ' + p + ' kali lipat kelereng adik. Berapa jumlah kelereng mereka berdua?', jawab: q + p * q, rumus: q + '+' + p + '*' + q }; }
+function wSelisih(k) { const n = pakaiOrang(), a = rb(k) + rb(k) + 2, b = rint(1, a - 1);
+  return { teks: 'Toko A menjual ' + a + ' buku, toko B menjual ' + b + ' buku. ' + n + ' ingin tahu selisihnya. Berapa selisih buku yang terjual?', jawab: a - b, rumus: a + '-' + b }; }
+function soalPola(k, hots) {
+  const dMax = [0, 2, 10, 12, 40, 80, 120][k], d = k === 1 ? acakDari([1, 2, 5]) : rint(2, dMax), t = hots ? rint(0, 3) : rint(0, 1);
+  if (t === 2 && k < 4) return soalPola(k, hots && false);
+  if (t === 0) { const s = rint(1, 20 * k); return { teks: 'Lengkapi pola: ' + [s, s + d, s + 2 * d, s + 3 * d].join(', ') + ', ... Bilangan berikutnya?', jawab: s + 4 * d, rumus: s + '+4*' + d }; }
+  if (t === 1) { const s = 4 * d + rint(2, 20 * k); return { teks: 'Lengkapi pola: ' + [s, s - d, s - 2 * d, s - 3 * d].join(', ') + ', ... Bilangan berikutnya?', jawab: s - 4 * d, rumus: s + '-4*' + d }; }
+  if (t === 2) { const s = rint(1, 5), r = rint(2, 3), a = [s, s * r, s * r * r, s * r * r * r]; return { teks: 'Lengkapi pola: ' + a.join(', ') + ', ... Bilangan berikutnya?', jawab: s * r * r * r * r, rumus: s + '*' + r + '*' + r + '*' + r + '*' + r }; }
+  const a = rint(3, 3 + k * 3), b = rint(1, a - 1), s = b + rint(1, 10), q = [s, s + a, s + a - b, s + 2 * a - b, s + 2 * a - 2 * b];
+  return { teks: 'Perhatikan pola naik-turun: ' + q.join(', ') + ', ... Bilangan berikutnya?', jawab: s + 3 * a - 2 * b, rumus: s + '+3*' + a + '-2*' + b };
+}
+function soalHilang(k) { const t = rint(0, k >= 3 ? 4 : 2), a = rb(k) + 1, x = rb(k) + 1;
+  if (t === 0) return { teks: '? + ' + a + ' = ' + (a + x), jawab: x, rumus: (a + x) + '-' + a };
+  if (t === 1) return { teks: a + ' + ? = ' + (a + x), jawab: x, rumus: (a + x) + '-' + a };
+  if (t === 2) return { teks: '? − ' + a + ' = ' + x, jawab: a + x, rumus: a + '+' + x };
+  if (t === 3) { const p = rKecil(k), q = rKecil2(k); return { teks: p + ' × ? = ' + (p * q), jawab: q, rumus: (p * q) + '/' + p }; }
+  const p = rKecil2(k), q = rKecil(k); return { teks: '? ÷ ' + p + ' = ' + q, jawab: p * q, rumus: p + '*' + q };
+}
+function soalGeo(k, hots) {
+  const t = hots ? rint(0, 3) : rint(0, 1), p = rint(6, 12 * k), l = rint(3, p - 1);
+  if (t === 0) return { teks: 'Sebuah persegi panjang berukuran panjang ' + p + ' cm dan lebar ' + l + ' cm. Berapa cm kelilingnya?', jawab: 2 * (p + l), rumus: '2*(' + p + '+' + l + ')' };
+  if (t === 1) return { teks: 'Sebuah persegi panjang berukuran panjang ' + p + ' cm dan lebar ' + l + ' cm. Berapa cm² luasnya?', jawab: p * l, rumus: p + '*' + l };
+  if (t === 2) { const s = rint(3, 10 * k); return { teks: 'Keliling sebuah persegi adalah ' + (4 * s) + ' cm. Berapa cm panjang sisinya?', jawab: s, rumus: (4 * s) + '/4' }; }
+  return { teks: 'Luas sebuah persegi panjang adalah ' + (p * l) + ' cm². Jika panjangnya ' + p + ' cm, berapa cm lebarnya?', jawab: l, rumus: (p * l) + '/' + p };
+}
+function soalStandar(k) { const op = pilihOperasi(k); if (op === 'tambah') return soalTambah(k); if (op === 'kurang') return soalKurang(k); if (op === 'kali') return soalKali(k); if (op === 'bagi') return soalBagi(k); return soalDuaLangkah(k); }
+function buatSoalAngka(kelas, stage) {
+  const k = klem(kelas | 0 || 3, 1, 6), s = klem(stage | 0 || 1, 1, 5), r = Math.random();
+  if (s === 1) return soalStandar(k);
+  if (s === 2) { if (k >= 3 && r < 0.45) return soalDuaLangkah(k); if (r < 0.75) return soalHilang(k); return soalStandar(k); }
+  if (s === 3) { if (r < 0.2) return soalPola(k, false); const w = k <= 2 ? [wTambah, wKurang, wKali, wBagi] : [wTambah, wKurang, wKali, wBagi, wSelisih]; return acakDari(k === 1 ? [wTambah, wKurang] : w)(k); }
+  if (s === 4) { if (r < 0.2) return soalPola(k, k >= 4); if (r < 0.33) return soalHilang(k); if (r < 0.48 && k >= 3) return soalGeo(k, false); return acakDari(k === 1 ? [wKurang2, wTambah] : [wKurang2, wBagiSetelah, wGabung])(k); }
+  if (r < 0.2 && k >= 3) return wBelanja3(k); if (r < 0.34 && k >= 3) return soalGeo(k, true); if (r < 0.52) return soalPola(k, true); if (r < 0.64) return wBanding(k);
+  return acakDari(k === 1 ? [wKurang2, wTambah] : [wKurang2, wBagiSetelah, wGabung, wBanding])(k);
+}
+function skorKesulitan(x, kategori) {
+  const cue = (x.q.match(/\b(mengapa|bagaimana|alasan|simpulan|kesimpulan|manakah|pernyataan|kecuali|paling|bukan|dampak|solusi|bandingkan|perbedaan|penyebab|akibat)\b/gi) || []).length;
+  const pj = x.o.reduce(function (a, z) { return a + z.length; }, 0) / 4; let d = x.q.length + pj * 0.6 + cue * 25;
+  if (/hots|sulit|c4|c5|c6|analisis/i.test(kategori || '')) d += 500; if (/mudah|c1|c2/i.test(kategori || '')) d -= 200; return d;
 }
 async function muatPool() {
   if (JENIS !== 'pilihan') return true;
-  const r = await sb.from('soal').select('pertanyaan, pilihan_a, pilihan_b, pilihan_c, pilihan_d, jawaban_benar').eq('mapel', MAPEL).eq('tingkat', S.kelas).limit(300);
+  const kolom = 'pertanyaan, pilihan_a, pilihan_b, pilihan_c, pilihan_d, jawaban_benar';
+  let r = await sb.from('soal').select(kolom + ', kategori').eq('mapel', MAPEL).eq('tingkat', S.kelas).limit(300);
+  if (r.error) r = await sb.from('soal').select(kolom).eq('mapel', MAPEL).eq('tingkat', S.kelas).limit(300);
   if (r.error || !Array.isArray(r.data)) return false;
-  S.pool = r.data.map(function (x) { return { q: String(x.pertanyaan || ''), o: [x.pilihan_a, x.pilihan_b, x.pilihan_c, x.pilihan_d].map(function (z) { return String(z == null ? '' : z); }), k: 'ABCD'.indexOf(String(x.jawaban_benar || '').trim().toUpperCase()) }; })
+  S.pool = r.data.map(function (x) { return { q: String(x.pertanyaan || ''), o: [x.pilihan_a, x.pilihan_b, x.pilihan_c, x.pilihan_d].map(function (z) { return String(z == null ? '' : z); }), k: 'ABCD'.indexOf(String(x.jawaban_benar || '').trim().toUpperCase()), kat: x.kategori }; })
     .filter(function (x) { return x.q && x.k >= 0 && x.o.every(function (z) { return z.trim() !== ''; }); });
+  S.pool.forEach(function (x) { x.d = skorKesulitan(x, x.kat); });
   return S.pool.length >= 4;
+}
+function siapkanPoolStage() {
+  S.antrean = []; S.terakhirIdx = -1; S.terakhirTeks = ''; if (JENIS !== 'pilihan') { S.poolStage = []; return; }
+  const semua = S.pool.map(function (x, i) { return { i: i, d: x.d }; }).sort(function (a, b) { return a.d - b.d; }), N = semua.length, c = (S.stage - 1) / 4;
+  let w = Math.max(0.2, 6 / N), pilih;
+  do { pilih = semua.filter(function (e, r) { return Math.abs((N > 1 ? r / (N - 1) : 0) - c) <= w; }); w += 0.05; } while (pilih.length < Math.min(N, 12) && w < 1.3);
+  S.poolStage = pilih.map(function (e) { return e.i; });
 }
 function ambilSoal() {
   if (JENIS === 'angka') {
-    let s, n = 0; do { s = buatSoalAngka(S.kelas); n++; } while (s.teks === S.terakhirTeks && n < 10); S.terakhirTeks = s.teks;
+    let s, n = 0; do { s = buatSoalAngka(S.kelas, S.stage); n++; } while (s.teks === S.terakhirTeks && n < 10); S.terakhirTeks = s.teks;
     return { teks: s.teks, jawab: s.jawab, pilihan: false };
   }
-  if (!S.antrean.length) { let idx = mengocok(S.pool.map(function (_, i) { return i; })); if (idx.length > 1 && idx[0] === S.terakhirIdx) { const t = idx[0]; idx[0] = idx[idx.length - 1]; idx[idx.length - 1] = t; } S.antrean = idx; }
+  if (!S.antrean.length) { let idx = mengocok(S.poolStage.slice()); if (idx.length > 1 && idx[0] === S.terakhirIdx) { const t = idx[0]; idx[0] = idx[idx.length - 1]; idx[idx.length - 1] = t; } S.antrean = idx; }
   const i = S.antrean.shift(); S.terakhirIdx = i; const so = S.pool[i]; const urut = mengocok([0, 1, 2, 3]);
   return { teks: so.q, opsi: urut.map(function (u) { return so.o[u]; }), benar: urut.indexOf(so.k), pilihan: true };
 }
@@ -443,7 +667,7 @@ function ambilSoal() {
 let toastT = null;
 function toast(t, ms) { const e = $('spa-toast'); e.textContent = t; e.classList.add('tampil'); clearTimeout(toastT); toastT = setTimeout(function () { e.classList.remove('tampil'); }, ms || 2200); }
 function perbaruiHud() {
-  $('spa-h-nyawa').textContent = '❤ ' + S.nyawa; $('spa-h-koin').textContent = '🪙 ' + S.koin; $('spa-h-bintang').textContent = '⭐ ' + S.benar + '/' + TARGET;
+  $('spa-h-nyawa').textContent = '❤ ' + S.nyawa; $('spa-h-koin').textContent = '🪙 ' + S.koin; $('spa-h-bintang').textContent = '⭐ ' + S.benar + '/' + targetStage(); $('spa-h-stage').textContent = '🏁 ' + S.stage;
   $('spa-h-skor').textContent = S.skor.toLocaleString('id-ID'); const b = $('spa-h-boost'); b.hidden = !(S.boost > 0); if (S.boost > 0) b.textContent = '⚡ ' + Math.ceil(S.boost);
 }
 function tampilLayar(id, h) { $(id).hidden = !h; }
@@ -490,8 +714,8 @@ function tabrakBlok(b) {
 function resetKunci() { K.kiri = K.kanan = K.lompat = K.lompatBaru = false; ['spa-p-kiri', 'spa-p-kanan', 'spa-p-lompat'].forEach(function (i) { $(i).classList.remove('tekan'); }); }
 function bukaSoal(b) {
   const so = ambilSoal(); S.status = 'soal'; S.blok = b; S.soal = so; S.kunciJawab = false; S.ketik = ''; resetKunci(); P.reaksi = 'pikir'; P.reaksiT = 99; S.blokDibuka++; $('spa-toast').classList.remove('tampil');
-  $('spa-no').textContent = 'Blok bonus ' + S.blokDibuka + ' dari ' + JUMLAH_BLOK + '  ·  Benar beruntun: ' + S.streak;
-  const q = $('spa-tanya'); q.textContent = so.teks; const n = so.teks.length; q.style.fontSize = so.pilihan ? (n > 160 ? '0.9em' : n > 90 ? '1.05em' : '1.3em') : '2.2em';
+  $('spa-no').textContent = 'Stage ' + S.stage + ' (' + TIER[S.stage - 1] + ')  ·  Blok ' + S.blokDibuka + '/' + JUMLAH_BLOK + '  ·  Beruntun: ' + S.streak;
+  const q = $('spa-tanya'); q.textContent = so.teks; const n = so.teks.length; q.style.fontSize = so.pilihan ? (n > 160 ? '0.9em' : n > 90 ? '1.05em' : '1.3em') : (n > 80 ? '1.15em' : n > 45 ? '1.4em' : '2.2em');
   $('spa-umpan').textContent = ''; $('spa-umpan').className = '';
   const op = $('spa-opsi'); op.innerHTML = '';
   if (so.pilihan) {
@@ -552,7 +776,7 @@ function update(dt) {
   L.solid.forEach(function (b) { if (b.bump > 0) b.bump = Math.max(0, b.bump - dt); });
   if (S.status === 'selesai') { updateAkhir(dt); perbaruiEfek(dt); kamera(dt); return; }
   if (P.mati) { updateMati(dt); perbaruiEfek(dt); kamera(dt); return; }
-  gerakPemain(dt); perbaruiEfek(dt);
+  gerakPemain(dt); updateMusuh(dt); perbaruiEfek(dt);
   P.anim += dt * (Math.abs(P.vx) > 200 ? 9 : 6); if (P.reaksiT > 0 && P.reaksi !== 'pikir') { P.reaksiT -= dt; if (P.reaksiT <= 0) P.reaksi = null; } if (P.kedip > 0) P.kedip -= dt;
   const kp = kotak(P);
   L.koin.forEach(function (c) { if (!c.ambil && Math.abs(c.x - (P.x + PW / 2)) < 30 && c.y + 17 > P.y && c.y - 17 < P.y + PH) { c.ambil = true; S.koin++; S.skor += 10; Suara.main('koin'); tampilTeks(c.x, c.y - 10, '+10', '#F5C542'); perbaruiHud(); } });
@@ -564,14 +788,14 @@ function update(dt) {
 function kamera(dt) { const t = klem(P.x - 330, 0, L.lebar - VW); S.cam += (t - S.cam) * Math.min(1, dt * 7); if (Math.abs(t - S.cam) < 0.5) S.cam = t; }
 function jatuhKeAir() { P.mati = { t: 0 }; S.nyawa--; S.streak = 0; percikAir(P.x + PW / 2); Suara.main('cebur'); perbaruiHud(); resetKunci(); }
 function updateMati(dt) {
-  const m = P.mati; m.t += dt; P.y += 200 * dt;
+  const m = P.mati; m.t += dt; if (!m.luka) P.y += 200 * dt;
   if (m.t > 1.2) {
     if (S.nyawa <= 0) { P.mati = null; tampilHasil('habis'); return; }
     P.mati = null; P.x = Math.max(60, P.aman); P.y = GY - PH; P.vx = 0; P.vy = 0; P.tanah = true; P.kedip = 1.4; S.cam = klem(P.x - 330, 0, L.lebar - VW); toast('Awas jurang! Ayo coba lagi 💪', 1800);
   }
 }
 function mulaiAkhir() {
-  resetKunci(); const lulus = S.benar >= TARGET; S.status = 'selesai'; S.akhir = { fase: 0, t: 0, lulus: lulus }; P.vx = 0; Suara.main(lulus ? 'menang' : 'salah');
+  resetKunci(); const lulus = S.benar >= targetStage(); L.musuh = []; S.status = 'selesai'; S.akhir = { fase: 0, t: 0, lulus: lulus }; P.vx = 0; Suara.main(lulus ? 'menang' : 'salah');
 }
 function updateAkhir(dt) {
   if (P.y < GY - PH || P.vy < 0) { P.vy += 2300 * dt; P.y += P.vy * dt; if (P.y >= GY - PH) { P.y = GY - PH; P.vy = 0; P.tanah = true; } }
@@ -587,20 +811,33 @@ function updateAkhir(dt) {
 }
 
 // ================= HASIL =================
+function simpanBuka(n) {
+  n = Math.min(STAGE_MAKS, n); if (n > S.bukaMaks) S.bukaMaks = n; try { localStorage.setItem('superaji_buka_' + S.uid + '_' + MAPEL, String(S.bukaMaks)); } catch (e) {}
+}
 function tampilHasil(jenis) {
-  S.status = 'akhir'; resetKunci(); S.sesi++; const lulus = jenis === 'menang'; if (lulus) S.skor += 500 + S.nyawa * 100;
-  const tot = S.benar + S.salah, akur = tot ? Math.round(S.benar / tot * 100) : 0;
-  $('spa-r-benar').textContent = S.benar; $('spa-r-salah').textContent = S.salah; $('spa-r-akurasi').textContent = akur + '%'; $('spa-r-koin').textContent = S.koin; $('spa-r-waktu').textContent = mmss(S.waktu); $('spa-r-skor').textContent = S.skor.toLocaleString('id-ID');
+  S.status = 'akhir'; S.hasilJenis = jenis; resetKunci(); S.sesi++; const lulus = jenis === 'menang', akhir = lulus && S.stage >= STAGE_MAKS;
+  if (lulus) S.skor += 500 + S.nyawa * 100;
+  S.tBenar += S.benar; S.tSalah += S.salah; S.tWaktu += S.waktu; if (lulus) simpanBuka(S.stage + 1);
+  const b = akhir ? S.tBenar : S.benar, s = akhir ? S.tSalah : S.salah, w = akhir ? S.tWaktu : S.waktu, tot = b + s, akur = tot ? Math.round(b / tot * 100) : 0;
+  $('spa-r-benar').textContent = b; $('spa-r-salah').textContent = s; $('spa-r-akurasi').textContent = akur + '%'; $('spa-r-koin').textContent = S.koin; $('spa-r-waktu').textContent = mmss(w); $('spa-r-skor').textContent = S.skor.toLocaleString('id-ID');
   let judul, pesan, pot, bintang = 0;
-  if (lulus) { bintang = akur >= 90 ? 3 : akur >= 70 ? 2 : 1; judul = '🏰 Istana Terbuka! Kamu Menang!'; pesan = 'Hebat, ' + S.nama + '! Kamu mengumpulkan ' + S.benar + ' bintang jawaban benar.'; pot = bintang === 3 ? 'menang' : 'piala'; }
-  else if (jenis === 'belum') { judul = 'Istana Masih Terkunci'; pesan = 'Kamu baru punya ' + S.benar + ' dari ' + TARGET + ' bintang. Sundul blok ❓ dan jawab dengan benar, ya!'; pot = 'sedih'; }
-  else { judul = 'Nyawa Habis'; pesan = 'Jangan menyerah, ' + S.nama + '! Coba lagi dan lompat lebih hati-hati.'; pot = 'pusing'; }
+  if (lulus) { bintang = akur >= 90 ? 3 : akur >= 70 ? 2 : 1; pot = bintang === 3 ? 'menang' : 'piala';
+    if (akhir) { judul = '🏆 JUARA SUPER PAK AJI!'; pesan = 'Luar biasa, ' + S.nama + '! Kamu menamatkan kelima stage. Akurasi total ' + akur + '%.'; }
+    else { judul = '🏰 Stage ' + S.stage + ' Selesai!'; pesan = 'Hebat, ' + S.nama + '! Stage ' + (S.stage + 1) + ' (' + NAMA_STAGE[S.stage] + ') terbuka. Soal makin ' + TIER[S.stage].toLowerCase() + '!'; } }
+  else if (jenis === 'belum') { judul = 'Istana Masih Terkunci'; pesan = 'Kamu baru punya ' + S.benar + ' dari ' + targetStage() + ' bintang. Sundul blok ❓ dan jawab dengan benar, ya!'; pot = 'sedih'; }
+  else { judul = 'Nyawa Habis'; pesan = 'Jangan menyerah, ' + S.nama + '! Injak kura-kura dari atas dan hindari burung.'; pot = 'pusing'; }
   $('spa-r-judul').textContent = judul; $('spa-r-pesan').textContent = pesan; $('spa-r-bintang').textContent = lulus ? '⭐'.repeat(bintang) + '☆'.repeat(3 - bintang) : '';
+  $('spa-b-lanjutst').hidden = !(lulus && !akhir); $('spa-b-lanjutst').textContent = 'Lanjut Stage ' + (S.stage + 1); $('spa-b-lagi').textContent = akhir ? 'Main Stage 5 Lagi' : 'Ulangi Stage ' + S.stage;
   gambarKe($('spa-pot-hasil'), pot); $('spa-hud').hidden = true; $('spa-kontrol').hidden = true; $('spa-prog').hidden = true; tampilLayar('spa-hasil', true);
 }
 
 // ================= GAMBAR (RENDER) =================
-const LANGIT = { siang: ['#5bb8ff', '#cdeeff', '#8fd16b', '#6fbf5a'], senja: ['#6a4c93', '#ffb37a', '#9a6f9f', '#7a5a8a'] };
+const LANGIT = [null,
+  { a: '#5bb8ff', b: '#cdeeff', h1: '#8fd16b', h2: '#6fbf5a', mt: [820, 90, 42, '#fff6bf'], aw: 'rgba(255,255,255,.9)', ov: null },
+  { a: '#4aa3e8', b: '#ffe9a8', h1: '#9bcf5c', h2: '#7fb54c', mt: [720, 160, 58, '#ffd36b'], aw: 'rgba(255,250,230,.9)', ov: null },
+  { a: '#6a4c93', b: '#ffb37a', h1: '#9a6f9f', h2: '#7a5a8a', mt: [700, 300, 70, '#ffe3a0'], aw: 'rgba(255,220,200,.7)', ov: 'rgba(120,40,40,.08)' },
+  { a: '#0b1030', b: '#2b3a7a', h1: '#2b5a4a', h2: '#1f4a3d', mt: [790, 100, 34, '#f4f0d0'], aw: 'rgba(130,150,210,.35)', ov: 'rgba(10,15,60,.22)', bintang: true },
+  { a: '#3a1c5c', b: '#e8667a', h1: '#5a3d78', h2: '#432d63', mt: [480, 330, 95, '#ffb3a0'], aw: 'rgba(255,190,200,.5)', ov: 'rgba(60,10,70,.16)', bintang: true }];
 function bukit(par, amp, base, warna) {
   const off = S.cam * par; ctx.fillStyle = warna; ctx.beginPath(); ctx.moveTo(0, VH);
   for (let x = 0; x <= VW + 20; x += 20) { const wx = x + off; ctx.lineTo(x, base - amp * (0.55 + 0.45 * Math.sin(wx / 170) * Math.cos(wx / 310 + 1)) - amp * 0.25 * Math.sin(wx / 71)); }
@@ -608,11 +845,12 @@ function bukit(par, amp, base, warna) {
 }
 function awan(x, y, s) { ctx.beginPath(); ctx.ellipse(x, y, 46 * s, 22 * s, 0, 0, 7); ctx.ellipse(x + 34 * s, y + 6 * s, 36 * s, 18 * s, 0, 0, 7); ctx.ellipse(x - 34 * s, y + 8 * s, 32 * s, 16 * s, 0, 0, 7); ctx.fill(); }
 function gambarLatar() {
-  const c = LANGIT[S.suasana] || LANGIT.siang; const g = ctx.createLinearGradient(0, 0, 0, VH * 0.85); g.addColorStop(0, c[0]); g.addColorStop(1, c[1]); ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH);
-  ctx.fillStyle = S.suasana === 'senja' ? '#ffe3a0' : '#fff6bf'; ctx.beginPath(); ctx.arc(S.suasana === 'senja' ? 700 : 820, S.suasana === 'senja' ? 300 : 90, S.suasana === 'senja' ? 70 : 42, 0, 7); ctx.fill();
-  ctx.fillStyle = S.suasana === 'senja' ? 'rgba(255,220,200,.7)' : 'rgba(255,255,255,.9)'; const off = S.cam * 0.12, sp = 380;
+  const c = LANGIT[klem(S.stage || 1, 1, 5)]; const g = ctx.createLinearGradient(0, 0, 0, VH * 0.85); g.addColorStop(0, c.a); g.addColorStop(1, c.b); ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH);
+  if (c.bintang) { ctx.fillStyle = '#fff'; for (let i = 0; i < 46; i++) { const sx = ((i * 211) % 997) / 997 * VW, sy = ((i * 389) % 541) / 541 * 300; ctx.globalAlpha = 0.5 + 0.5 * Math.sin(S.t * 2 + i); ctx.fillRect(sx, sy, 2, 2); } ctx.globalAlpha = 1; }
+  ctx.fillStyle = c.mt[3]; ctx.beginPath(); ctx.arc(c.mt[0], c.mt[1], c.mt[2], 0, 7); ctx.fill();
+  ctx.fillStyle = c.aw; const off = S.cam * 0.12, sp = 380;
   for (let i = -1; i < 4; i++) { const bx = Math.floor((off) / sp) + i; const x = bx * sp - off + ((bx * 97) % 120); awan(x, 70 + ((bx * 53) % 60 + 60) % 60, 0.9 + (((bx * 31) % 5) + 5) % 5 * 0.08); }
-  bukit(0.22, 120, 400, c[2]); bukit(0.4, 90, 450, c[3]);
+  bukit(0.22, 120, 400, c.h1); bukit(0.4, 90, 450, c.h2);
 }
 function gambarPipa(s) {
   const w = 88, sc = w / 128, cap = 43 * sc; const x = s.gx, y = GY - s.gh, p = SPA_POS.dunia.lorong, im = IMG.dunia; if (!im) return;
@@ -628,7 +866,7 @@ function gambarBlok(b, t) {
 function gambarPemain(t) {
   const p = P; let nama = 'diam', sk = 0.5;
   if (S.status === 'selesai') { nama = S.akhir.lulus ? (S.akhir.fase >= 1 ? ((Math.floor(p.anim * 2) % 2) ? 'lari' : 'jalan') : 'finish') : 'sedih'; }
-  else if (p.mati) nama = 'jatuh';
+  else if (p.mati) nama = p.mati.luka ? 'pusing' : 'jatuh';
   else if (p.reaksi && p.reaksiT > 0) nama = p.reaksi;
   else if (!p.tanah) nama = p.vy < 0 ? 'loncat' : 'loncat2';
   else if (Math.abs(p.vx) > 25) nama = (Math.floor(p.anim) % 2) ? 'lari' : 'jalan';
@@ -646,7 +884,7 @@ function gambarDunia(t) {
   // tanah
   const tp = SPA_POS.dunia.tanah, th = tp[3] * 0.9, tw = tp[2] * 0.9;
   L.seg.forEach(function (s) { if (s[1] < x0 || s[0] > x1) return; ctx.save(); ctx.beginPath(); ctx.rect(s[0], GY - 2, s[1] - s[0], VH); ctx.clip(); ctx.fillStyle = '#9a5a1e'; ctx.fillRect(s[0], GY + th - 6, s[1] - s[0], VH);
-    for (let x = s[0] - ((s[0]) % tw); x < s[1]; x += tw) { if (x + tw < x0 || x > x1) continue; spr('dunia', 'tanah', x, GY, tw, th); } ctx.restore(); });
+    for (let x = s[0] - ((s[0]) % tw); x < s[1]; x += tw) { if (x + tw < x0 || x > x1) continue; spr('dunia', 'tanah', x, GY, tw + 1.5, th); } ctx.restore(); });
   // gambar tambahan, pilar, pipa
   L.gbr.forEach(function (g) { spr('dunia', g.n, g.x, g.y, g.w, g.h); });
   L.solid.forEach(function (s) { if (s.x > x1 || s.x + s.w < x0) return; if (s.k === 'pilar') spr('dunia', 'pilar', s.gx, s.gy, s.gw, s.gh); else if (s.k === 'pipa') gambarPipa(s); });
@@ -659,6 +897,7 @@ function gambarDunia(t) {
   ctx.fillStyle = '#fff'; ctx.font = 'bold 22px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('★', fx + 20, fy + 31);
   // koin
   L.koin.forEach(function (c) { if (c.ambil || c.x > x1 || c.x < x0) return; const k = Math.max(0.2, Math.abs(Math.cos(t * 5 + c.x * 0.05))); const w = 28 * k; spr('dunia', 'koin', c.x - w / 2, c.y - 17 + Math.sin(t * 3 + c.x) * 2, w, 34); });
+  L.musuh.forEach(function (e) { if (e.x > x1 || e.x < x0 - 60) return; if (e.t === 'kura') gambarKura(e); else if (e.state !== 'tunggu') gambarBurung(e); });
   gambarPemain(t);
   // bonus terbang
   efek.bonus.forEach(function (e) { const n = e.tipe === 'koin' ? 'koin' : e.tipe, s = n === 'jamur' ? [46, 42] : n === 'bintang' ? [52, 47] : [30, 36]; spr('dunia', n, e.x - s[0] / 2, e.y - s[1] / 2, s[0], s[1]); });
@@ -669,24 +908,40 @@ function gambarDunia(t) {
   efek.partikel.forEach(function (e) { ctx.fillStyle = e.w; ctx.globalAlpha = 1 - e.t / 0.8; ctx.beginPath(); ctx.arc(e.x, e.y, 4, 0, 7); ctx.fill(); }); ctx.globalAlpha = 1;
   ctx.font = 'bold 20px Trebuchet MS, sans-serif'; ctx.textAlign = 'center';
   efek.teks.forEach(function (e) { ctx.globalAlpha = Math.max(0, 1 - e.t / 1.1); ctx.lineWidth = 4; ctx.strokeStyle = '#0B2A4A'; ctx.strokeText(e.txt, e.x, e.y); ctx.fillStyle = e.w; ctx.fillText(e.txt, e.x, e.y); }); ctx.globalAlpha = 1;
-  ctx.restore();
+  ctx.restore(); gambarPeringatan();
 }
 function gambar() {
   if (!ctx) return; ctx.setTransform(skalaK, 0, 0, skalaK, 0, 0); ctx.imageSmoothingEnabled = true;
   if (!L) { S.cam = 0; gambarLatar(); return; }
   gambarLatar(); gambarDunia(S.t);
+  const ov = LANGIT[klem(S.stage || 1, 1, 5)].ov; if (ov) { ctx.fillStyle = ov; ctx.fillRect(0, 0, VW, VH); }
 }
 
 // ================= ALUR GAME =================
-function mulaiGame() {
-  Suara.init(); Suara.baca(); S.sesi++; L = bangunLevel(); P = buatPemain();
-  S.nyawa = NYAWA_AWAL; S.koin = 0; S.benar = 0; S.salah = 0; S.skor = 0; S.waktu = 0; S.streak = 0; S.boost = 0; S.cam = 0; S.blokDibuka = 0; S.akhir = null; S.antrean = []; S.terakhirIdx = -1; S.terakhirTeks = '';
+function mulaiGame(n) { mulaiStage(n || S.stagePilih || 1, true); }
+function mulaiStage(n, reset) {
+  Suara.init(); Suara.baca(); S.sesi++; S.stage = klem(n | 0 || 1, 1, STAGE_MAKS); L = bangunLevel(S.stage); P = buatPemain();
+  if (reset) { S.nyawa = NYAWA_AWAL; S.skor = 0; S.koin = 0; S.tBenar = 0; S.tSalah = 0; S.tWaktu = 0; }
+  S.snap = { nyawa: S.nyawa, skor: S.skor, koin: S.koin, tB: S.tBenar, tS: S.tSalah, tW: S.tWaktu };
+  S.benar = 0; S.salah = 0; S.waktu = 0; S.streak = 0; S.boost = 0; S.cam = 0; S.blokDibuka = 0; S.akhir = null; siapkanPoolStage();
   efek.teks = []; efek.bonus = []; efek.partikel = []; resetKunci();
   tampilLayar('spa-setup', false); tampilLayar('spa-hasil', false); tampilLayar('spa-jeda', false); tampilLayar('spa-modal', false);
   $('spa-hud').hidden = false; $('spa-prog').hidden = false; $('spa-kontrol').hidden = !('ontouchstart' in window || navigator.maxTouchPoints > 0); $('spa-prog-i').style.width = '0%'; perbaruiHud();
   S.status = 'hitung'; S.hitungT = 3.0; $('spa-hitung-w').hidden = false; $('spa-hitung').textContent = '3'; S.hitungAngka = 3; Suara.main('hitung');
+  setTimeout(function () { if (S.status === 'main' || S.status === 'hitung') toast('Stage ' + S.stage + ' · ' + NAMA_STAGE[S.stage - 1] + ' · Soal ' + TIER[S.stage - 1], 2600); }, 100);
 }
-function keSetup() { S.sesi++; S.status = 'setup'; L = null; P = null; tampilLayar('spa-hasil', false); tampilLayar('spa-jeda', false); tampilLayar('spa-modal', false); $('spa-hitung-w').hidden = true; $('spa-hud').hidden = true; $('spa-kontrol').hidden = true; $('spa-prog').hidden = true; tampilLayar('spa-setup', true); }
+function ulangiStage() {
+  const sn = S.snap || { nyawa: NYAWA_AWAL, skor: 0, koin: 0, tB: 0, tS: 0, tW: 0 }, habis = S.hasilJenis === 'habis';
+  S.skor = sn.skor; S.koin = sn.koin; S.tBenar = sn.tB; S.tSalah = sn.tS; S.tWaktu = sn.tW; S.nyawa = habis ? NYAWA_AWAL : sn.nyawa; mulaiStage(S.stage, false);
+}
+function lanjutStage() { S.nyawa = Math.min(NYAWA_MAX, S.nyawa + 1); mulaiStage(S.stage + 1, false); }
+function bangunPilihStage() {
+  const w = $('spa-stage-pilih'); w.innerHTML = '';
+  for (let i = 1; i <= STAGE_MAKS; i++) { const b = document.createElement('button'), kunci = i > S.bukaMaks; b.className = 'spa-stg' + (kunci ? ' kunci' : '') + (i === S.stagePilih ? ' on' : ''); b.dataset.s = i;
+    b.textContent = kunci ? '🔒' : String(i); w.appendChild(b); }
+  const n = S.stagePilih; $('spa-stage-info').textContent = 'Stage ' + n + ' · ' + NAMA_STAGE[n - 1] + ' · Soal ' + TIER[n - 1] + ' · butuh ' + TARGET_STAGE[n - 1] + ' benar';
+}
+function keSetup() { S.sesi++; S.status = 'setup'; L = null; P = null; S.stage = S.stagePilih; bangunPilihStage(); tampilLayar('spa-hasil', false); tampilLayar('spa-jeda', false); tampilLayar('spa-modal', false); $('spa-hitung-w').hidden = true; $('spa-hud').hidden = true; $('spa-kontrol').hidden = true; $('spa-prog').hidden = true; tampilLayar('spa-setup', true); }
 function keMapel() { window.location.href = 'mapel.html?mapel=' + encodeURIComponent(MAPEL); }
 function aturJeda(j) {
   if (j) { if (S.status !== 'main') return; S.status = 'jeda'; resetKunci(); tampilLayar('spa-jeda', true); }
@@ -737,22 +992,21 @@ function pasangInput() {
   const pad = $('spa-pad-angka'); ['7', '8', '9', '4', '5', '6', '1', '2', '3', '-', '0', 'D'].forEach(function (k) { const b = document.createElement('button'); b.dataset.k = k; b.textContent = k === 'D' ? '⌫' : k; pad.appendChild(b); });
   const ok = document.createElement('button'); ok.className = 'ok'; ok.dataset.k = 'OK'; ok.textContent = 'JAWAB ✔'; pad.appendChild(ok);
   pad.addEventListener('pointerdown', function (e) { const b = e.target.closest('[data-k]'); if (!b) return; e.preventDefault(); ketikAngka(b.dataset.k); });
-  $('spa-b-mulai').onclick = function () { if (S.siap) mulaiGame(); };
+  $('spa-b-mulai').onclick = function () { if (S.siap) mulaiGame(S.stagePilih); };
   $('spa-b-kembali').onclick = keMapel; $('spa-b-selesai').onclick = keMapel; $('spa-b-menyerah').onclick = keMapel;
-  $('spa-b-lagi').onclick = function () { mulaiGame(); }; $('spa-b-ubah').onclick = keSetup;
+  $('spa-b-lagi').onclick = ulangiStage; $('spa-b-ubah').onclick = keSetup;
   $('spa-b-jeda').onclick = function () { aturJeda(true); }; $('spa-b-lanjut').onclick = function () { aturJeda(false); };
   $('spa-b-penuh').onclick = layarPenuh;
   $('spa-b-suara').onclick = function () { Suara.init(); const h = !(Suara.efek || Suara.musik); Suara.setAktif(h); $('spa-b-suara').textContent = h ? '🔊' : '🔇'; if (h) Suara.main('klik'); };
-  const pilihSuasana = function (s) { S.suasana = s; $('spa-s-siang').classList.toggle('on', s === 'siang'); $('spa-s-senja').classList.toggle('on', s === 'senja'); try { localStorage.setItem('superaji_suasana', s); } catch (e) {} };
-  $('spa-s-siang').onclick = function () { pilihSuasana('siang'); }; $('spa-s-senja').onclick = function () { pilihSuasana('senja'); };
-  try { const s = localStorage.getItem('superaji_suasana'); if (s === 'senja') pilihSuasana('senja'); } catch (e) {}
+  $('spa-stage-pilih').addEventListener('pointerdown', function (e) { const b = e.target.closest('[data-s]'); if (!b) return; const n = parseInt(b.dataset.s, 10); if (n > S.bukaMaks) { toast('Selesaikan stage sebelumnya dulu 🔒', 1800); return; } S.stagePilih = n; S.stage = n; bangunPilihStage(); Suara.init(); Suara.main('klik'); });
+  $('spa-b-lanjutst').onclick = lanjutStage;
 }
 
 // ================= INISIALISASI =================
 function pesanSetup(t) { $('spa-pesan-setup').textContent = t || ''; }
 async function init() {
   kanvas = $('spa-kanvas'); ctx = kanvas.getContext('2d'); Suara.baca(); pasangInput(); ukurPanggung(); requestAnimationFrame(loop);
-  $('spa-i-mapel').textContent = NAMA_MAPEL[MAPEL]; $('spa-i-target').textContent = TARGET; $('spa-b-suara').textContent = (Suara.efek || Suara.musik) ? '🔊' : '🔇';
+  $('spa-i-mapel').textContent = NAMA_MAPEL[MAPEL]; $('spa-b-suara').textContent = (Suara.efek || Suara.musik) ? '🔊' : '🔇';
   const gm = await Promise.all([muatGambar('pak', 'pak-aji.webp'), muatGambar('dunia', 'dunia.webp')]);
   if (!gm[0] || !gm[1]) { pesanSetup('Gambar game gagal dimuat. Periksa koneksi lalu muat ulang halaman.'); $('spa-b-mulai').textContent = 'Muat Ulang'; $('spa-b-mulai').disabled = false; $('spa-b-mulai').onclick = function () { location.reload(); }; return; }
   gambarKe($('spa-pot-setup'), 'finish');
@@ -765,12 +1019,12 @@ async function init() {
   const kp = parseInt(PARAM.get('kelas'), 10), ts = prof.kelas && prof.kelas.tingkat ? parseInt(prof.kelas.tingkat, 10) : 0;
   S.kelas = S.admin ? (kp >= 1 && kp <= 6 ? kp : (ts || 3)) : ts;
   if (!S.kelas) { pesanSetup('Kelasmu belum diatur. Hubungi admin.'); $('spa-b-mulai').textContent = 'Mulai'; return; }
-  S.nama = bersihNama(prof.nama) || 'Siswa'; $('spa-i-kelas').textContent = 'Kelas ' + S.kelas; $('spa-i-nama').textContent = S.nama;
+  S.uid = uid; S.nama = bersihNama(prof.nama) || 'Siswa'; try { S.bukaMaks = S.admin ? STAGE_MAKS : klem(parseInt(localStorage.getItem('superaji_buka_' + uid + '_' + MAPEL), 10) || 1, 1, STAGE_MAKS); } catch (e) { S.bukaMaks = S.admin ? STAGE_MAKS : 1; } S.stagePilih = S.admin ? 1 : S.bukaMaks; S.stage = S.stagePilih; bangunPilihStage(); $('spa-i-kelas').textContent = 'Kelas ' + S.kelas; $('spa-i-nama').textContent = S.nama;
   const ada = await muatPool();
   if (!ada) { pesanSetup('Belum ada cukup soal ' + NAMA_MAPEL[MAPEL] + ' untuk Kelas ' + S.kelas + '. Minta admin menambah soal.'); $('spa-b-mulai').textContent = 'Mulai'; return; }
   S.siap = true; $('spa-b-mulai').disabled = false; $('spa-b-mulai').textContent = 'MULAI MAIN';
 }
-window.__spa = { S: S, K: K, efek: efek, get L() { return L; }, get P() { return P; }, bukaSoal: bukaSoal, jawab: jawab, pilihOpsi: pilihOpsi, ketikAngka: ketikAngka, update: update, mulaiGame: mulaiGame, tampilHasil: tampilHasil, ambilSoal: ambilSoal, buatSoalAngka: buatSoalAngka, TARGET: TARGET };
+window.__spa = { S: S, K: K, efek: efek, get L() { return L; }, get P() { return P; }, bukaSoal: bukaSoal, jawab: jawab, pilihOpsi: pilihOpsi, ketikAngka: ketikAngka, update: update, mulaiGame: mulaiGame, tampilHasil: tampilHasil, ambilSoal: ambilSoal, buatSoalAngka: buatSoalAngka, targetStage: targetStage, mulaiStage: mulaiStage, ulangiStage: ulangiStage, lanjutStage: lanjutStage, bangunLevel: bangunLevel, rakit: rakit, buatSoalAngka: buatSoalAngka, siapkanPoolStage: siapkanPoolStage };
 init();
 </script>
 <script>mulaiAplikasi();</script>
