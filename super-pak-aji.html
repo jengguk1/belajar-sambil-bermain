@@ -635,16 +635,169 @@ function skorKesulitan(x, kategori) {
   const pj = x.o.reduce(function (a, z) { return a + z.length; }, 0) / 4; let d = x.q.length + pj * 0.6 + cue * 25;
   if (/hots|sulit|c4|c5|c6|analisis/i.test(kategori || '')) d += 500; if (/mudah|c1|c2/i.test(kategori || '')) d -= 200; return d;
 }
+
+// ================= SOAL CADANGAN (dipakai hanya bila tabel soal kurang dari 10) =================
+// format: [pertanyaan, jawaban benar, salah1, salah2, salah3]  (urutan pilihan diacak saat ditampilkan)
+const CADANGAN = {
+  bahasa_indonesia: [
+    [ // kelas 1-2
+      ['Huruf vokal adalah ...', 'a, i, u, e, o', 'b, c, d, f, g', 'k, l, m, n, p', 'r, s, t, w, y'],
+      ['Lawan kata (antonim) dari "besar" adalah ...', 'kecil', 'tinggi', 'panjang', 'berat'],
+      ['Ibu memasak nasi di ...', 'dapur', 'kamar tidur', 'halaman', 'sekolah'],
+      ['Hewan berkaki empat yang suaranya mengeong adalah ...', 'kucing', 'ayam', 'ikan', 'burung'],
+      ['Kalimat yang ditulis dengan benar adalah ...', 'Adik membaca buku.', 'adik membaca buku.', 'Adik membaca buku', 'adik membaca buku'],
+      ['Nama hari setelah hari Senin adalah ...', 'Selasa', 'Rabu', 'Minggu', 'Sabtu'],
+      ['Persamaan kata (sinonim) dari "cantik" adalah ...', 'indah', 'jelek', 'kotor', 'marah'],
+      ['Pembagian suku kata yang benar untuk kata "sekolah" adalah ...', 'se-ko-lah', 'sek-o-lah', 's-e-kolah', 'seko-lah'],
+      ['Jumlah huruf pada kata "baju" adalah ...', '4', '3', '5', '2'],
+      ['Kata yang menunjukkan perbuatan adalah ...', 'berlari', 'meja', 'merah', 'tinggi'],
+      ['Lawan kata "siang" adalah ...', 'malam', 'pagi', 'panas', 'terang'],
+      ['Huruf pertama pada kata "ayam" adalah huruf ...', 'a', 'y', 'm', 'i'],
+      ['Kalimat tanya diakhiri tanda ...', 'tanya (?)', 'titik (.)', 'seru (!)', 'koma (,)'],
+      ['Ibu pergi ke pasar untuk membeli sayur. Apa yang dibeli ibu?', 'sayur', 'baju', 'buku', 'sepatu']],
+    [ // kelas 3-4
+      ['Kata baku dari "apotik" adalah ...', 'apotek', 'apotik', 'afotek', 'apoteik'],
+      ['Antonim kata "rajin" adalah ...', 'malas', 'pintar', 'kuat', 'cepat'],
+      ['Kalimat yang memakai tanda baca dengan tepat adalah ...', 'Ayah membeli roti, susu, dan telur.', 'Ayah membeli roti susu dan telur', 'ayah, membeli roti susu dan telur.', 'Ayah membeli, roti susu dan telur'],
+      ['Gagasan utama paragraf biasanya terdapat pada ...', 'kalimat utama', 'kalimat penjelas saja', 'nomor halaman', 'tanda baca'],
+      ['Kata dasar dari "membaca" adalah ...', 'baca', 'membac', 'mem', 'bacaan'],
+      ['Sinonim kata "pandai" adalah ...', 'pintar', 'bodoh', 'malas', 'lambat'],
+      ['Kata kerja dalam kalimat "Ibu menyapu halaman." adalah ...', 'menyapu', 'Ibu', 'halaman', 'yang'],
+      ['Surat yang ditulis untuk teman atau keluarga disebut surat ...', 'pribadi', 'dinas', 'undangan resmi', 'pengumuman'],
+      ['Cerita tentang binatang yang berperilaku seperti manusia, misalnya Si Kancil, disebut ...', 'fabel', 'legenda', 'biografi', 'berita'],
+      ['Satu bait pantun terdiri atas ... baris.', '4', '2', '3', '6'],
+      ['Kalimat "Tolong tutup pintu itu!" termasuk kalimat ...', 'perintah', 'tanya', 'berita', 'harapan'],
+      ['Huruf kapital digunakan pada awal penulisan ...', 'nama orang', 'nama buah pada umumnya', 'kata kerja', 'kata sifat'],
+      ['Kata "licin" termasuk kata ...', 'sifat', 'benda', 'kerja', 'bilangan'],
+      ['Teks yang menceritakan kejadian nyata dan terbaru disebut ...', 'berita', 'dongeng', 'puisi', 'fabel']],
+    [ // kelas 5-6
+      ['Kata baku di bawah ini adalah ...', 'analisis', 'analisa', 'analises', 'anelisis'],
+      ['Kalimat efektif adalah kalimat yang ...', 'jelas, singkat, dan mudah dipahami', 'panjang dan berbelit-belit', 'banyak pengulangan kata', 'tidak memiliki subjek'],
+      ['Kata tanya "mengapa" digunakan untuk menanyakan ...', 'sebab', 'waktu', 'tempat', 'jumlah'],
+      ['Paragraf yang kalimat utamanya berada di awal paragraf disebut paragraf ...', 'deduktif', 'induktif', 'campuran', 'naratif'],
+      ['Gaya bahasa "wajahnya bagai bulan purnama" termasuk majas ...', 'perumpamaan', 'hiperbola', 'ironi', 'personifikasi'],
+      ['"Angin berbisik di telinga malam." termasuk majas ...', 'personifikasi', 'hiperbola', 'perumpamaan', 'ironi'],
+      ['Orang yang optimis adalah orang yang ...', 'selalu berpengharapan baik', 'mudah putus asa', 'sombong', 'penakut'],
+      ['Unsur cerita yang menjelaskan waktu dan tempat kejadian disebut ...', 'latar', 'tokoh', 'alur', 'amanat'],
+      ['Pesan yang ingin disampaikan pengarang kepada pembaca disebut ...', 'amanat', 'latar', 'tokoh', 'judul'],
+      ['Penulisan kata berimbuhan yang benar adalah ...', 'dipukul', 'di pukul', 'dipukul-', 'di-pukul'],
+      ['Tanda koma digunakan untuk memisahkan ...', 'unsur-unsur dalam perincian', 'akhir kalimat tanya', 'akhir kalimat seru', 'judul buku'],
+      ['Antonim kata "hemat" adalah ...', 'boros', 'irit', 'cermat', 'rajin'],
+      ['Teks yang bertujuan membujuk pembaca agar melakukan sesuatu disebut teks ...', 'persuasi', 'narasi', 'deskripsi', 'prosedur'],
+      ['Teks yang berisi langkah-langkah membuat sesuatu disebut teks ...', 'prosedur', 'eksposisi', 'narasi', 'puisi']]
+  ],
+  ipas: [
+    [
+      ['Alat indra untuk melihat adalah ...', 'mata', 'telinga', 'hidung', 'lidah'],
+      ['Tumbuhan membutuhkan ... agar dapat tumbuh.', 'air dan cahaya matahari', 'plastik', 'batu', 'minyak'],
+      ['Benda yang berwujud cair adalah ...', 'air', 'batu', 'kayu', 'besi'],
+      ['Hewan yang berkembang biak dengan bertelur adalah ...', 'ayam', 'kucing', 'sapi', 'kambing'],
+      ['Matahari terbit dari arah ...', 'timur', 'barat', 'utara', 'selatan'],
+      ['Bagian tumbuhan yang menyerap air dari tanah adalah ...', 'akar', 'daun', 'bunga', 'buah'],
+      ['Alat indra untuk mencium bau adalah ...', 'hidung', 'mata', 'kulit', 'telinga'],
+      ['Kita menggosok gigi agar gigi ...', 'bersih dan sehat', 'menguning', 'berlubang', 'patah'],
+      ['Hewan yang hidup di air adalah ...', 'ikan', 'kucing', 'ayam', 'sapi'],
+      ['Es batu mencair karena ...', 'terkena panas', 'dimasukkan ke kulkas', 'ditaruh di freezer', 'dibiarkan beku'],
+      ['Sumber cahaya terbesar di siang hari adalah ...', 'matahari', 'bulan', 'bintang', 'lilin'],
+      ['Hewan pemakan tumbuhan disebut ...', 'herbivora', 'karnivora', 'omnivora', 'predator'],
+      ['Kulit berfungsi sebagai alat indra ...', 'peraba', 'penglihatan', 'pendengaran', 'pengecap'],
+      ['Sisa makanan dan daun kering termasuk sampah ...', 'organik', 'anorganik', 'kaca', 'logam']],
+    [
+      ['Proses tumbuhan membuat makanan dengan bantuan cahaya matahari disebut ...', 'fotosintesis', 'respirasi', 'evaporasi', 'kondensasi'],
+      ['Perubahan wujud dari cair menjadi gas disebut ...', 'menguap', 'membeku', 'mencair', 'mengembun'],
+      ['Sumber energi terbesar di bumi adalah ...', 'matahari', 'bulan', 'angin', 'air sungai'],
+      ['Rantai makanan yang benar adalah ...', 'rumput → belalang → katak → ular', 'ular → katak → belalang → rumput', 'belalang → rumput → katak → ular', 'katak → rumput → ular → belalang'],
+      ['Gerhana matahari terjadi ketika ... berada di antara matahari dan bumi.', 'bulan', 'bintang', 'planet Mars', 'awan'],
+      ['Daur hidup kupu-kupu yang benar adalah ...', 'telur → ulat → kepompong → kupu-kupu', 'telur → kupu-kupu → ulat → kepompong', 'ulat → telur → kepompong → kupu-kupu', 'kepompong → telur → ulat → kupu-kupu'],
+      ['Magnet dapat menarik benda yang terbuat dari ...', 'besi', 'plastik', 'kayu', 'kaca'],
+      ['Planet yang paling dekat dengan matahari adalah ...', 'Merkurius', 'Venus', 'Mars', 'Jupiter'],
+      ['Organ yang memompa darah ke seluruh tubuh adalah ...', 'jantung', 'paru-paru', 'lambung', 'ginjal'],
+      ['Contoh perubahan wujud yang membutuhkan panas adalah ...', 'es mencair', 'air membeku', 'embun terbentuk', 'uap mengembun'],
+      ['Bunyi dapat merambat melalui ...', 'udara, air, dan benda padat', 'ruang hampa saja', 'cahaya saja', 'air saja'],
+      ['Hewan pemakan tumbuhan dan hewan disebut ...', 'omnivora', 'herbivora', 'karnivora', 'dekomposer'],
+      ['Energi yang dimiliki benda yang sedang bergerak disebut energi ...', 'gerak', 'panas', 'bunyi', 'cahaya'],
+      ['Bagian bunga yang akan menjadi buah adalah ...', 'bakal buah', 'mahkota', 'kelopak', 'tangkai']],
+    [
+      ['Lapisan bumi paling luar yang kita tempati disebut ...', 'kerak bumi', 'mantel', 'inti luar', 'inti dalam'],
+      ['Gaya yang menarik benda ke pusat bumi disebut gaya ...', 'gravitasi', 'gesek', 'magnet', 'otot'],
+      ['Sel darah yang mengangkut oksigen adalah sel darah ...', 'merah', 'putih', 'keping', 'plasma'],
+      ['Organ yang menukar oksigen dan karbon dioksida pada pernapasan adalah ...', 'paru-paru', 'jantung', 'usus', 'hati'],
+      ['Perpindahan panas melalui benda padat tanpa perpindahan zatnya disebut ...', 'konduksi', 'konveksi', 'radiasi', 'evaporasi'],
+      ['Sumber energi yang tidak dapat diperbarui adalah ...', 'minyak bumi', 'angin', 'air', 'matahari'],
+      ['Rotasi bumi menyebabkan terjadinya ...', 'pergantian siang dan malam', 'pergantian musim', 'gerhana bulan', 'gempa bumi'],
+      ['Penyakit akibat kekurangan vitamin C adalah ...', 'skorbut', 'rabun senja', 'beri-beri', 'rakitis'],
+      ['Contoh adaptasi tingkah laku pada hewan adalah ...', 'burung yang bermigrasi', 'paruh yang runcing', 'kulit yang tebal', 'bulu yang tebal'],
+      ['Jika rangkaian listrik terbuka, lampu akan ...', 'tidak menyala', 'menyala terang', 'menyala redup', 'meledak'],
+      ['Pembusukan sampah organik dilakukan oleh ...', 'pengurai (dekomposer)', 'produsen', 'konsumen tingkat I', 'konsumen tingkat II'],
+      ['Pasang surut air laut terutama dipengaruhi oleh gaya tarik ...', 'bulan', 'Mars', 'bintang', 'awan'],
+      ['Hubungan lebah dan bunga yang saling menguntungkan disebut ...', 'simbiosis mutualisme', 'parasitisme', 'komensalisme', 'predasi'],
+      ['Alat untuk mengukur suhu adalah ...', 'termometer', 'barometer', 'higrometer', 'anemometer']]
+  ],
+  pendidikan_pancasila: [
+    [
+      ['Sila pertama Pancasila berbunyi ...', 'Ketuhanan Yang Maha Esa', 'Kemanusiaan yang adil dan beradab', 'Persatuan Indonesia', 'Keadilan sosial bagi seluruh rakyat Indonesia'],
+      ['Lambang sila ketiga Pancasila adalah ...', 'pohon beringin', 'bintang', 'rantai', 'kepala banteng'],
+      ['Lambang negara Indonesia adalah ...', 'Garuda Pancasila', 'burung merpati', 'harimau', 'gajah'],
+      ['Warna bendera Indonesia adalah ...', 'merah di atas dan putih di bawah', 'putih di atas dan merah di bawah', 'biru dan kuning', 'hijau dan putih'],
+      ['Sikap yang baik saat upacara bendera adalah ...', 'tertib dan hormat', 'bercanda', 'berlari-lari', 'bermain'],
+      ['Kita harus saling membantu teman yang sedang ...', 'kesulitan', 'bermain', 'tertawa', 'pergi'],
+      ['Hari kemerdekaan Indonesia diperingati setiap tanggal ...', '17 Agustus', '17 Januari', '1 Juni', '28 Oktober'],
+      ['Menaati aturan di rumah dan sekolah disebut sikap ...', 'patuh', 'malas', 'marah', 'sombong'],
+      ['Lagu kebangsaan Indonesia adalah ...', 'Indonesia Raya', 'Garuda Pancasila', 'Halo-Halo Bandung', 'Rayuan Pulau Kelapa'],
+      ['Berdoa sebelum belajar sesuai agama masing-masing adalah pengamalan sila ke-...', '1', '2', '3', '4'],
+      ['Pancasila memiliki ... sila.', '5', '3', '4', '7'],
+      ['Kepada bapak dan ibu guru kita harus ...', 'hormat', 'mengabaikan', 'mengejek', 'menghindar'],
+      ['Membuang sampah pada tempatnya merupakan sikap ...', 'cinta lingkungan', 'malas', 'boros', 'sombong'],
+      ['Tanggal 1 Juni diperingati sebagai hari lahir ...', 'Pancasila', 'Kemerdekaan', 'Sumpah Pemuda', 'Pahlawan']],
+    [
+      ['Lambang sila kedua Pancasila adalah ...', 'rantai', 'bintang', 'pohon beringin', 'kepala banteng'],
+      ['Semboyan negara Indonesia adalah ...', 'Bhinneka Tunggal Ika', 'Tut Wuri Handayani', 'Merdeka atau Mati', 'Indonesia Raya'],
+      ['Arti Bhinneka Tunggal Ika adalah ...', 'berbeda-beda tetapi tetap satu', 'satu untuk semua', 'bersatu kita teguh', 'gotong royong'],
+      ['Musyawarah dilakukan untuk mencapai ...', 'mufakat', 'kemenangan sendiri', 'pertengkaran', 'hadiah'],
+      ['Mengerjakan piket kelas sesuai jadwal termasuk menjalankan ...', 'kewajiban', 'hak', 'hadiah', 'hukuman'],
+      ['Menghargai pendapat teman saat diskusi sesuai dengan sila ke-...', '4', '1', '2', '5'],
+      ['Membantu korban bencana sesuai dengan sila ke-...', '2', '1', '3', '4'],
+      ['Tokoh yang memproklamasikan kemerdekaan Indonesia bersama Moh. Hatta adalah ...', 'Ir. Soekarno', 'Ki Hajar Dewantara', 'Pangeran Diponegoro', 'Cut Nyak Dien'],
+      ['Hari Sumpah Pemuda diperingati setiap tanggal ...', '28 Oktober', '10 November', '2 Mei', '21 April'],
+      ['Hari Pahlawan diperingati setiap tanggal ...', '10 November', '28 Oktober', '17 Agustus', '1 Juni'],
+      ['Warna merah pada bendera Indonesia melambangkan ...', 'keberanian', 'kesucian', 'kedamaian', 'kesuburan'],
+      ['Pemilihan ketua kelas yang adil dilakukan secara ...', 'demokratis', 'paksaan', 'curang', 'diam-diam'],
+      ['Lambang sila keempat Pancasila adalah ...', 'kepala banteng', 'rantai', 'bintang', 'padi dan kapas'],
+      ['Lambang sila kelima Pancasila adalah ...', 'padi dan kapas', 'rantai', 'bintang', 'pohon beringin']],
+    [
+      ['Pancasila ditetapkan sebagai dasar negara pada tanggal ...', '18 Agustus 1945', '1 Juni 1945', '17 Agustus 1945', '28 Oktober 1928'],
+      ['Pembukaan UUD 1945 terdiri atas ... alinea.', '4', '3', '5', '2'],
+      ['Lembaga yang membuat undang-undang bersama Presiden adalah ...', 'DPR', 'Mahkamah Agung', 'BPK', 'KPK'],
+      ['Membayar pajak bagi warga negara bertujuan untuk ...', 'membiayai pembangunan negara', 'hadiah pribadi', 'hiburan', 'tidak ada manfaatnya'],
+      ['Prinsip gotong royong tampak pada kegiatan ...', 'kerja bakti', 'bermain sendiri', 'bertengkar', 'menyendiri'],
+      ['Perbedaan suku, agama, dan budaya di Indonesia sebaiknya kita ...', 'hormati dan jaga persatuan', 'jadikan alasan bermusuhan', 'hindari', 'ejek'],
+      ['Norma yang bersumber dari ajaran agama disebut norma ...', 'agama', 'hukum', 'kesusilaan', 'kesopanan'],
+      ['Aturan tertulis yang sanksinya tegas dari negara disebut norma ...', 'hukum', 'agama', 'kesopanan', 'kebiasaan'],
+      ['Contoh sikap cinta tanah air adalah ...', 'memakai produk dalam negeri', 'merusak fasilitas umum', 'membuang sampah sembarangan', 'meremehkan bangsa sendiri'],
+      ['Jika terjadi perbedaan pendapat dalam musyawarah, sikap yang benar adalah ...', 'mencari kesepakatan bersama', 'memaksakan kehendak', 'meninggalkan rapat', 'mengejek teman'],
+      ['Kerja sama negara-negara ASEAN bertujuan antara lain untuk ...', 'menjaga perdamaian dan memajukan kawasan', 'menguasai negara lain', 'memutus hubungan dagang', 'saling berperang'],
+      ['Hak asasi manusia dimiliki setiap manusia sejak ...', 'lahir', 'dewasa', 'bekerja', 'sekolah'],
+      ['Lambang bintang terdapat pada sila ke-...', '1', '2', '3', '4'],
+      ['Pengamalan sila ke-5 yang tepat adalah ...', 'bersikap adil kepada semua teman', 'memilih-milih teman', 'mengutamakan diri sendiri', 'berbuat curang']]
+  ]
+};
+function cadanganSoal(mapel, kelas) {
+  const grup = CADANGAN[mapel]; if (!grup) return []; const g = grup[kelas <= 2 ? 0 : kelas <= 4 ? 1 : 2] || [];
+  return g.map(function (r) { return { q: r[0], o: [r[1], r[2], r[3], r[4]], k: 0, kat: '' }; });
+}
+
 async function muatPool() {
   if (JENIS !== 'pilihan') return true;
   const kolom = 'pertanyaan, pilihan_a, pilihan_b, pilihan_c, pilihan_d, jawaban_benar';
   let r = await sb.from('soal').select(kolom + ', kategori').eq('mapel', MAPEL).eq('tingkat', S.kelas).limit(300);
   if (r.error) r = await sb.from('soal').select(kolom).eq('mapel', MAPEL).eq('tingkat', S.kelas).limit(300);
-  if (r.error || !Array.isArray(r.data)) return false;
+  if (r.error || !Array.isArray(r.data)) r = { data: [] };
   S.pool = r.data.map(function (x) { return { q: String(x.pertanyaan || ''), o: [x.pilihan_a, x.pilihan_b, x.pilihan_c, x.pilihan_d].map(function (z) { return String(z == null ? '' : z); }), k: 'ABCD'.indexOf(String(x.jawaban_benar || '').trim().toUpperCase()), kat: x.kategori }; })
     .filter(function (x) { return x.q && x.k >= 0 && x.o.every(function (z) { return z.trim() !== ''; }); });
+  S.nTabel = S.pool.length; S.cadangan = false;
+  if (S.pool.length < 10) { const ada = {}; S.pool.forEach(function (x) { ada[x.q] = 1; }); cadanganSoal(MAPEL, S.kelas).forEach(function (x) { if (!ada[x.q]) S.pool.push(x); }); S.cadangan = S.pool.length > S.nTabel; }
   S.pool.forEach(function (x) { x.d = skorKesulitan(x, x.kat); });
-  return S.pool.length >= 4;
+  return S.pool.length >= 1;
 }
 function siapkanPoolStage() {
   S.antrean = []; S.terakhirIdx = -1; S.terakhirTeks = ''; if (JENIS !== 'pilihan') { S.poolStage = []; return; }
@@ -1003,7 +1156,7 @@ function pasangInput() {
 }
 
 // ================= INISIALISASI =================
-function pesanSetup(t) { $('spa-pesan-setup').textContent = t || ''; }
+function pesanSetup(t, info) { const e = $('spa-pesan-setup'); e.textContent = t || ''; e.style.color = info ? '#7A5A12' : ''; }
 async function init() {
   kanvas = $('spa-kanvas'); ctx = kanvas.getContext('2d'); Suara.baca(); pasangInput(); ukurPanggung(); requestAnimationFrame(loop);
   $('spa-i-mapel').textContent = NAMA_MAPEL[MAPEL]; $('spa-b-suara').textContent = (Suara.efek || Suara.musik) ? '🔊' : '🔇';
@@ -1022,6 +1175,7 @@ async function init() {
   S.uid = uid; S.nama = bersihNama(prof.nama) || 'Siswa'; try { S.bukaMaks = S.admin ? STAGE_MAKS : klem(parseInt(localStorage.getItem('superaji_buka_' + uid + '_' + MAPEL), 10) || 1, 1, STAGE_MAKS); } catch (e) { S.bukaMaks = S.admin ? STAGE_MAKS : 1; } S.stagePilih = S.admin ? 1 : S.bukaMaks; S.stage = S.stagePilih; bangunPilihStage(); $('spa-i-kelas').textContent = 'Kelas ' + S.kelas; $('spa-i-nama').textContent = S.nama;
   const ada = await muatPool();
   if (!ada) { pesanSetup('Belum ada cukup soal ' + NAMA_MAPEL[MAPEL] + ' untuk Kelas ' + S.kelas + '. Minta admin menambah soal.'); $('spa-b-mulai').textContent = 'Mulai'; return; }
+  if (S.admin && S.cadangan) pesanSetup('Info admin: soal ' + NAMA_MAPEL[MAPEL] + ' Kelas ' + S.kelas + ' di tabel baru ' + S.nTabel + ', jadi game memakai soal cadangan. Tambahkan soal agar lebih beragam.', true);
   S.siap = true; $('spa-b-mulai').disabled = false; $('spa-b-mulai').textContent = 'MULAI MAIN';
 }
 window.__spa = { S: S, K: K, efek: efek, get L() { return L; }, get P() { return P; }, bukaSoal: bukaSoal, jawab: jawab, pilihOpsi: pilihOpsi, ketikAngka: ketikAngka, update: update, mulaiGame: mulaiGame, tampilHasil: tampilHasil, ambilSoal: ambilSoal, buatSoalAngka: buatSoalAngka, targetStage: targetStage, mulaiStage: mulaiStage, ulangiStage: ulangiStage, lanjutStage: lanjutStage, bangunLevel: bangunLevel, rakit: rakit, buatSoalAngka: buatSoalAngka, siapkanPoolStage: siapkanPoolStage };
