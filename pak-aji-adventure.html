@@ -97,7 +97,7 @@
 <div id="paaCtl"><button id="cKiri">◀</button><button id="cKanan">▶</button><button id="cLompat">⬆</button><button id="cJeda">⏸</button></div>
 <div class="paaP" id="paaPesan"><h2 id="paaPesanT"></h2><button class="paaB" id="paaPesanB" onclick="location.href='index.html'">Kembali</button></div>
 <div class="paaP" id="paaMenu"><h1>PAK AJI ADVENTURE</h1><p id="mSapa"></p><button class="paaB" id="bMain">▶ BERMAIN</button><button class="paaB" id="bPanduan">📖 PANDUAN</button><button class="paaB" id="bSet">⚙️ PENGATURAN</button><button class="paaB" id="bKeluar">🏠 KELUAR</button></div>
-<div class="paaP" id="paaPeta"><h2>🗺️ Peta Petualangan</h2><div id="petaIsi" style="display:flex;flex-direction:column;gap:8px"></div><button class="paaB paaKembali" style="min-width:200px">Kembali</button></div>
+<div class="paaP" id="paaPeta"><h2 id="pJudul">🗺️ Peta Petualangan</h2><div id="petaIsi" style="display:flex;flex-direction:column;gap:8px"></div><button class="paaB paaKembali" style="min-width:200px">Kembali</button></div>
 <div class="paaP" id="paaPanduan"><h2>Panduan</h2><p>Gerakkan Pak Aji ke kanan sambil mengumpulkan koin. Lompati jurang, injak atau hindari landak. Berhenti di setiap tanda ❓ untuk menjawab soal Matematika. Di ujung hutan, kalahkan Penjaga Hutan dengan menjawab 3 soal tantangan.</p><p>HP: tombol ◀ ▶ ⬆ dan ⏸. Komputer: panah kiri/kanan, Spasi lompat, Esc jeda.</p><button class="paaB paaKembali" style="min-width:200px">Kembali</button></div>
 <div class="paaP" id="paaSet"><h2>Pengaturan</h2><button class="paaB" id="sMusik"></button><button class="paaB" id="sEfek"></button><button class="paaB paaKembali" style="min-width:200px">Kembali</button></div>
 <div class="paaP" id="paaKuis"><h2 id="kJudul"></h2><div id="kSoal"></div><div id="kOps"></div><div id="kJwb"></div><div id="kInfo"></div><div id="kPad"></div></div>
@@ -163,7 +163,9 @@ function gen(k, l) {
   const a = R(3, 10 + 3 * k), b = R(3, 10 + 2 * k), d = R(1, a * b - 1); return { t: a + ' × ' + b + ' − ' + d, j: a * b - d };
 }
 const MAPEL_NAMA = { matematika: 'Matematika', bahasa_indonesia: 'Bahasa Indonesia', ipas: 'IPAS', pendidikan_pancasila: 'Pendidikan Pancasila' };
+const MAP = (function () { const m = new URLSearchParams(location.search).get('mapel'); return MAPEL_NAMA[m] ? m : 'matematika'; })();
 const POOL = {};
+function SM() { return DATA.stages[MAP] || (DATA.stages[MAP] = {}); }
 function hash(t) { let h = 0; for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
 function catat(key) { DATA.pakai.push(key); if (DATA.pakai.length > 300) DATA.pakai.shift(); }
 async function muatPool(m) {
@@ -180,7 +182,7 @@ async function muatPool(m) {
 // p = 0..1 (makin besar makin sulit). Soal yang sudah pernah muncul tidak diulang sampai bank habis.
 function ambilPilihan(m, p) {
   const pool = POOL[m]; let sisa = pool.filter(x => DATA.pakai.indexOf(m + '|' + hash(x.q)) < 0);
-  if (sisa.length < 4) { DATA.pakai = DATA.pakai.filter(k => k.indexOf(m + '|') !== 0); sisa = pool.slice(); }
+  if (sisa.length < 4) { const mk = DATA.pakai.filter(k => k.indexOf(m + '|') === 0), simpanK = mk.slice(-8); DATA.pakai = DATA.pakai.filter(k => k.indexOf(m + '|') !== 0).concat(simpanK); sisa = pool.filter(x => simpanK.indexOf(m + '|' + hash(x.q)) < 0); }
   sisa.sort((a, b) => a.w - b.w); const n = sisa.length, c = Math.round(p * (n - 1)), lebar = Math.ceil(n * .08);
   const x = sisa[R(Math.max(0, c - lebar), Math.min(n - 1, c + lebar))]; catat(m + '|' + hash(x.q));
   const ops = x.o.map((t, i) => ({ t: t, ok: i === x.k })); for (let i = 3; i > 0; i--) { const j = R(0, i), t = ops[i]; ops[i] = ops[j]; ops[j] = t; }
@@ -188,12 +190,12 @@ function ambilPilihan(m, p) {
 }
 // slot 0..4 = pos kuis, 5..7 = soal bos. Makin tinggi stage dan slot, makin sulit.
 function buatSoal(slot) {
-  const n = G.stage, m = n === 1 ? 'matematika' : n < 5 ? S.m : ['matematika', 'bahasa_indonesia', 'ipas', 'pendidikan_pancasila'][slot % 4];
+  const n = G.stage, m = MAP, p = ((n - 1) * 8 + slot) / 39;
   if (m === 'matematika') {
-    const l = Math.round(slot * 3 / 7) + (n === 5 ? 4 : 0);
+    const l = Math.round(p * 7);
     for (let i = 0; i < 30; i++) { const q = gen(U.kelas, l), key = 'matematika|' + q.t; if (DATA.pakai.indexOf(key) < 0 || i === 29) { catat(key); q.tipe = 'a'; q.mapel = m; return q; } }
   }
-  return ambilPilihan(m, ((n - 1) * 8 + slot) / 39);
+  return ambilPilihan(m, p);
 }
 
 // ===== PERMAINAN =====
@@ -208,7 +210,7 @@ const EXTRA = [[1200, 1100, 1500], [2600, 2400, 2850], [3550, 3400, 3850], [4650
 let S = STG[0];
 function info(t, tombol) { $('paaPesanT').textContent = t; $('paaPesanB').style.display = tombol ? 'inline-block' : 'none'; tampil('paaPesan'); }
 async function mulaiStage(n) {
-  S = STG[n - 1]; const perlu = n === 5 ? ['bahasa_indonesia', 'ipas', 'pendidikan_pancasila'] : (n > 1 ? [S.m] : []);
+  S = STG[n - 1]; const perlu = MAP === 'matematika' ? [] : [MAP];
   if (perlu.length) {
     info('Memuat soal...', false);
     for (const m of perlu) if (!(await muatPool(m))) { info('Soal ' + MAPEL_NAMA[m] + ' untuk kelasmu belum cukup. Hubungi guru.', false); setTimeout(bukaPeta, 3000); return; }
@@ -314,8 +316,9 @@ function menang() {
 }
 async function simpan(h) {
   try {
-    const lama = DATA.stages[h.stage]; if (!lama || h.skor > lama.skor) DATA.stages[h.stage] = { skor: h.skor, koin: h.koin, bintang: h.bintang, medali: h.medali };
-    let ts = 0, tk = 0, tb = 0, mx = 0; for (const k in DATA.stages) { const v = DATA.stages[k]; ts += v.skor; tk += v.koin; tb += v.bintang; mx = Math.max(mx, +k); }
+    const lama = SM()[h.stage]; if (!lama || h.skor > lama.skor) SM()[h.stage] = { skor: h.skor, koin: h.koin, bintang: h.bintang, medali: h.medali };
+    let ts = 0, tk = 0, tb = 0, mx = 0; for (const m in DATA.stages) for (const k in DATA.stages[m]) { const v = DATA.stages[m][k]; ts += v.skor; tk += v.koin; tb += v.bintang; mx = Math.max(mx, +k); }
+    ts = Math.min(ts, 100000); tk = Math.min(tk, 5000); tb = Math.min(tb, 15);
     await sb.from('adventure_hasil').insert({ id_siswa: U.uid, stage: h.stage, skor: h.skor, koin: h.koin, bintang: h.bintang, medali: h.medali, waktu_detik: h.waktu });
     await sb.from('adventure_progres').upsert({ id_siswa: U.uid, stage_selesai: mx, total_skor: ts, total_koin: tk, total_bintang: tb, data: DATA });
   } catch (e) { /* gagal simpan tidak boleh merusak game */ }
@@ -325,11 +328,11 @@ async function simpan(h) {
 function bukaPeta() {
   const w = $('petaIsi'); w.textContent = '';
   NAMA_STAGE.forEach((n, i) => {
-    const d = DATA.stages[i + 1], buka = U.admin || i === 0 || !!DATA.stages[i], b = document.createElement('button'); b.className = 'paaB' + (buka ? '' : ' paaOff');
+    const d = SM()[i + 1], buka = U.admin || i === 0 || !!SM()[i], b = document.createElement('button'); b.className = 'paaB' + (buka ? '' : ' paaOff');
     b.textContent = ['🌳', '🏜️', '🏔️', '🏛️', '🏰'][i] + ' Stage ' + (i + 1) + ': ' + n + (d ? '  ✓ ' + '⭐'.repeat(d.bintang) : buka ? '' : '  🔒 Selesaikan stage sebelumnya');
     if (buka) b.onclick = () => { bunyi('koin'); mulaiStage(i + 1); }; w.appendChild(b);
   });
-  tampil('paaPeta');
+  $('pJudul').textContent = '🗺️ Peta Petualangan · ' + MAPEL_NAMA[MAP]; tampil('paaPeta');
 }
 function suaraUI() { $('sMusik').textContent = 'Musik: ' + (bacaSuara().musik ? 'Hidup' : 'Mati') + ' (musik latar menyusul)'; $('sEfek').textContent = 'Efek suara: ' + (efekOn ? 'Hidup' : 'Mati'); }
 function pasangUI() {
@@ -369,8 +372,8 @@ async function init() {
   const kelas = admin ? (param >= 1 && param <= 6 ? param : (ts || 3)) : ts;
   if (!kelas) { pesan('Kelasmu belum diatur. Hubungi admin.'); return; }
   U = { nama: String(prof.nama || 'Siswa').trim().slice(0, 14), kelas: kelas, uid: uid, admin: admin };
-  try { const pg = await sb.from('adventure_progres').select('data').eq('id_siswa', uid).maybeSingle(); if (pg.data && pg.data.data) { DATA = { stages: pg.data.data.stages || {}, pakai: Array.isArray(pg.data.data.pakai) ? pg.data.data.pakai : [] }; } } catch (e) {}
-  $('mSapa').textContent = 'Halo, ' + U.nama + '! Kelas ' + U.kelas;
+  try { const pg = await sb.from('adventure_progres').select('data').eq('id_siswa', uid).maybeSingle(); if (pg.data && pg.data.data) { let st = pg.data.data.stages || {}; if (st[1] || st['1'] || st[2] || st['2']) st = { matematika: st }; DATA = { stages: st, pakai: Array.isArray(pg.data.data.pakai) ? pg.data.data.pakai : [] }; } } catch (e) {}
+  $('mSapa').textContent = 'Halo, ' + U.nama + '! Kelas ' + U.kelas + ' · ' + MAPEL_NAMA[MAP];
   await muatGambar(); tampil('paaMenu'); requestAnimationFrame(loop);
 }
 init();
