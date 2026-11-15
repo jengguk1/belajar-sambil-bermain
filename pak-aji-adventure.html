@@ -208,7 +208,9 @@ function gambar() {
   if (IMG.kura) { const sh = G.shake > 0 ? Math.sin(G.t * 60) * 6 : 0; if (G.bossHp > 0 || G.mode !== 'selesai') cx.drawImage(IMG.kura, 5050 - c + sh, GY - 150, 220, 150); }
   if (G.fase) { cx.fillStyle = '#0008'; cx.fillRect(5050 - c, GY - 175, 220, 14); cx.fillStyle = '#e53935'; cx.fillRect(5052 - c, GY - 173, 216 * G.bossHp / 3, 10); }
   const im = !G.ground ? IMG.lompat : (K.kiri || K.kanan) ? IMG.lari : IMG.idle;
+  if (!im && (G.inv <= 0 || Math.floor(G.t * 12) % 2)) { const px = G.x + PW / 2 - c; cx.fillStyle = '#111'; cx.fillRect(px - 15, G.y + 30, 30, 50); cx.fillStyle = '#f2c9a0'; cx.beginPath(); cx.arc(px, G.y + 20, 16, 0, 7); cx.fill(); cx.fillStyle = '#d32f2f'; cx.fillRect(px - 17, G.y + 4, 34, 9); }
   if (im && (G.inv <= 0 || Math.floor(G.t * 12) % 2)) { const h = 112, w = h * im.width / im.height; cx.save(); cx.translate(G.x + PW / 2 - c, G.y + PH); cx.scale(G.face, 1); cx.drawImage(im, -w / 2, -h, w, h); cx.restore(); }
+  if (IMG.gagal) { cx.fillStyle = '#d32f2f'; cx.fillRect(0, 50, VW, 26); cx.fillStyle = '#fff'; cx.font = '800 15px Trebuchet MS'; cx.textAlign = 'center'; cx.fillText('Gambar tidak termuat. Cek nama dan letak folder aset-pak-aji-adventure di GitHub.', VW / 2, 68); }
   cx.fillStyle = '#0007'; cx.fillRect(0, 0, VW, 46); cx.font = '800 20px Trebuchet MS'; cx.fillStyle = '#fff'; cx.textAlign = 'left';
   for (let i = 0; i < G.hati; i++) if (IMG.hati) cx.drawImage(IMG.hati, 12 + i * 34, 8, 30, 30);
   cx.fillText('🪙 ' + G.koin + '/100', 140, 31); cx.fillText('⭐ ' + G.skor, 300, 31); cx.fillText('Pos ' + G.pos.reduce((a, b) => a + b, 0) + '/5', 440, 31);
@@ -289,7 +291,7 @@ function pasangUI() {
 }
 function muatGambar() {
   const f = { idle: 'pak-idle', lari: 'pak-lari', lompat: 'pak-lompat', hati: 'hati', bg: 'bg-hutan', ps: 'platform', hog: 'landak', kura: 'kura', pohon: 'pohon' };
-  return Promise.all(Object.keys(f).map(k => new Promise(ok => { const i = new Image(); i.onload = () => { IMG[k] = i; ok(); }; i.onerror = ok; i.src = BASE + f[k] + '.webp'; setTimeout(ok, 15000); })));
+  return Promise.all(Object.keys(f).map(k => new Promise(ok => { const i = new Image(); i.onload = () => { IMG[k] = i; ok(); }; i.onerror = () => { IMG.gagal = (IMG.gagal || 0) + 1; ok(); }; i.src = BASE + f[k] + '.webp'; setTimeout(ok, 15000); })));
 }
 async function init() {
   pasangUI(); efekOn = bacaSuara().efek;
