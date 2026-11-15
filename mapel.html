@@ -379,6 +379,28 @@ function pilihKelas(k, awal) {
     } else if (perangBtn) {
       perangBtn.style.display = 'none';
     }
+    let raceCarBtn = document.getElementById('btn-race-car');
+    if (!raceCarBtn) {
+      raceCarBtn = document.createElement('button');
+      raceCarBtn.id = 'btn-race-car';
+      raceCarBtn.className = 'menu-item';
+      raceCarBtn.style.marginTop = '12px';
+      raceCarBtn.innerHTML = '<span class="emoji">🏎️</span><span class="txt"><b>Race Car</b><span>Balapan mobil, jawab benar supaya melaju!</span></span><span class="arrow">&rarr;</span>';
+      raceCarBtn.onclick = () => window.location.href = 'race.html?mapel=' + mapelAktif + '&kelas=' + k;
+      areaMain.appendChild(raceCarBtn);
+    }
+    raceCarBtn.style.display = 'flex';
+    let superBtn = document.getElementById('btn-super-pak-aji');
+    if (!superBtn) {
+      superBtn = document.createElement('button');
+      superBtn.id = 'btn-super-pak-aji';
+      superBtn.className = 'menu-item';
+      superBtn.style.marginTop = '12px';
+      superBtn.innerHTML = '<span class="emoji">🦸</span><span class="txt"><b>Super Pak Aji</b><span>Lari dan lompat, jawab soal di setiap blok!</span></span><span class="arrow">&rarr;</span>';
+      superBtn.onclick = () => window.location.href = 'super-pak-aji.html?mapel=' + mapelAktif + '&kelas=' + k;
+      areaMain.appendChild(superBtn);
+    }
+    superBtn.style.display = 'flex';
     let adventureBtn = document.getElementById('btn-pak-aji-adventure');
     if (pakAjiAdvAktif) {
       if (!adventureBtn) {
