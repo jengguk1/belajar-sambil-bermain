@@ -317,13 +317,13 @@ async function muat() {
       return;
     }
 
-    const { data, error } = await sb.from('soal').select('*').eq('mapel', mapel).eq('tingkat', tingkat).limit(15);
+    const { data, error } = await sb.from('soal').select('*').eq('mapel', mapel).eq('tingkat', tingkat).limit(300);
     if (error) throw error;
     if (!data || data.length === 0) {
       card.innerHTML = '<div class="state-msg">Belum ada soal untuk mapel ini di kelasmu.<br>Coba mapel lain dulu, ya.</div>';
       return;
     }
-    soalList = data.sort(() => Math.random() - 0.5);
+    soalList = data.map(x => [Math.random(), x]).sort((p, q) => p[0] - q[0]).map(x => x[1]).slice(0, 15);
     tampilkanSoal();
   } catch (e) {
     card.innerHTML = '<div class="state-msg">Gagal memuat soal.<br>' + (e.message || e) + '</div>';
