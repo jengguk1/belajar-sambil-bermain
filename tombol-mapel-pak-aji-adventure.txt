@@ -3,7 +3,7 @@ TOMBOL PAK AJI ADVENTURE UNTUK mapel.html (2 tempelan kecil, file lain jangan di
 TEMPELAN 1 - cari baris ini:
   const perangAktif = (mapelAktif === 'matematika');
 Tambahkan SATU baris di bawahnya:
-  const pakAjiAdvAktif = (mapelAktif === 'matematika');
+  const pakAjiAdvAktif = true;
 
 TEMPELAN 2 - cari blok tombol Perang Angka. Blok itu berakhir dengan:
     } else if (perangBtn) {
@@ -18,7 +18,7 @@ Tempel blok di bawah ini TEPAT SESUDAH tanda } penutup tersebut (dan sebelum bar
         adventureBtn.id = 'btn-pak-aji-adventure';
         adventureBtn.className = 'menu-item';
         adventureBtn.style.marginTop = '12px';
-        adventureBtn.innerHTML = '<span class="emoji">🏃</span><span class="txt"><b>Pak Aji Adventure</b><span>Petualangan platformer 5 stage, jawab soal di setiap pos!</span></span><span class="arrow">&rarr;</span>';
+        adventureBtn.innerHTML = '<span class="emoji">🏃</span><span class="txt"><b>Pak Aji Adventure</b><span>5 stage, semua mapel, jawab soal di setiap kotak!</span></span><span class="arrow">&rarr;</span>';
         adventureBtn.onclick = () => window.location.href = 'pak-aji-adventure.html?mapel=' + mapelAktif + '&kelas=' + k;
         areaMain.appendChild(adventureBtn);
       }
