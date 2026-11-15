@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Pak Aji Lari - Belajar Sambil Bermain</title>
+<link rel="preconnect" href="https://dyxmilgvaymkbzgjtvln.supabase.co" crossorigin>
+<script>
+(function () {
+  var KUNCI = 'lib_supabase_v2';
+  var SUMBER = [
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js',
+    'https://fastly.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js',
+    'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js',
+    'https://gcore.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js'
+  ];
+  var banner = null;
+  function tampilBanner(teks, tombol, aksi) {
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.style.cssText = 'position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:99999;background:#F5C542;color:#0B2A4A;font:800 0.85rem Trebuchet MS,sans-serif;padding:9px 16px;border-radius:999px;border:2px solid #7A5A12;box-shadow:0 6px 16px rgba(0,0,0,.4);text-align:center;max-width:90vw;';
+      document.body.appendChild(banner);
+    }
+    banner.textContent = teks + ' ';
+    if (tombol) {
+      var b = document.createElement('button');
+      b.textContent = tombol;
+      b.style.cssText = 'margin-left:6px;padding:4px 10px;border-radius:999px;border:2px solid #0B2A4A;background:#fff;color:#0B2A4A;font:800 0.8rem Trebuchet MS,sans-serif;cursor:pointer;';
+      b.onclick = aksi;
+      banner.appendChild(b);
+    }
+  }
+  function hapusBanner() { if (banner && banner.parentNode) banner.parentNode.removeChild(banner); banner = null; }
+  function libSiap() { return !!(window.supabase && typeof window.supabase.createClient === 'function'); }
+  function jalankanKode(kode) {
+    var s = document.createElement('script');
+    s.text = kode;
+    document.head.appendChild(s);
+    return libSiap();
+  }
+  function ambil(url, ms) {
+    return new Promise(function (ok, gagal) {
+      var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var t = setTimeout(function () { if (ctrl) ctrl.abort(); gagal(new Error('waktu habis')); }, ms);
+      fetch(url, { signal: ctrl ? ctrl.signal : undefined, cache: 'force-cache' })
+        .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.text(); })
+        .then(function (txt) { clearTimeout(t); ok(txt); }, function (e) { clearTimeout(t); gagal(e); });
+    });
+  }
+  function siapkanLib() {
+    try {
+      var simpan = localStorage.getItem(KUNCI);
+      if (simpan) { if (jalankanKode(simpan)) return Promise.resolve(); localStorage.removeItem(KUNCI); }
+    } catch (e) {}
+    var i = 0;
+    function coba() {
+      if (i >= SUMBER.length) return Promise.reject(new Error('semua sumber gagal'));
+      var url = SUMBER[i++];
+      return ambil(url, 9000).then(function (txt) {
+        if (txt.length < 50000 || txt.indexOf('createClient') < 0) throw new Error('isi tidak valid');
+        if (!jalankanKode(txt)) throw new Error('library tidak aktif');
+        try { localStorage.setItem(KUNCI, txt); } catch (e) {}
+      }).catch(function () { return coba(); });
+    }
+    return coba();
+  }
+  window.mulaiAplikasi = function () {
+    var el = document.getElementById('kode-app');
+    function jalan() { var s = document.createElement('script'); s.text = el.textContent; document.head.appendChild(s); hapusBanner(); }
+    if (libSiap()) { jalan(); return; }
+    tampilBanner('Menyiapkan aplikasi...');
+    siapkanLib().then(jalan, function () {
+      tampilBanner('Koneksi lambat atau terputus.', 'Coba Lagi', function () { window.mulaiAplikasi(); });
+    });
+  };
+})();
+</script>
+<style>*{box-sizing:border-box}html,body{margin:0;height:100%;background:#0B2A4A;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;font-family:"Trebuchet MS",sans-serif}
+#lrRoot{position:absolute;width:960px;height:540px;transform-origin:0 0;overflow:hidden;background:#8fd3f4}
+#lrC{position:absolute;left:0;top:0;width:960px;height:540px}
+.lrP{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(11,42,74,.88);color:#fff;text-align:center;padding:20px}
+.lrP h1{margin:0;font-size:44px;color:#F5C542;text-shadow:0 4px 0 #7A5A12}.lrP h2{margin:0;font-size:28px;color:#F5C542}.lrP p{margin:0;font-size:18px;max-width:700px;line-height:1.4}
+.lrB{min-width:340px;padding:12px 22px;border-radius:999px;border:3px solid #7A5A12;background:linear-gradient(#ffd860,#f5a623);color:#0B2A4A;font:800 20px "Trebuchet MS",sans-serif;cursor:pointer;box-shadow:0 5px 0 #7A5A12}
+.lrB:active{transform:translateY(3px);box-shadow:0 2px 0 #7A5A12}.lrOff{background:#9aa5b1;border-color:#5b6672;box-shadow:0 5px 0 #5b6672;cursor:default}
+#kSoal{font-size:56px;font-weight:800;background:#fff;color:#0B2A4A;border-radius:18px;padding:10px 34px}#kJwb{font-size:40px;font-weight:800;min-width:240px;background:#0B2A4A;border:3px solid #F5C542;border-radius:14px;padding:4px 20px}
+#kInfo{min-height:26px;font-size:18px;color:#ffe08a;font-weight:700}#kPad{display:grid;grid-template-columns:repeat(6,64px);gap:8px}.lrK{height:52px;border-radius:12px;border:3px solid #7A5A12;background:#ffd860;color:#0B2A4A;font:800 24px "Trebuchet MS",sans-serif;cursor:pointer}
+#lrCtl{display:none;position:absolute;inset:0;pointer-events:none}#lrCtl button{pointer-events:auto;position:absolute;width:86px;height:86px;border-radius:50%;border:4px solid #fff;background:rgba(11,42,74,.55);color:#fff;font-size:34px;bottom:22px;touch-action:none}
+#lKiri{left:22px}#lKanan{right:22px}#lJeda{right:20px;top:54px;bottom:auto;width:50px;height:50px;font-size:22px}
+#lrPutar{display:none;position:fixed;inset:0;z-index:9;background:#0B2A4A;color:#F5C542;font:800 22px "Trebuchet MS",sans-serif;align-items:center;justify-content:center;text-align:center;padding:30px}
+#kOps{display:none;grid-template-columns:1fr 1fr;gap:10px;width:840px}.lrO{padding:12px 14px;border-radius:14px;border:3px solid #7A5A12;background:#ffd860;color:#0B2A4A;font:800 19px "Trebuchet MS",sans-serif;cursor:pointer;text-align:left}#kSoal{max-width:860px}
+#sahIsi{display:grid;grid-template-columns:repeat(4,160px);gap:10px}.lrS{padding:8px 6px;border-radius:14px;border:3px solid transparent;background:rgba(255,255,255,.14);color:#fff;font:600 14px "Trebuchet MS",sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}.lrS.pilih{border-color:#F5C542;background:rgba(245,197,66,.25)}.lrO:disabled{cursor:default}
+@media (orientation:portrait) and (max-width:700px){#lrPutar{display:flex}}</style>
+</head>
+<body>
+<div id="lrPutar">📱 Putar HP ke mode mendatar (landscape) supaya game tampil penuh.</div>
+<div id="lrRoot">
+<canvas id="lrC" width="960" height="540"></canvas>
+<div id="lrCtl"><button id="lKiri">◀</button><button id="lKanan">▶</button><button id="lJeda">⏸</button></div>
+<div class="lrP" id="lrPesan"><h2 id="lrPesanT"></h2><button class="lrB" onclick="location.href='index.html'">Kembali</button></div>
+<div class="lrP" id="lrMenu"><h1>PAK AJI LARI</h1><p id="mSapa"></p><button class="lrB" id="bMain">▶ MULAI</button><button class="lrB" id="bPanduan">📖 PANDUAN</button><button class="lrB" id="bSet">⚙️ PENGATURAN</button><button class="lrB" id="bKeluar">🏠 KELUAR</button></div>
+<div class="lrP" id="lrPanduan"><h2>Panduan</h2><p>Pak Aji berlari otomatis. Geser ke lajur kiri, tengah, atau kanan untuk masuk ke gerbang jawaban yang benar (A, B, atau C). Kumpulkan koin di jalan. Jawaban benar berturut-turut menambah combo dan nilai. Salah mengurangi nyawa.</p><p>HP: ketuk sisi kiri atau kanan layar, geser jari, atau tombol ◀ ▶. Komputer: panah kiri/kanan, Esc jeda. Sahabat yang dipilih di Pak Aji Adventure ikut membantu.</p><button class="lrB lrKembali" style="min-width:200px">Kembali</button></div>
+<div class="lrP" id="lrSet"><h2>Pengaturan</h2><button class="lrB" id="sMusik"></button><button class="lrB" id="sEfek"></button><button class="lrB lrKembali" style="min-width:200px">Kembali</button></div>
+<div class="lrP" id="lrJeda"><h2>⏸ Jeda</h2><button class="lrB" id="jLanjut">Lanjut</button><button class="lrB" id="jMenu">Ke Menu</button></div>
+<div class="lrP" id="lrHasil"><h1 id="hJudul"></h1><h2 id="hBintang"></h2><p id="hStat"></p><button class="lrB" id="hUlang">Main Lagi</button><button class="lrB" id="hSelesai">Selesai</button></div>
+</div>
+<script type="text/plain" id="kode-app">
+const SUPABASE_URL = "https://dyxmilgvaymkbzgjtvln.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5eG1pbGd2YXlta2J6Z2p0dmxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4NDI0NTAsImV4cCI6MjEwNTQxODQ1MH0.FbzeXaVS2WIhbd1U3RMoqvYxieD-_x-o7PYmS4zmrcE";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const VW = 960, VH = 540, HZ = 232, ZP = .92, N = 12, BASE = 'aset-pak-aji-adventure/';
+const $ = id => document.getElementById(id);
+const R = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const Pk = a => a[R(0, a.length - 1)];
+const IMG = {}, WARNA = ['#1e88e5', '#fb8c00', '#43a047'];
+let U = { nama: 'Siswa', kelas: 3, uid: '', admin: false }, DATA = { stages: {}, pakai: [], sahabat: '' }, G = null, AC = null, efekOn = true, VMUL = 1;
+const cv = $('lrC'), cx = cv.getContext('2d');
+function bacaSuara() { try { const s = JSON.parse(localStorage.getItem('pengaturan_game') || '{}'); return { musik: s.musik !== false, efek: s.efek !== false }; } catch (e) { return { musik: true, efek: true }; } }
+function simpanSuara(k, v) { try { const s = JSON.parse(localStorage.getItem('pengaturan_game') || '{}'); s[k] = v; localStorage.setItem('pengaturan_game', JSON.stringify(s)); } catch (e) {} }
+function bunyi(j) {
+  if (!efekOn) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+    const f = { koin: [880, 1320], lompat: [330, 520], benar: [523, 1047], salah: [220, 150], menang: [660, 1320] }[j];
+    o.frequency.setValueAtTime(f[0], t); o.frequency.linearRampToValueAtTime(f[1], t + .12);
+    g.gain.setValueAtTime(.15, t); g.gain.exponentialRampToValueAtTime(.001, t + .2);
+    o.connect(g); g.connect(AC.destination); o.start(); o.stop(t + .22);
+  } catch (e) {}
+}
+
+function gen(k, l) {
+  const top = [20, 100, 999, 9999, 99999, 999999][k - 1];
+  let o = l < 2 ? 0 : l < 4 ? 1 : 2;
+  if (k < 2) o = 0; if (k < 5 && o > 1) o = 1;
+  if (o === 0) {
+    const m = Math.max(6, Math.round(top * (0.4 + 0.08 * l)));
+    let a = R(Math.ceil(m / 3), m), b = R(1, m);
+    if (R(0, 1)) return { t: a + ' + ' + b, j: a + b };
+    if (b > a) { const x = a; a = b; b = x; }
+    return { t: a + ' − ' + b, j: a - b };
+  }
+  if (o === 1) {
+    const A = [0, [2, 10], [2, 10], [12, 99], [12, 60], [12, 99]][k - 1], B = [0, [2, 10], [2, 10], [2, 9], [3, 15], [6, 25]][k - 1];
+    const a = k === 2 ? Pk([2, 3, 4, 5, 6, 10]) : R(A[0], A[1]), b = R(B[0], B[0] + Math.ceil((B[1] - B[0]) * Math.min(1, (l + 1) / 5)));
+    if (R(0, 1)) return { t: a + ' × ' + b, j: a * b };
+    return { t: (a * b) + ' ÷ ' + b, j: a };
+  }
+  const c = R(2, 9), t = R(0, 2);
+  if (t === 0) { const a = R(10, 10 * k), b = R(2, 9); return { t: a + ' + ' + b + ' × ' + c, j: a + b * c }; }
+  if (t === 1) { const a = R(3, 10 * k), b = R(3, 25); return { t: '(' + a + ' + ' + b + ') × ' + c, j: (a + b) * c }; }
+  const a = R(3, 10 + 3 * k), b = R(3, 10 + 2 * k), d = R(1, a * b - 1); return { t: a + ' × ' + b + ' − ' + d, j: a * b - d };
+}
+
+const MAPEL_NAMA = { matematika: 'Matematika', bahasa_indonesia: 'Bahasa Indonesia', ipas: 'IPAS', pendidikan_pancasila: 'Pendidikan Pancasila' };
+const MAP = (function () { const m = new URLSearchParams(location.search).get('mapel'); return MAPEL_NAMA[m] ? m : 'matematika'; })();
+const POOL = {};
+function SM() { return DATA.stages[MAP] || (DATA.stages[MAP] = {}); }
+function hash(t) { let h = 0; for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
+function catat(key) { DATA.pakai.push(key); if (DATA.pakai.length > 300) DATA.pakai.shift(); }
+async function muatPool(m) {
+  if (POOL[m]) return POOL[m].length >= 4;
+  try {
+    const r = await sb.from('soal').select('pertanyaan, pilihan_a, pilihan_b, pilihan_c, pilihan_d, jawaban_benar').eq('mapel', m).eq('tingkat', U.kelas).limit(300);
+    if (r.error || !Array.isArray(r.data)) return false;
+    POOL[m] = r.data.map(x => ({ q: String(x.pertanyaan || '').trim(), o: [x.pilihan_a, x.pilihan_b, x.pilihan_c, x.pilihan_d].map(z => String(z == null ? '' : z).trim()), k: 'ABCD'.indexOf(String(x.jawaban_benar || '').trim().toUpperCase()), w: 0 }))
+      .filter(x => x.q && x.k >= 0 && x.o.every(t => t !== ''));
+    POOL[m].forEach(x => { x.w = x.q.length + 0.35 * x.o.join('').length; });
+    return POOL[m].length >= 4;
+  } catch (e) { return false; }
+}
+// p = 0..1 (makin besar makin sulit). Soal yang sudah pernah muncul tidak diulang sampai bank habis.
+function ambilPilihan(m, p) {
+  const pool = POOL[m]; let sisa = pool.filter(x => DATA.pakai.indexOf(m + '|' + hash(x.q)) < 0);
+  if (sisa.length < 4) { const mk = DATA.pakai.filter(k => k.indexOf(m + '|') === 0), simpanK = mk.slice(-8); DATA.pakai = DATA.pakai.filter(k => k.indexOf(m + '|') !== 0).concat(simpanK); sisa = pool.filter(x => simpanK.indexOf(m + '|' + hash(x.q)) < 0); }
+  sisa.sort((a, b) => a.w - b.w); const n = sisa.length, c = Math.round(p * (n - 1)), lebar = Math.ceil(n * .08);
+  const x = sisa[R(Math.max(0, c - lebar), Math.min(n - 1, c + lebar))]; catat(m + '|' + hash(x.q));
+  const ops = x.o.map((t, i) => ({ t: t, ok: i === x.k })); for (let i = 3; i > 0; i--) { const j = R(0, i), t = ops[i]; ops[i] = ops[j]; ops[j] = t; }
+  const j = ops.findIndex(o => o.ok); return { t: x.q, ops: ops, j: j, jt: ops[j].t, tipe: 'p', mapel: m };
+}
+
+async function tulisProgres() {
+  try {
+    let ts = 0, tk = 0, tb = 0, mx = 0; for (const m in DATA.stages) for (const k in DATA.stages[m]) { const v = DATA.stages[m][k]; ts += v.skor; tk += v.koin; tb += v.bintang; mx = Math.max(mx, +k); }
+    await sb.from('adventure_progres').upsert({ id_siswa: U.uid, stage_selesai: mx, total_skor: Math.min(ts, 100000), total_koin: Math.min(tk, 5000), total_bintang: Math.min(tb, 15), data: DATA });
+  } catch (e) { /* gagal simpan tidak boleh merusak game */ }
+}
+
+function acak(a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = R(0, i), t = b[i]; b[i] = b[j]; b[j] = t; } return b; }
+function sah(k) { return DATA.sahabat === k; }
+function tampil(id) { document.querySelectorAll('.lrP').forEach(e => e.style.display = 'none'); if (id) $(id).style.display = 'flex'; $('lrCtl').style.display = (G && G.mode === 'main' && !id) ? 'block' : 'none'; }
+function pesan(t) { $('lrPesanT').textContent = t; tampil('lrPesan'); }
+function ukur() { const s = Math.min(innerWidth / VW, innerHeight / VH), r = $('lrRoot'); r.style.transform = 'scale(' + s + ')'; r.style.left = ((innerWidth - VW * s) / 2) + 'px'; r.style.top = ((innerHeight - VH * s) / 2) + 'px'; }
+
+// ===== SOAL GERBANG (3 pilihan, makin lama makin sulit) =====
+function soalMat(l) { for (let i = 0; i < 30; i++) { const s = gen(U.kelas, l), key = 'matematika|' + s.t; if (DATA.pakai.indexOf(key) < 0 || i === 29) { catat(key); return s; } } }
+function buatGerbang(qi) {
+  const p = qi / (N - 1), g = { z: -.36, done: false, hint: qi % 4 === 0 };
+  if (MAP === 'matematika') {
+    const s = soalMat(Math.round(p * 7)), opts = [s.j]; let n = 0;
+    while (opts.length < 3 && n++ < 60) { const d = R(1, Math.max(3, Math.round(Math.abs(s.j) * .15))), v = s.j + (R(0, 1) ? d : -d); if (v >= 0 && opts.indexOf(v) < 0) opts.push(v); }
+    while (opts.length < 3) opts.push(s.j + opts.length * 7);
+    g.q = s.t + ' = ?'; g.o = acak(opts.map(String)); g.j = g.o.indexOf(String(s.j));
+  } else {
+    const q = ambilPilihan(MAP, p), salah = acak(q.ops.filter(x => !x.ok)).slice(0, 2);
+    g.q = q.t; g.o = acak([q.ops[q.j]].concat(salah)).map(x => x.t); g.j = g.o.indexOf(q.jt);
+  }
+  return g;
+}
+
+// ===== PERMAINAN =====
+function laneX(l, z) { return VW / 2 + (l - 1) * 280 * (.12 + .88 * z); }
+function zy(z) { return HZ + (500 - HZ) * z; }
+function nextGate() { const g = buatGerbang(G.qi); G.gates.push(g); for (let k = 0; k < 4; k++) G.coins.push({ z: g.z + .07 + k * .075, l: R(0, 2) }); }
+async function mulai() {
+  if (MAP !== 'matematika' && !(await muatPool(MAP))) { pesan('Soal ' + MAPEL_NAMA[MAP] + ' untuk kelasmu belum cukup. Hubungi guru.'); setTimeout(() => tampil('lrMenu'), 3000); return; }
+  G = { mode: 'main', cd: 3.2, t: 0, lane: 1, lx: 1, hati: sah('kura') ? 4 : 3, perisai: sah('kadal') ? 1 : 0, skor: 0, koin: 0, benar: 0, salah: 0, combo: 0, mx: 0, qi: 0, gates: [], coins: [], msg: '', mt: 0, shake: 0 };
+  nextGate(); tampil(null); $('lrCtl').style.display = 'block';
+}
+function geser(d) { if (G && G.mode === 'main') G.lane = Math.max(0, Math.min(2, G.lane + d)); }
+function jawabGerbang(g) {
+  if (G.lane === g.j) { G.benar++; G.combo++; G.mx = Math.max(G.mx, G.combo); const add = 100 + Math.min(G.combo - 1, 5) * 20; G.skor += add; G.msg = 'Benar! +' + add + (G.combo > 1 ? '  Combo x' + G.combo : ''); G.ok = 1; bunyi('benar'); }
+  else { G.salah++; G.combo = 0; G.msg = 'Salah! Jawabannya: ' + g.o[g.j]; G.ok = 0; bunyi('salah'); G.shake = .5; if (G.perisai > 0) { G.perisai--; G.msg += ' (kadal melindungi!)'; } else G.hati--; }
+  G.mt = 1.8; G.qi++;
+  if (G.hati <= 0) { G.mode = 'tunggu'; setTimeout(() => selesai(false), 1100); return; }
+  if (G.qi >= N) { G.mode = 'tunggu'; setTimeout(() => selesai(true), 1300); return; }
+  nextGate();
+}
+function update(dt) {
+  if (!G || G.mode !== 'main') return; if (G.cd > 0) { G.cd -= dt; return; }
+  const d = dt * VMUL; G.t += d; if (G.mt > 0) G.mt -= dt; if (G.shake > 0) G.shake -= dt;
+  G.lx += (G.lane - G.lx) * Math.min(1, (sah('rusa') ? 14 : 10) * dt);
+  const v = Math.min(.3, .2 + G.mx * .006); G.v = v;
+  G.gates.forEach(g => { g.z += v * d; if (!g.done && g.z >= ZP) { g.done = true; jawabGerbang(g); } });
+  G.coins.forEach(c => { c.z += v * d; if (!c.k && c.z >= ZP) { c.k = 1; if (Math.abs(c.l - G.lane) < (sah('tupai') ? 1.5 : .5)) { G.koin++; G.skor += sah('unta') ? 10 : 5; bunyi('koin'); } } });
+  G.gates = G.gates.filter(g => g.z < 1.2); G.coins = G.coins.filter(c => c.z < 1.2);
+}
+function bungkus(t, mw) { const k = String(t).split(' '), b = []; let l = ''; k.forEach(w => { const c = l ? l + ' ' + w : w; if (cx.measureText(c).width > mw && l) { b.push(l); l = w; } else l = c; }); if (l) b.push(l); return b; }
+function teks(t, x, y, mw, ukuran, maks, lh) {
+  let u = ukuran, b; for (; u >= 13; u -= 2) { cx.font = '800 ' + u + 'px Trebuchet MS'; b = bungkus(t, mw); if (b.length <= maks) break; }
+  const awal = y - (b.length - 1) * (u * 1.15) / 2; b.slice(0, maks + 1).forEach((l, i) => cx.fillText(l, x, awal + i * u * 1.15)); return b.length;
+}
+function gambar() {
+  const g = cx.createLinearGradient(0, 0, 0, HZ); g.addColorStop(0, '#8fd3f4'); g.addColorStop(1, '#d9f2d0'); cx.fillStyle = g; cx.fillRect(0, 0, VW, VH);
+  if (IMG.surya) cx.drawImage(IMG.surya, 690, 56, 76, 77);
+  if (IMG.bg) cx.drawImage(IMG.bg, 0, HZ - 126, VW, 130);
+  cx.fillStyle = '#5fae4a'; cx.fillRect(0, HZ, VW, VH - HZ);
+  const e = z => 1.5 * 280 * (.12 + .88 * z); cx.fillStyle = '#6d6d7a'; cx.beginPath(); cx.moveTo(VW / 2 - e(0), HZ); cx.lineTo(VW / 2 + e(0), HZ); cx.lineTo(VW / 2 + e(1.06), zy(1.06)); cx.lineTo(VW / 2 - e(1.06), zy(1.06)); cx.fill();
+  if (!G) return;
+  const t = G.t * (G.v || .2); cx.strokeStyle = '#ffffffcc';
+  for (let i = 0; i < 12; i++) { const z0 = ((i * .09 + t) % 1.08), z1 = z0 + .04; [.5, 1.5].forEach(b => { cx.lineWidth = 2 + 6 * z0; cx.beginPath(); cx.moveTo(laneX(b + .5, z0) - 140 * (.12 + .88 * z0), zy(z0)); cx.lineTo(laneX(b + .5, z1) - 140 * (.12 + .88 * z1), zy(z1)); cx.stroke(); }); }
+  if (IMG.pohon) for (let i = 0; i < 6; i++) { const z = ((i * .19 + t) % 1.1); if (z < .03) continue; const sc = .12 + .88 * z, w = 230 * sc, h = w * IMG.pohon.height / IMG.pohon.width; cx.drawImage(IMG.pohon, VW / 2 - e(z) - w - 10, zy(z) - h + 6, w, h); cx.drawImage(IMG.pohon, VW / 2 + e(z) + 10, zy(z) - h + 6, w, h); }
+  const sorted = G.gates.map(o => ({ k: 'g', z: o.z, o: o })).concat(G.coins.filter(c => !c.k).map(o => ({ k: 'c', z: o.z, o: o }))).sort((a, b) => a.z - b.z);
+  sorted.forEach(it => {
+    if (it.z < .02) return; const sc = .12 + .88 * it.z, y = zy(it.z);
+    if (it.k === 'c') { cx.fillStyle = '#f5c542'; cx.strokeStyle = '#b8860b'; cx.lineWidth = 2; cx.beginPath(); cx.ellipse(laneX(it.o.l, it.z), y - 30 * sc, 15 * sc, 17 * sc, 0, 0, 7); cx.fill(); cx.stroke(); }
+    else for (let l = 0; l < 3; l++) { const x = laneX(l, it.z), w = 250 * sc, h = 170 * sc; cx.globalAlpha = it.o.done ? .5 : 1; cx.fillStyle = WARNA[l]; cx.strokeStyle = '#fff'; cx.lineWidth = Math.max(2, 5 * sc); cx.fillRect(x - w / 2, y - h, w, h); cx.strokeRect(x - w / 2, y - h, w, h); cx.fillStyle = '#fff'; cx.textAlign = 'center'; cx.font = '800 ' + Math.round(80 * sc) + 'px Trebuchet MS'; cx.fillText('ABC'[l], x, y - h / 2 + 28 * sc); cx.globalAlpha = 1; }
+  });
+  const px = laneX(G.lx, ZP) + (G.shake > 0 ? Math.sin(G.t * 90) * 6 : 0), py = zy(ZP), im = IMG.idle;
+  if (im) { const h = 150, w = h * im.width / im.height; cx.save(); cx.translate(px, py + Math.sin(G.t * 14) * 3); cx.rotate((G.lane - G.lx) * .22); cx.drawImage(im, -w / 2, -h, w, h); cx.restore(); } else { cx.fillStyle = '#111'; cx.fillRect(px - 20, py - 90, 40, 80); }
+  if (DATA.sahabat && IMG[DATA.sahabat]) { const s = IMG[DATA.sahabat], w = 54, h = w * s.height / s.width; cx.drawImage(s, px + 56, py - h + Math.abs(Math.sin(G.t * 10)) * -5, w, h); }
+  // HUD
+  cx.fillStyle = '#0007'; cx.fillRect(0, 0, VW, 46); cx.textAlign = 'left'; cx.font = '800 20px Trebuchet MS'; cx.fillStyle = '#fff';
+  for (let i = 0; i < G.hati; i++) if (IMG.hati) cx.drawImage(IMG.hati, 12 + i * 34, 8, 30, 30);
+  cx.fillText('⭐ ' + G.skor, 160, 31); cx.fillText('🪙 ' + G.koin, 300, 31); cx.fillText('Soal ' + Math.min(G.qi + 1, N) + '/' + N, 410, 31); cx.fillText(G.combo > 1 ? '🔥 Combo x' + G.combo : '', 560, 31);
+  const a = G.gates.find(o => !o.done);
+  if (a) {
+    cx.fillStyle = '#0B2A4Add'; cx.fillRect(40, 52, 880, 78); cx.fillStyle = '#fff'; cx.textAlign = 'center'; teks(a.q, VW / 2, 91, 840, 30, 2);
+    for (let l = 0; l < 3; l++) { const x = 40 + l * 297, ak = G.lane === l; cx.fillStyle = WARNA[l]; cx.fillRect(x, 136, 286, 74); cx.strokeStyle = (a.hint && sah('rubah') && a.j === l) ? '#ffeb3b' : '#fff'; cx.lineWidth = ak ? 7 : (a.hint && sah('rubah') && a.j === l ? 6 : 2); cx.strokeRect(x, 136, 286, 74); cx.fillStyle = '#fff'; cx.textAlign = 'center'; teks('ABC'[l] + '. ' + a.o[l], x + 143, 173, 262, 21, 2); if (a.hint && sah('rubah') && a.j === l) cx.fillText('💡', x + 266, 156); }
+  }
+  cx.textAlign = 'center'; if (G.mt > 0) { cx.fillStyle = G.ok ? '#2e7d32' : '#c62828'; cx.fillRect(160, 290, 640, 50); cx.fillStyle = '#fff'; cx.font = '800 24px Trebuchet MS'; cx.fillText(G.msg, VW / 2, 323); }
+  if (G.cd > 0) { cx.fillStyle = '#0008'; cx.fillRect(0, 232, VW, VH - 232); cx.fillStyle = '#F5C542'; cx.font = '800 120px Trebuchet MS'; cx.fillText(G.cd > .2 ? Math.ceil(G.cd - .2) : 'GO!', VW / 2, 400); cx.font = '800 22px Trebuchet MS'; cx.fillStyle = '#fff'; cx.fillText('Geser ke gerbang jawaban yang benar!', VW / 2, 450); }
+}
+let tLalu = 0;
+function loop(t) { const dt = Math.min(.05, (t - tLalu) / 1000 || 0); tLalu = t; update(dt); gambar(); requestAnimationFrame(loop); }
+function selesai(menang) {
+  G.mode = 'selesai'; const tot = G.benar + G.salah, akur = tot ? Math.round(G.benar * 100 / tot) : 0, bintang = menang ? 1 + (akur >= 70 ? 1 : 0) + (akur >= 90 ? 1 : 0) : 0, w = Math.round(G.t);
+  DATA.lari = DATA.lari || {}; const rek = DATA.lari[MAP] || { skor: 0 }, baru = G.skor > rek.skor; if (baru) DATA.lari[MAP] = { skor: G.skor, bintang: bintang };
+  $('hJudul').textContent = menang ? 'Selesai! 🎉' : 'Nyawa Habis 😅'; $('hBintang').textContent = '⭐'.repeat(bintang) + '☆'.repeat(3 - bintang);
+  $('hStat').textContent = 'Skor ' + G.skor + (baru ? ' (REKOR BARU!)' : ' · Rekor ' + rek.skor) + ' · Benar ' + G.benar + ' · Salah ' + G.salah + ' · Akurasi ' + akur + '% · Koin ' + G.koin + ' · Combo terbaik ' + G.mx + ' · Waktu ' + Math.floor(w / 60) + ':' + ('0' + w % 60).slice(-2);
+  bunyi(menang ? 'menang' : 'salah'); tampil('lrHasil'); tulisProgres();
+}
+function jeda() { if (!G) return; if (G.mode === 'main') { G.mode = 'jeda'; tampil('lrJeda'); } else if (G.mode === 'jeda') { G.mode = 'main'; tampil(null); $('lrCtl').style.display = 'block'; } }
+function suaraUI() { $('sMusik').textContent = 'Musik: ' + (bacaSuara().musik ? 'Hidup' : 'Mati') + ' (musik latar menyusul)'; $('sEfek').textContent = 'Efek suara: ' + (efekOn ? 'Hidup' : 'Mati'); }
+function pasangUI() {
+  $('bMain').onclick = () => { bunyi('koin'); mulai(); };
+  $('bPanduan').onclick = () => tampil('lrPanduan'); $('bSet').onclick = () => { suaraUI(); tampil('lrSet'); }; $('bKeluar').onclick = () => { location.href = 'beranda.html'; };
+  document.querySelectorAll('.lrKembali').forEach(b => b.onclick = () => tampil('lrMenu'));
+  $('sMusik').onclick = () => { simpanSuara('musik', !bacaSuara().musik); suaraUI(); }; $('sEfek').onclick = () => { efekOn = !efekOn; simpanSuara('efek', efekOn); suaraUI(); bunyi('koin'); };
+  $('hUlang').onclick = mulai; $('hSelesai').onclick = () => { location.href = 'beranda.html'; }; $('jLanjut').onclick = jeda; $('jMenu').onclick = () => { G = null; tampil('lrMenu'); };
+  const tombol = (id, d) => $(id).addEventListener('pointerdown', ev => { ev.preventDefault(); geser(d); }); tombol('lKiri', -1); tombol('lKanan', 1); $('lJeda').onclick = jeda;
+  let x0 = null; cv.addEventListener('pointerdown', ev => { x0 = ev.clientX; });
+  cv.addEventListener('pointerup', ev => { if (x0 === null) return; const dx = ev.clientX - x0, r = cv.getBoundingClientRect(), rx = (ev.clientX - r.left) / r.width; if (Math.abs(dx) > 40) geser(dx > 0 ? 1 : -1); else if (rx < .33) geser(-1); else if (rx > .67) geser(1); x0 = null; });
+  addEventListener('keydown', e => { const c = e.key; if (c === 'ArrowLeft' || c === 'a') geser(-1); else if (c === 'ArrowRight' || c === 'd') geser(1); else if (c === 'Escape' || c === 'p') jeda(); });
+  addEventListener('resize', ukur); ukur();
+}
+async function muatGambar() {
+  const f = { idle: 'pak-idle', hati: 'hati', bg: 'bg-hutan', pohon: 'pohon', surya: 'matahari', kura: 'kura', unta: 'unta', kelinci: 'kelinci', rusa: 'rusa', tupai: 'tupai', rubah: 'rubah', kadal: 'kadal', burung: 'burung' };
+  await Promise.all(Object.keys(f).map(k => new Promise(ok => { const i = new Image(); i.onload = () => { IMG[k] = i; ok(); }; i.onerror = ok; i.src = BASE + f[k] + '.webp'; setTimeout(ok, 15000); })));
+}
+async function init() {
+  pasangUI(); efekOn = bacaSuara().efek;
+  const ses = await sb.auth.getSession();
+  if (!ses.data || !ses.data.session) { location.href = 'index.html'; return; }
+  const uid = ses.data.session.user.id;
+  const pr = await sb.from('profil').select('*, kelas(tingkat)').eq('id', uid).single();
+  if (pr.error || !pr.data) { pesan('Profil tidak ditemukan. Coba masuk lagi.'); return; }
+  const prof = pr.data, admin = prof.role === 'admin';
+  if (!admin && prof.status !== 'approved') { pesan('Akunmu belum disetujui admin.'); return; }
+  const q = new URLSearchParams(location.search), param = parseInt(q.get('kelas'), 10), ts = prof.kelas && prof.kelas.tingkat ? parseInt(prof.kelas.tingkat, 10) : 0;
+  const kelas = admin ? (param >= 1 && param <= 6 ? param : (ts || 3)) : ts;
+  if (!kelas) { pesan('Kelasmu belum diatur. Hubungi admin.'); return; }
+  U = { nama: String(prof.nama || 'Siswa').trim().slice(0, 14), kelas: kelas, uid: uid, admin: admin };
+  try { const pg = await sb.from('adventure_progres').select('data').eq('id_siswa', uid).maybeSingle(); if (pg.data && pg.data.data) { let st = pg.data.data.stages || {}; if (st[1] || st['1'] || st[2] || st['2']) st = { matematika: st }; DATA = Object.assign({}, pg.data.data, { stages: st, pakai: Array.isArray(pg.data.data.pakai) ? pg.data.data.pakai : [], sahabat: pg.data.data.sahabat || '' }); } } catch (e) {}
+  const rk = DATA.lari && DATA.lari[MAP] ? DATA.lari[MAP].skor : 0;
+  $('mSapa').textContent = 'Halo, ' + U.nama + '! Kelas ' + U.kelas + ' · ' + MAPEL_NAMA[MAP] + (rk ? ' · Rekor ' + rk : '');
+  await muatGambar(); tampil('lrMenu'); requestAnimationFrame(loop);
+}
+init();
+
+</script>
+<script>mulaiAplikasi();</script>
+</body>
+</html>

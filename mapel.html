@@ -401,6 +401,17 @@ function pilihKelas(k, awal) {
       areaMain.appendChild(superBtn);
     }
     superBtn.style.display = 'flex';
+    let lariBtn = document.getElementById('btn-pak-aji-lari');
+    if (!lariBtn) {
+      lariBtn = document.createElement('button');
+      lariBtn.id = 'btn-pak-aji-lari';
+      lariBtn.className = 'menu-item';
+      lariBtn.style.marginTop = '12px';
+      lariBtn.innerHTML = '<span class="emoji">🛣️</span><span class="txt"><b>Pak Aji Lari</b><span>Lari 3 lajur, pilih gerbang jawaban yang benar!</span></span><span class="arrow">&rarr;</span>';
+      lariBtn.onclick = () => window.location.href = 'pak-aji-lari.html?mapel=' + mapelAktif + '&kelas=' + k;
+      areaMain.appendChild(lariBtn);
+    }
+    lariBtn.style.display = 'flex';
     let adventureBtn = document.getElementById('btn-pak-aji-adventure');
     if (pakAjiAdvAktif) {
       if (!adventureBtn) {

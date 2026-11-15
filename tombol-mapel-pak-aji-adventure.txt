@@ -5,6 +5,7 @@ TEMPELAN 1 - cari baris ini:
 Tambahkan SATU baris di bawahnya:
   const pakAjiAdvAktif = true;
 
+TEMPELAN 2 (sama untuk Pak Aji Adventure; blok Pak Aji Lari ada di bawahnya di mapel.html utuh)
 TEMPELAN 2 - cari blok tombol Perang Angka. Blok itu berakhir dengan:
     } else if (perangBtn) {
       perangBtn.style.display = 'none';
