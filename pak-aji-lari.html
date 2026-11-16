@@ -89,7 +89,7 @@
 #lrPutar{display:none;position:fixed;inset:0;z-index:9;background:#0B2A4A;color:#F5C542;font:800 22px "Trebuchet MS",sans-serif;align-items:center;justify-content:center;text-align:center;padding:30px}
 #kOps{display:none;grid-template-columns:1fr 1fr;gap:10px;width:840px}.lrO{padding:12px 14px;border-radius:14px;border:3px solid #7A5A12;background:#ffd860;color:#0B2A4A;font:800 19px "Trebuchet MS",sans-serif;cursor:pointer;text-align:left}#kSoal{max-width:860px}
 #sahIsi{display:grid;grid-template-columns:repeat(4,160px);gap:10px}.lrS{padding:8px 6px;border-radius:14px;border:3px solid transparent;background:rgba(255,255,255,.14);color:#fff;font:600 14px "Trebuchet MS",sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}.lrS.pilih{border-color:#F5C542;background:rgba(245,197,66,.25)}.lrO:disabled{cursor:default}
-@media (orientation:portrait) and (max-width:700px){#lrPutar{display:flex}}</style>
+@media (orientation:portrait) and (max-width:700px){#lrPutar{display:flex}}.lrS{padding:8px;border-radius:14px;border:3px solid transparent;background:rgba(255,255,255,.14);color:#fff;font:700 15px "Trebuchet MS",sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}.lrS.pilih{border-color:#F5C542;background:rgba(245,197,66,.28)}#pilKar,#pilMed{display:flex;gap:12px;justify-content:center}</style>
 </head>
 <body>
 <div id="lrPutar">📱 Putar HP ke mode mendatar (landscape) supaya game tampil penuh.</div>
@@ -97,11 +97,12 @@
 <canvas id="lrC" width="960" height="540"></canvas>
 <div id="lrCtl"><button id="lKiri">◀</button><button id="lKanan">▶</button><button id="lJeda">⏸</button></div>
 <div class="lrP" id="lrPesan"><h2 id="lrPesanT"></h2><button class="lrB" onclick="location.href='index.html'">Kembali</button></div>
-<div class="lrP" id="lrMenu"><h1>PAK AJI LARI</h1><p id="mSapa"></p><button class="lrB" id="bMain">▶ MULAI</button><button class="lrB" id="bPanduan">📖 PANDUAN</button><button class="lrB" id="bSet">⚙️ PENGATURAN</button><button class="lrB" id="bKeluar">🏠 KELUAR</button></div>
+<div class="lrP" id="lrMenu"><h1>PAK AJI LARI</h1><p id="mSapa"></p><img id="mKar" alt="" style="position:absolute;left:60px;bottom:6px;height:410px;pointer-events:none"><button class="lrB" id="bMain">▶ MULAI</button><button class="lrB" id="bPilih">🎨 PILIH TOKOH &amp; MEDAN</button><button class="lrB" id="bPanduan">📖 PANDUAN</button><button class="lrB" id="bSet">⚙️ PENGATURAN</button><button class="lrB" id="bKeluar">🏠 KELUAR</button></div>
 <div class="lrP" id="lrPanduan"><h2>Panduan</h2><p>Pak Aji berlari otomatis. Geser ke lajur kiri, tengah, atau kanan untuk masuk ke gerbang jawaban yang benar (A, B, atau C). Kumpulkan koin di jalan. Jawaban benar berturut-turut menambah combo dan nilai. Salah mengurangi nyawa.</p><p>HP: ketuk sisi kiri atau kanan layar, geser jari, atau tombol ◀ ▶. Komputer: panah kiri/kanan, Esc jeda. Sahabat yang dipilih di Pak Aji Adventure ikut membantu.</p><button class="lrB lrKembali" style="min-width:200px">Kembali</button></div>
 <div class="lrP" id="lrSet"><h2>Pengaturan</h2><button class="lrB" id="sMusik"></button><button class="lrB" id="sEfek"></button><button class="lrB lrKembali" style="min-width:200px">Kembali</button></div>
+<div class="lrP" id="lrPilih"><h2>Pilih Tokoh</h2><div id="pilKar"></div><h2>Pilih Medan</h2><div id="pilMed"></div><button class="lrB lrKembali" style="min-width:200px">Selesai</button></div>
 <div class="lrP" id="lrJeda"><h2>⏸ Jeda</h2><button class="lrB" id="jLanjut">Lanjut</button><button class="lrB" id="jMenu">Ke Menu</button></div>
-<div class="lrP" id="lrHasil"><h1 id="hJudul"></h1><h2 id="hBintang"></h2><p id="hStat"></p><button class="lrB" id="hUlang">Main Lagi</button><button class="lrB" id="hSelesai">Selesai</button></div>
+<div class="lrP" id="lrHasil"><img id="hKar" alt="" style="height:130px"><h1 id="hJudul"></h1><h2 id="hBintang"></h2><p id="hStat"></p><button class="lrB" id="hUlang">Main Lagi</button><button class="lrB" id="hSelesai">Selesai</button></div>
 </div>
 <script type="text/plain" id="kode-app">
 const SUPABASE_URL = "https://dyxmilgvaymkbzgjtvln.supabase.co";
@@ -111,7 +112,13 @@ const VW = 960, VH = 540, HZ = 232, ZP = .92, N = 12, BASE = 'aset-pak-aji-adven
 const $ = id => document.getElementById(id);
 const R = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 const Pk = a => a[R(0, a.length - 1)];
-const IMG = {}, WARNA = ['#1e88e5', '#fb8c00', '#43a047'];
+const BASE2 = 'aset-pak-aji-lari/';
+const IMG = {}, WARNA = ['#1e88e5', '#e53935', '#43a047'], IM = {}, CACHE = {};
+const KAR = [{ k: 'aji', n: 'Pak Aji' }, { k: 'azzam', n: 'Moh Azzam' }, { k: 'sofyan', n: 'Moh Sofyan' }, { k: 'nadia', n: 'Nadia Fathin' }];
+const MEDAN = [{ k: '1', n: 'Desa Bersalju', p: 1, a: '#9fb3d6', b: '#c9dcf8' }, { k: '2', n: 'Jalan Desa', p: 2, a: '#d98e3f', b: '#e69a45' }, { k: '3', n: 'Kota Pelari', p: 3, a: '#6f6d94', b: '#5b5981' }, { k: '4', n: 'Lintasan Kota', p: 1, a: '#6a6280', b: '#574f67' }];
+const BOX = { 1: [[.062, .463, .247, .297], [.375, .463, .247, .3], [.688, .463, .246, .297]], 2: [[.092, .416, .235, .345], [.393, .42, .235, .345], [.693, .416, .234, .349]], 3: [[.092, .422, .229, .318], [.384, .419, .228, .318], [.672, .422, .226, .314]] };
+const PAPAN_H = { 1: 283 / 800, 2: 238 / 800, 3: 277 / 800 }, GRB = [[.157, .251, .19, .135], [.407, .251, .19, .141], [.659, .251, .191, .137]], GRB_H = 439 / 700, RIN_H = 235 / 420;
+let PIL = { k: 'aji', m: '2' };
 let U = { nama: 'Siswa', kelas: 3, uid: '', admin: false }, DATA = { stages: {}, pakai: [], sahabat: '' }, G = null, AC = null, efekOn = true, VMUL = 1;
 const cv = $('lrC'), cx = cv.getContext('2d');
 function bacaSuara() { try { const s = JSON.parse(localStorage.getItem('pengaturan_game') || '{}'); return { musik: s.musik !== false, efek: s.efek !== false }; } catch (e) { return { musik: true, efek: true }; } }
@@ -210,10 +217,10 @@ function buatGerbang(qi) {
 // ===== PERMAINAN =====
 function laneX(l, z) { return VW / 2 + (l - 1) * 280 * (.12 + .88 * z); }
 function zy(z) { return HZ + (500 - HZ) * z; }
-function nextGate() { const g = buatGerbang(G.qi); G.gates.push(g); for (let k = 0; k < 4; k++) G.coins.push({ z: g.z + .07 + k * .075, l: R(0, 2) }); }
+function nextGate() { const g = buatGerbang(G.qi); G.gates.push(g); for (let k = 0; k < 4; k++) G.coins.push({ z: g.z + .07 + k * .075, l: R(0, 2) }); if (G.qi > 0) G.obs.push({ z: g.z + .2, l: R(0, 2) }); }
 async function mulai() {
   if (MAP !== 'matematika' && !(await muatPool(MAP))) { pesan('Soal ' + MAPEL_NAMA[MAP] + ' untuk kelasmu belum cukup. Hubungi guru.'); setTimeout(() => tampil('lrMenu'), 3000); return; }
-  G = { mode: 'main', cd: 3.2, t: 0, lane: 1, lx: 1, hati: sah('kura') ? 4 : 3, perisai: sah('kadal') ? 1 : 0, skor: 0, koin: 0, benar: 0, salah: 0, combo: 0, mx: 0, qi: 0, gates: [], coins: [], msg: '', mt: 0, shake: 0 };
+  G = { mode: 'main', cd: 3.2, t: 0, lane: 1, lx: 1, hati: sah('kura') ? 4 : 3, perisai: sah('kadal') ? 1 : 0, skor: 0, koin: 0, benar: 0, salah: 0, combo: 0, mx: 0, qi: 0, gates: [], coins: [], obs: [], msg: '', mt: 0, shake: 0 };
   nextGate(); tampil(null); $('lrCtl').style.display = 'block';
 }
 function geser(d) { if (G && G.mode === 'main') G.lane = Math.max(0, Math.min(2, G.lane + d)); }
@@ -232,43 +239,64 @@ function update(dt) {
   const v = Math.min(.3, .2 + G.mx * .006); G.v = v;
   G.gates.forEach(g => { g.z += v * d; if (!g.done && g.z >= ZP) { g.done = true; jawabGerbang(g); } });
   G.coins.forEach(c => { c.z += v * d; if (!c.k && c.z >= ZP) { c.k = 1; if (Math.abs(c.l - G.lane) < (sah('tupai') ? 1.5 : .5)) { G.koin++; G.skor += sah('unta') ? 10 : 5; bunyi('koin'); } } });
+  G.obs.forEach(o => { o.z += v * d; if (!o.k && o.z >= ZP) { o.k = 1; if (o.l === G.lane) { G.combo = 0; G.skor = Math.max(0, G.skor - 10); G.msg = 'Aduh, menabrak rintangan! -10'; G.ok = 0; G.mt = 1.4; G.shake = .4; bunyi('salah'); } } });
+  G.obs = G.obs.filter(o => o.z < 1.2);
   G.gates = G.gates.filter(g => g.z < 1.2); G.coins = G.coins.filter(c => c.z < 1.2);
 }
 function bungkus(t, mw) { const k = String(t).split(' '), b = []; let l = ''; k.forEach(w => { const c = l ? l + ' ' + w : w; if (cx.measureText(c).width > mw && l) { b.push(l); l = w; } else l = c; }); if (l) b.push(l); return b; }
-function teks(t, x, y, mw, ukuran, maks, lh) {
-  let u = ukuran, b; for (; u >= 13; u -= 2) { cx.font = '800 ' + u + 'px Trebuchet MS'; b = bungkus(t, mw); if (b.length <= maks) break; }
+function teks(t, x, y, mw, ukuran, maks, mn) {
+  let u = ukuran, b; for (; u >= (mn || 13); u -= 2) { cx.font = '800 ' + u + 'px Trebuchet MS, sans-serif'; b = bungkus(t, mw); if (b.length <= maks) break; }
   const awal = y - (b.length - 1) * (u * 1.15) / 2; b.slice(0, maks + 1).forEach((l, i) => cx.fillText(l, x, awal + i * u * 1.15)); return b.length;
 }
 function gambar() {
-  const g = cx.createLinearGradient(0, 0, 0, HZ); g.addColorStop(0, '#8fd3f4'); g.addColorStop(1, '#d9f2d0'); cx.fillStyle = g; cx.fillRect(0, 0, VW, VH);
-  if (IMG.surya) cx.drawImage(IMG.surya, 690, 56, 76, 77);
-  if (IMG.bg) cx.drawImage(IMG.bg, 0, HZ - 126, VW, 130);
-  cx.fillStyle = '#5fae4a'; cx.fillRect(0, HZ, VW, VH - HZ);
-  const e = z => 1.5 * 280 * (.12 + .88 * z); cx.fillStyle = '#6d6d7a'; cx.beginPath(); cx.moveTo(VW / 2 - e(0), HZ); cx.lineTo(VW / 2 + e(0), HZ); cx.lineTo(VW / 2 + e(1.06), zy(1.06)); cx.lineTo(VW / 2 - e(1.06), zy(1.06)); cx.fill();
+  const md = MEDAN.find(m => m.k === PIL.m) || MEDAN[1];
+  if (IM.bg) cx.drawImage(IM.bg, 0, 0, VW, VH); else { const g0 = cx.createLinearGradient(0, 0, 0, HZ); g0.addColorStop(0, '#8fd3f4'); g0.addColorStop(1, '#d9f2d0'); cx.fillStyle = g0; cx.fillRect(0, 0, VW, VH); cx.fillStyle = '#5fae4a'; cx.fillRect(0, HZ, VW, VH - HZ); }
+  const e = z => 1.5 * 280 * (.12 + .88 * z), gr = cx.createLinearGradient(0, HZ, 0, VH); gr.addColorStop(0, md.a); gr.addColorStop(1, md.b);
+  cx.fillStyle = gr; cx.beginPath(); cx.moveTo(VW / 2 - e(0), HZ); cx.lineTo(VW / 2 + e(0), HZ); cx.lineTo(VW / 2 + e(1.06), zy(1.06)); cx.lineTo(VW / 2 - e(1.06), zy(1.06)); cx.fill();
+  cx.strokeStyle = '#ffffffd0'; cx.lineWidth = 5; [-1, 1].forEach(s => { cx.beginPath(); cx.moveTo(VW / 2 + s * e(0), HZ); cx.lineTo(VW / 2 + s * e(1.06), zy(1.06)); cx.stroke(); });
   if (!G) return;
-  const t = G.t * (G.v || .2); cx.strokeStyle = '#ffffffcc';
+  const t = G.t * (G.v || .2);
+  cx.fillStyle = 'rgba(0,0,0,.07)'; for (let i = 0; i < 14; i++) { const z0 = ((i * .08 + t) % 1.1), z1 = z0 + .03; cx.beginPath(); cx.moveTo(VW / 2 - e(z0), zy(z0)); cx.lineTo(VW / 2 + e(z0), zy(z0)); cx.lineTo(VW / 2 + e(z1), zy(z1)); cx.lineTo(VW / 2 - e(z1), zy(z1)); cx.fill(); }
+  cx.strokeStyle = '#ffffffcc';
   for (let i = 0; i < 12; i++) { const z0 = ((i * .09 + t) % 1.08), z1 = z0 + .04; [.5, 1.5].forEach(b => { cx.lineWidth = 2 + 6 * z0; cx.beginPath(); cx.moveTo(laneX(b + .5, z0) - 140 * (.12 + .88 * z0), zy(z0)); cx.lineTo(laneX(b + .5, z1) - 140 * (.12 + .88 * z1), zy(z1)); cx.stroke(); }); }
-  if (IMG.pohon) for (let i = 0; i < 6; i++) { const z = ((i * .19 + t) % 1.1); if (z < .03) continue; const sc = .12 + .88 * z, w = 230 * sc, h = w * IMG.pohon.height / IMG.pohon.width; cx.drawImage(IMG.pohon, VW / 2 - e(z) - w - 10, zy(z) - h + 6, w, h); cx.drawImage(IMG.pohon, VW / 2 + e(z) + 10, zy(z) - h + 6, w, h); }
-  const sorted = G.gates.map(o => ({ k: 'g', z: o.z, o: o })).concat(G.coins.filter(c => !c.k).map(o => ({ k: 'c', z: o.z, o: o }))).sort((a, b) => a.z - b.z);
+  const sorted = G.gates.map(o => ({ k: 'g', z: o.z, o: o })).concat(G.coins.filter(c => !c.k).map(o => ({ k: 'c', z: o.z, o: o })), G.obs.filter(o => !o.k).map(o => ({ k: 'o', z: o.z, o: o }))).sort((a, b) => a.z - b.z);
   sorted.forEach(it => {
     if (it.z < .02) return; const sc = .12 + .88 * it.z, y = zy(it.z);
-    if (it.k === 'c') { cx.fillStyle = '#f5c542'; cx.strokeStyle = '#b8860b'; cx.lineWidth = 2; cx.beginPath(); cx.ellipse(laneX(it.o.l, it.z), y - 30 * sc, 15 * sc, 17 * sc, 0, 0, 7); cx.fill(); cx.stroke(); }
-    else for (let l = 0; l < 3; l++) { const x = laneX(l, it.z), w = 250 * sc, h = 170 * sc; cx.globalAlpha = it.o.done ? .5 : 1; cx.fillStyle = WARNA[l]; cx.strokeStyle = '#fff'; cx.lineWidth = Math.max(2, 5 * sc); cx.fillRect(x - w / 2, y - h, w, h); cx.strokeRect(x - w / 2, y - h, w, h); cx.fillStyle = '#fff'; cx.textAlign = 'center'; cx.font = '800 ' + Math.round(80 * sc) + 'px Trebuchet MS'; cx.fillText('ABC'[l], x, y - h / 2 + 28 * sc); cx.globalAlpha = 1; }
+    if (it.k === 'c') { cx.fillStyle = '#f5c542'; cx.strokeStyle = '#b8860b'; cx.lineWidth = 2; cx.beginPath(); cx.ellipse(laneX(it.o.l, it.z), y - 30 * sc, 15 * sc, 17 * sc, 0, 0, 7); cx.fill(); cx.stroke(); cx.fillStyle = '#fff8'; cx.beginPath(); cx.ellipse(laneX(it.o.l, it.z) - 4 * sc, y - 36 * sc, 4 * sc, 7 * sc, 0, 0, 7); cx.fill(); }
+    else if (it.k === 'o') { const w = 270 * sc * .95, h = w * RIN_H, x = laneX(it.o.l, it.z); if (IM.rin) cx.drawImage(IM.rin, x - w / 2, y - h + 6 * sc, w, h); else { cx.fillStyle = '#e53935'; cx.fillRect(x - w / 2, y - h, w, h); } }
+    else if (IM.gerbang) {
+      const W3 = 3 * 280 * sc * 1.02, h = W3 * GRB_H, x0 = VW / 2 - W3 / 2, y0 = y - h + 14 * sc;
+      cx.globalAlpha = it.o.done ? Math.max(0, 1 - (it.z - ZP) / .12) : 1; cx.drawImage(IM.gerbang, x0, y0, W3, h); cx.textAlign = 'center';
+      GRB.forEach((b, l) => { cx.fillStyle = '#0B2A4A'; cx.font = '800 ' + Math.max(8, Math.round(b[3] * h * .9)) + 'px Trebuchet MS, sans-serif'; cx.fillText('ABC'[l], x0 + (b[0] + b[2] / 2) * W3, y0 + (b[1] + b[3] * .86) * h); });
+      cx.lineJoin = 'round'; cx.strokeStyle = '#0B2A4A'; cx.lineWidth = Math.max(2, 7 * sc); cx.font = '800 ' + Math.max(10, Math.round(84 * sc)) + 'px Trebuchet MS, sans-serif'; cx.fillStyle = '#fff';
+      for (let l = 0; l < 3; l++) { const lx = laneX(l, it.z), ly = y - 10 * sc; cx.strokeText('ABC'[l], lx, ly); cx.fillText('ABC'[l], lx, ly); }
+      cx.globalAlpha = 1;
+    } else for (let l = 0; l < 3; l++) { const x = laneX(l, it.z), w = 250 * sc, h = 170 * sc; cx.globalAlpha = it.o.done ? .5 : 1; cx.fillStyle = WARNA[l]; cx.strokeStyle = '#fff'; cx.lineWidth = Math.max(2, 5 * sc); cx.fillRect(x - w / 2, y - h, w, h); cx.strokeRect(x - w / 2, y - h, w, h); cx.fillStyle = '#fff'; cx.textAlign = 'center'; cx.font = '800 ' + Math.round(80 * sc) + 'px Trebuchet MS, sans-serif'; cx.fillText('ABC'[l], x, y - h / 2 + 28 * sc); cx.globalAlpha = 1; }
   });
-  const px = laneX(G.lx, ZP) + (G.shake > 0 ? Math.sin(G.t * 90) * 6 : 0), py = zy(ZP), im = IMG.idle;
-  if (im) { const h = 150, w = h * im.width / im.height; cx.save(); cx.translate(px, py + Math.sin(G.t * 14) * 3); cx.rotate((G.lane - G.lx) * .22); cx.drawImage(im, -w / 2, -h, w, h); cx.restore(); } else { cx.fillStyle = '#111'; cx.fillRect(px - 20, py - 90, 40, 80); }
-  if (DATA.sahabat && IMG[DATA.sahabat]) { const s = IMG[DATA.sahabat], w = 54, h = w * s.height / s.width; cx.drawImage(s, px + 56, py - h + Math.abs(Math.sin(G.t * 10)) * -5, w, h); }
+  const px = laneX(G.lx, ZP) + (G.shake > 0 ? Math.sin(G.t * 90) * 6 : 0), py = zy(ZP), im = IM.k3 || IMG.idle;
+  if (im) { const h = 190, w = h * im.width / im.height, flip = Math.floor(G.t * 6) % 2 ? -1 : 1, bob = Math.abs(Math.sin(G.t * 12)) * 7;
+    cx.fillStyle = '#0005'; cx.beginPath(); cx.ellipse(px, py + 4, w * .5, 10, 0, 0, 7); cx.fill();
+    cx.save(); cx.translate(px, py - bob); cx.rotate((G.lane - G.lx) * .18); cx.scale(flip, 1); cx.drawImage(im, -w / 2, -h, w, h); cx.restore(); }
+  else { cx.fillStyle = '#111'; cx.fillRect(px - 20, py - 90, 40, 80); }
+  if (DATA.sahabat && IMG[DATA.sahabat]) { const s = IMG[DATA.sahabat], w = 60, h = w * s.height / s.width; cx.drawImage(s, px + 62, py - h - Math.abs(Math.sin(G.t * 10)) * 5, w, h); }
   // HUD
-  cx.fillStyle = '#0007'; cx.fillRect(0, 0, VW, 46); cx.textAlign = 'left'; cx.font = '800 20px Trebuchet MS'; cx.fillStyle = '#fff';
+  cx.fillStyle = '#0007'; cx.fillRect(0, 0, VW, 46); cx.textAlign = 'left'; cx.font = '800 20px Trebuchet MS, sans-serif'; cx.fillStyle = '#fff';
   for (let i = 0; i < G.hati; i++) if (IMG.hati) cx.drawImage(IMG.hati, 12 + i * 34, 8, 30, 30);
   cx.fillText('⭐ ' + G.skor, 160, 31); cx.fillText('🪙 ' + G.koin, 300, 31); cx.fillText('Soal ' + Math.min(G.qi + 1, N) + '/' + N, 410, 31); cx.fillText(G.combo > 1 ? '🔥 Combo x' + G.combo : '', 560, 31);
   const a = G.gates.find(o => !o.done);
   if (a) {
-    cx.fillStyle = '#0B2A4Add'; cx.fillRect(40, 52, 880, 78); cx.fillStyle = '#fff'; cx.textAlign = 'center'; teks(a.q, VW / 2, 91, 840, 30, 2);
-    for (let l = 0; l < 3; l++) { const x = 40 + l * 297, ak = G.lane === l; cx.fillStyle = WARNA[l]; cx.fillRect(x, 136, 286, 74); cx.strokeStyle = (a.hint && sah('rubah') && a.j === l) ? '#ffeb3b' : '#fff'; cx.lineWidth = ak ? 7 : (a.hint && sah('rubah') && a.j === l ? 6 : 2); cx.strokeRect(x, 136, 286, 74); cx.fillStyle = '#fff'; cx.textAlign = 'center'; teks('ABC'[l] + '. ' + a.o[l], x + 143, 173, 262, 21, 2); if (a.hint && sah('rubah') && a.j === l) cx.fillText('💡', x + 266, 156); }
+    cx.fillStyle = '#0B2A4Ae8'; cx.fillRect(40, 50, 880, 48); cx.strokeStyle = '#F5C542'; cx.lineWidth = 3; cx.strokeRect(40, 50, 880, 48); cx.fillStyle = '#fff'; cx.textAlign = 'center'; teks(a.q, VW / 2, 75, 850, 24, 2, 14);
+    if (IM.papan) {
+      const pw = 680, ph = pw * PAPAN_H[md.p], bx = (VW - pw) / 2, by = 100; cx.drawImage(IM.papan, bx, by, pw, ph);
+      BOX[md.p].forEach((b, l) => { const x = bx + b[0] * pw, yy = by + b[1] * ph, w = b[2] * pw, h = b[3] * ph, ak = G.lane === l;
+        if (ak) { cx.fillStyle = WARNA[l] + '40'; cx.fillRect(x, yy, w, h); }
+        cx.fillStyle = '#0B2A4A'; cx.textAlign = 'center'; teks('ABC'[l] + '. ' + a.o[l], x + w / 2, yy + h / 2, w - 12, 16, 4, 10);
+        cx.strokeStyle = WARNA[l]; cx.lineWidth = ak ? 5 : 3; cx.strokeRect(x, yy, w, h);
+        if (a.hint && sah('rubah') && a.j === l) { cx.font = '20px serif'; cx.fillText('💡', x + w - 14, yy + 18); } });
+    } else for (let l = 0; l < 3; l++) { const x = 40 + l * 297, ak = G.lane === l; cx.fillStyle = WARNA[l]; cx.fillRect(x, 104, 286, 74); cx.strokeStyle = '#fff'; cx.lineWidth = ak ? 7 : 2; cx.strokeRect(x, 104, 286, 74); cx.fillStyle = '#fff'; cx.textAlign = 'center'; teks('ABC'[l] + '. ' + a.o[l], x + 143, 141, 262, 21, 2); }
   }
-  cx.textAlign = 'center'; if (G.mt > 0) { cx.fillStyle = G.ok ? '#2e7d32' : '#c62828'; cx.fillRect(160, 290, 640, 50); cx.fillStyle = '#fff'; cx.font = '800 24px Trebuchet MS'; cx.fillText(G.msg, VW / 2, 323); }
-  if (G.cd > 0) { cx.fillStyle = '#0008'; cx.fillRect(0, 232, VW, VH - 232); cx.fillStyle = '#F5C542'; cx.font = '800 120px Trebuchet MS'; cx.fillText(G.cd > .2 ? Math.ceil(G.cd - .2) : 'GO!', VW / 2, 400); cx.font = '800 22px Trebuchet MS'; cx.fillStyle = '#fff'; cx.fillText('Geser ke gerbang jawaban yang benar!', VW / 2, 450); }
+  cx.textAlign = 'center'; if (G.mt > 0) { cx.fillStyle = G.ok ? '#2e7d32' : '#c62828'; cx.fillRect(160, 350, 640, 50); cx.fillStyle = '#fff'; cx.font = '800 24px Trebuchet MS, sans-serif'; cx.fillText(G.msg, VW / 2, 383); }
+  if (G.cd > 0) { cx.fillStyle = '#0008'; cx.fillRect(0, 350, VW, VH - 350); cx.fillStyle = '#F5C542'; cx.font = '800 100px Trebuchet MS, sans-serif'; cx.fillText(G.cd > .2 ? Math.ceil(G.cd - .2) : 'GO!', VW / 2, 450); cx.font = '800 22px Trebuchet MS, sans-serif'; cx.fillStyle = '#fff'; cx.fillText('Geser ke gerbang jawaban yang benar!', VW / 2, 500); }
 }
 let tLalu = 0;
 function loop(t) { const dt = Math.min(.05, (t - tLalu) / 1000 || 0); tLalu = t; update(dt); gambar(); requestAnimationFrame(loop); }
@@ -277,13 +305,13 @@ function selesai(menang) {
   DATA.lari = DATA.lari || {}; const rek = DATA.lari[MAP] || { skor: 0 }, baru = G.skor > rek.skor; if (baru) DATA.lari[MAP] = { skor: G.skor, bintang: bintang };
   $('hJudul').textContent = menang ? 'Selesai! 🎉' : 'Nyawa Habis 😅'; $('hBintang').textContent = '⭐'.repeat(bintang) + '☆'.repeat(3 - bintang);
   $('hStat').textContent = 'Skor ' + G.skor + (baru ? ' (REKOR BARU!)' : ' · Rekor ' + rek.skor) + ' · Benar ' + G.benar + ' · Salah ' + G.salah + ' · Akurasi ' + akur + '% · Koin ' + G.koin + ' · Combo terbaik ' + G.mx + ' · Waktu ' + Math.floor(w / 60) + ':' + ('0' + w % 60).slice(-2);
-  bunyi(menang ? 'menang' : 'salah'); tampil('lrHasil'); tulisProgres();
+  $('hKar').src = BASE2 + 'kar-' + PIL.k + (menang ? '-2' : '-1') + '.webp'; bunyi(menang ? 'menang' : 'salah'); tampil('lrHasil'); tulisProgres();
 }
 function jeda() { if (!G) return; if (G.mode === 'main') { G.mode = 'jeda'; tampil('lrJeda'); } else if (G.mode === 'jeda') { G.mode = 'main'; tampil(null); $('lrCtl').style.display = 'block'; } }
 function suaraUI() { $('sMusik').textContent = 'Musik: ' + (bacaSuara().musik ? 'Hidup' : 'Mati') + ' (musik latar menyusul)'; $('sEfek').textContent = 'Efek suara: ' + (efekOn ? 'Hidup' : 'Mati'); }
 function pasangUI() {
   $('bMain').onclick = () => { bunyi('koin'); mulai(); };
-  $('bPanduan').onclick = () => tampil('lrPanduan'); $('bSet').onclick = () => { suaraUI(); tampil('lrSet'); }; $('bKeluar').onclick = () => { location.href = 'beranda.html'; };
+  $('bPanduan').onclick = () => tampil('lrPanduan'); $('bPilih').onclick = bukaPilih; $('bSet').onclick = () => { suaraUI(); tampil('lrSet'); }; $('bKeluar').onclick = () => { location.href = 'beranda.html'; };
   document.querySelectorAll('.lrKembali').forEach(b => b.onclick = () => tampil('lrMenu'));
   $('sMusik').onclick = () => { simpanSuara('musik', !bacaSuara().musik); suaraUI(); }; $('sEfek').onclick = () => { efekOn = !efekOn; simpanSuara('efek', efekOn); suaraUI(); bunyi('koin'); };
   $('hUlang').onclick = mulai; $('hSelesai').onclick = () => { location.href = 'beranda.html'; }; $('jLanjut').onclick = jeda; $('jMenu').onclick = () => { G = null; tampil('lrMenu'); };
@@ -293,9 +321,24 @@ function pasangUI() {
   addEventListener('keydown', e => { const c = e.key; if (c === 'ArrowLeft' || c === 'a') geser(-1); else if (c === 'ArrowRight' || c === 'd') geser(1); else if (c === 'Escape' || c === 'p') jeda(); });
   addEventListener('resize', ukur); ukur();
 }
+function muat(nm, base) { if (CACHE[nm]) return Promise.resolve(CACHE[nm]); return new Promise(ok => { const i = new Image(); i.onload = () => { CACHE[nm] = i; ok(i); }; i.onerror = () => ok(null); i.src = (base || BASE2) + nm + '.webp'; setTimeout(() => ok(null), 15000); }); }
+async function siapkanPilihan() {
+  const md = MEDAN.find(m => m.k === PIL.m) || MEDAN[1], k = PIL.k;
+  const r = await Promise.all(['bg-' + md.k, 'kar-' + k + '-1', 'kar-' + k + '-3', 'papan-' + md.p, 'gerbang', 'rintangan'].map(n => muat(n)));
+  IM.bg = r[0]; IM.k1 = r[1]; IM.k3 = r[2]; IM.papan = r[3]; IM.gerbang = r[4]; IM.rin = r[5];
+  if (IM.k1) $('mKar').src = BASE2 + 'kar-' + k + '-1.webp';
+}
+function simpanPilihan() { DATA.lariPilih = { k: PIL.k, m: PIL.m }; try { localStorage.setItem('lari_pilihan_v1', JSON.stringify(PIL)); } catch (e) {} }
+function bukaPilih() {
+  const a = $('pilKar'), b = $('pilMed'); a.textContent = ''; b.textContent = '';
+  const kartu = (par, cls, src, st, nama, fn) => { const d = document.createElement('button'); d.className = 'lrS' + (cls ? ' pilih' : ''); const im = document.createElement('img'); im.src = src; for (const q in st) im.style[q] = st[q]; d.appendChild(im); const t = document.createElement('div'); t.textContent = nama; d.appendChild(t); d.onclick = fn; par.appendChild(d); };
+  KAR.forEach(c => kartu(a, PIL.k === c.k, BASE2 + 'kar-' + c.k + '-1.webp', { height: '118px' }, c.n, async () => { PIL.k = c.k; simpanPilihan(); await siapkanPilihan(); bukaPilih(); }));
+  MEDAN.forEach(c => kartu(b, PIL.m === c.k, BASE2 + 'th-' + c.k + '.webp', { width: '170px' }, c.n, async () => { PIL.m = c.k; simpanPilihan(); await siapkanPilihan(); bukaPilih(); }));
+  tampil('lrPilih');
+}
 async function muatGambar() {
-  const f = { idle: 'pak-idle', hati: 'hati', bg: 'bg-hutan', pohon: 'pohon', surya: 'matahari', kura: 'kura', unta: 'unta', kelinci: 'kelinci', rusa: 'rusa', tupai: 'tupai', rubah: 'rubah', kadal: 'kadal', burung: 'burung' };
-  await Promise.all(Object.keys(f).map(k => new Promise(ok => { const i = new Image(); i.onload = () => { IMG[k] = i; ok(); }; i.onerror = ok; i.src = BASE + f[k] + '.webp'; setTimeout(ok, 15000); })));
+  const f = { idle: 'pak-idle', hati: 'hati', kura: 'kura', unta: 'unta', kelinci: 'kelinci', rusa: 'rusa', tupai: 'tupai', rubah: 'rubah', kadal: 'kadal', burung: 'burung' };
+  await Promise.all(Object.keys(f).map(k => muat(f[k], BASE).then(i => { if (i) IMG[k] = i; })));
 }
 async function init() {
   pasangUI(); efekOn = bacaSuara().efek;
@@ -313,7 +356,8 @@ async function init() {
   try { const pg = await sb.from('adventure_progres').select('data').eq('id_siswa', uid).maybeSingle(); if (pg.data && pg.data.data) { let st = pg.data.data.stages || {}; if (st[1] || st['1'] || st[2] || st['2']) st = { matematika: st }; DATA = Object.assign({}, pg.data.data, { stages: st, pakai: Array.isArray(pg.data.data.pakai) ? pg.data.data.pakai : [], sahabat: pg.data.data.sahabat || '' }); } } catch (e) {}
   const rk = DATA.lari && DATA.lari[MAP] ? DATA.lari[MAP].skor : 0;
   $('mSapa').textContent = 'Halo, ' + U.nama + '! Kelas ' + U.kelas + ' · ' + MAPEL_NAMA[MAP] + (rk ? ' · Rekor ' + rk : '');
-  await muatGambar(); tampil('lrMenu'); requestAnimationFrame(loop);
+  try { const sv = JSON.parse(localStorage.getItem('lari_pilihan_v1') || 'null') || DATA.lariPilih; if (sv && KAR.some(c => c.k === sv.k) && MEDAN.some(c => c.k === sv.m)) PIL = { k: sv.k, m: sv.m }; } catch (e) {}
+  await muatGambar(); await siapkanPilihan(); tampil('lrMenu'); requestAnimationFrame(loop);
 }
 init();
 
