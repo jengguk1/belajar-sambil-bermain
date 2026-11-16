@@ -427,6 +427,17 @@ function pilihKelas(k, awal) {
     } else if (adventureBtn) {
       adventureBtn.style.display = 'none';
     }
+    let contraBtn = document.getElementById('btn-contra-pak-aji');
+    if (!contraBtn) {
+      contraBtn = document.createElement('button');
+      contraBtn.id = 'btn-contra-pak-aji';
+      contraBtn.className = 'menu-item';
+      contraBtn.style.marginTop = '12px';
+      contraBtn.innerHTML = '<span class="emoji">🔫</span><span class="txt"><b>Contra Pak Aji</b><span>Tembak musuh, kalahkan boss, jawab soal di peti!</span></span><span class="arrow">&rarr;</span>';
+      contraBtn.onclick = () => window.location.href = 'contra-pak-aji.html?mapel=' + mapelAktif + '&kelas=' + k;
+      areaMain.appendChild(contraBtn);
+    }
+    contraBtn.style.display = 'flex';
   } else {
     areaMain.style.display = 'none';
   }
