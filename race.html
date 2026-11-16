@@ -1080,8 +1080,19 @@ function selesaiBalap(pemenang) {
     $('banner').hidden = true; Suara.panggil('hentikanHujan'); Suara.panggil('hentikanAngin');
     const manusiaKalah = G.mode === 'single' && pemenang === 2;
     Suara.main('sorak'); jadwal(500, function () { Suara.main(manusiaKalah ? 'kalah' : 'menang'); });
-    tampilHasil(pemenang);
+    tampilHasil(pemenang); simpanSkorRace(pemenang);
   });
+}
+// Skor dicatat hanya bila pemain menang melawan COM. Database menyimpan skor tertinggi saja per akun.
+async function simpanSkorRace(pemenang) {
+  if (G.mode !== 'single' || pemenang !== 1 || !G.uid) return;
+  const p = G.p[1], tot = p.benar + p.salah, akur = tot ? p.benar / tot : 0;
+  const pengali = { mudah: 1, sedang: 1.5, sulit: 2 }[G.level] || 1;
+  const nilai = Math.round(p.benar * 100 * pengali * (0.5 + akur / 2));
+  const sub = $('hasil-sub'); if (sub) sub.textContent += ' · Skor ' + nilai;
+  try {
+    await sb.from('skor_game').insert({ id_siswa: G.uid, nama: G.namaSaya, mapel: MAPEL, tingkat: G.kelas, game: 'race-car', nilai: nilai, waktu_detik: Math.round(G.waktuBalap || 0) });
+  } catch (e) { console.warn('Gagal simpan skor race car:', e); }
 }
 function tampilHasil(pemenang) {
   const m = G.p[pemenang], k = G.p[pemenang === 1 ? 2 : 1], manusiaKalah = G.mode === 'single' && pemenang === 2;
@@ -1182,7 +1193,7 @@ async function init() {
   const s = bacaPengaturanSuara(); $('btn-suara').textContent = (s.efek || s.musik) ? '🔊' : '🔇';
 
   const ses = await sb.auth.getSession(); if (!ses.data || !ses.data.session) { window.location.href = 'index.html'; return; }
-  const uid = ses.data.session.user.id;
+  const uid = ses.data.session.user.id; G.uid = uid;
   const pr = await sb.from('profil').select('*, kelas(tingkat)').eq('id', uid).single();
   if (pr.error || !pr.data) { pesanSetup('Profil tidak ditemukan. Coba masuk lagi.'); return; }
   const prof = pr.data; G.admin = prof.role === 'admin';

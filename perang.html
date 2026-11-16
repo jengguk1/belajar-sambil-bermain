@@ -1048,7 +1048,16 @@ function kenaDamage(j) {
 function akhiri(pemenang) {
   if (G.selesai) return;
   G.selesai = true; G.pemenang = pemenang; clearInterval(G.timerWaktu); Suara.suasana(false);
-  jadwal(1400, function () { Suara.main('menang'); tampilHasil(pemenang); });
+  jadwal(1400, function () { Suara.main('menang'); tampilHasil(pemenang); simpanSkorPerang(pemenang); });
+}
+// Skor dicatat hanya bila Pemain 1 (akun yang masuk) menang. Database menyimpan skor tertinggi saja per akun.
+async function simpanSkorPerang(pemenang) {
+  if (pemenang !== 1 || !G.uid) return;
+  const nilai = G.p[1].skor;
+  const sub = $('hasil-sub'); if (sub) sub.textContent += ' · Skor ' + nilai;
+  try {
+    await sb.from('skor_game').insert({ id_siswa: G.uid, nama: G.namaSaya, mapel: 'matematika', tingkat: G.kelas, game: 'perang-angka', nilai: nilai, waktu_detik: Math.max(1, Math.round((Date.now() - G.t0) / 1000)) });
+  } catch (e) { console.warn('Gagal simpan skor perang angka:', e); }
 }
 function mmss(ms) { const s = Math.floor(ms / 1000); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); }
 function tampilHasil(pemenang) {
@@ -1287,7 +1296,7 @@ async function init() {
 
   const ses = await sb.auth.getSession();
   if (!ses.data || !ses.data.session) { window.location.href = 'index.html'; return; }
-  const uid = ses.data.session.user.id;
+  const uid = ses.data.session.user.id; G.uid = uid;
   const pr = await sb.from('profil').select('*, kelas(tingkat)').eq('id', uid).single();
   if (pr.error || !pr.data) { pesanSetup('Profil tidak ditemukan. Coba masuk lagi.'); return; }
   const prof = pr.data; G.admin = prof.role === 'admin';

@@ -129,6 +129,8 @@
     <button class="tab-btn" data-game="petualangan-matematika">🤖 Petualangan MTK</button>
     <button class="tab-btn" data-game="petualangan-bindo">🤖 Petualangan B.Indo</button>
     <button class="tab-btn" data-game="millionaire">💰 Jutawan</button>
+    <button class="tab-btn" data-game="race-car">🏎️ Race Car</button>
+    <button class="tab-btn" data-game="perang-angka">⚔️ Perang Angka</button>
     <button class="tab-btn" data-game="total">🏆 Total</button>
   </div>
 
@@ -144,7 +146,25 @@ const SUPABASE_URL = "https://dyxmilgvaymkbzgjtvln.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5eG1pbGd2YXlta2J6Z2p0dmxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4NDI0NTAsImV4cCI6MjEwNTQxODQ1MH0.FbzeXaVS2WIhbd1U3RMoqvYxieD-_x-o7PYmS4zmrcE";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+const NAMA_MAPEL = { matematika: 'Matematika', bahasa_indonesia: 'Bahasa Indonesia', ipas: 'IPAS', pendidikan_pancasila: 'Pendidikan Pancasila' };
 let gameAktif = 'race-berhitung';
+
+// Satu akun hanya tampil sekali per game (skor tertingginya). Petualangan: bintang terbaik tiap stage dijumlahkan.
+function olahPapan(rows) {
+  if (gameAktif.indexOf('petualangan') === 0) {
+    const per = {};
+    rows.forEach(r => {
+      const a = per[r.id_siswa] || (per[r.id_siswa] = { id_siswa: r.id_siswa, nama: r.nama, tingkat: r.tingkat, mapel: r.mapel, nilai: 0, terbaik: {} });
+      const t = r.tahap || 0;
+      if (!(t in a.terbaik) || r.nilai > a.terbaik[t]) a.terbaik[t] = r.nilai;
+    });
+    return Object.values(per).map(a => { a.nilai = Object.values(a.terbaik).reduce((x, y) => x + y, 0); a.jumlahStage = Object.keys(a.terbaik).length; return a; })
+      .sort((x, y) => y.nilai - x.nilai).slice(0, 20);
+  }
+  const lihat = {}, hasil = [];
+  rows.forEach(r => { if (lihat[r.id_siswa]) return; lihat[r.id_siswa] = 1; hasil.push(r); });
+  return hasil.slice(0, 20);
+}
 let kelasAktif = '';
 
 async function init() {
@@ -185,10 +205,11 @@ async function muatData() {
   }
 
   try {
-    let query = sb.from('skor_game').select('*').eq('game', gameAktif).order('nilai', { ascending: false }).limit(20);
+    let query = sb.from('skor_game').select('*').eq('game', gameAktif).order('nilai', { ascending: false }).order('waktu_detik', { ascending: true, nullsFirst: false }).limit(1000);
     if (kelasAktif) query = query.eq('tingkat', kelasAktif);
-    const { data, error } = await query;
+    const { data: mentah, error } = await query;
     if (error) throw error;
+    const data = olahPapan(mentah || []);
 
     if (!data || data.length === 0) {
       empty.style.display = 'block';
@@ -204,8 +225,10 @@ async function muatData() {
       if (gameAktif === 'race-berhitung') detail = 'Kelas ' + row.tingkat;
       else if (gameAktif === 'cari-pasangan') detail = 'Kelas ' + row.tingkat + ' · ' + (row.langkah || '-') + ' langkah · ' + (row.waktu_detik || '-') + ' detik';
       else if (gameAktif === 'millionaire') detail = 'Kelas ' + row.tingkat + ' · ' + (row.mapel || '-') + ' · Level ' + (row.tahap || '-');
-      else detail = 'Kelas ' + row.tingkat + ' · Stage ' + (row.tahap || '-');
-      const satuan = (gameAktif === 'petualangan-matematika' || gameAktif === 'petualangan-bindo') ? ' ⭐' : '';
+      else if (gameAktif === 'race-car') detail = 'Kelas ' + row.tingkat + ' · ' + (NAMA_MAPEL[row.mapel] || row.mapel || '-') + ' · ' + (row.waktu_detik || '-') + ' detik';
+      else if (gameAktif === 'perang-angka') detail = 'Kelas ' + row.tingkat + ' · ' + (row.waktu_detik || '-') + ' detik';
+      else detail = 'Kelas ' + row.tingkat + ' · ' + (row.jumlahStage || 1) + ' stage';
+      const satuan = (gameAktif === 'petualangan-matematika' || gameAktif === 'petualangan-bindo') ? ' ⭐' : ((gameAktif === 'race-car' || gameAktif === 'perang-angka') ? ' poin' : '');
 
       item.innerHTML = `
         <div class="peringkat">${medali}</div>

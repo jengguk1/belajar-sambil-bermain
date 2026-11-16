@@ -520,7 +520,37 @@ function soalPknBasic(bank) {
 
 // ---------------- DISPATCH PER SESI (antrian anti-ulang, direset tiap mulai game) ----------------
 let antrianBindoBasic, antrianBindoHots, antrianIpasMudah, antrianIpasSedang, antrianIpasHots, antrianPknMudah, antrianPknSedang, antrianPknHots;
+// ---- Bank soal dari database (sesuai mapel dan kelas siswa). Level awal = soal pendek/mudah, level akhir = soal panjang/sulit. ----
+let bankDb = null, antrianDb = null, pernahTampil = new Set();
+async function muatBankDb() {
+  if (mapelAktif === 'matematika') return;
+  try {
+    const { data, error } = await sb.from('soal').select('pertanyaan,pilihan_a,pilihan_b,pilihan_c,pilihan_d,jawaban_benar').eq('mapel', mapelAktif).eq('tingkat', TINGKAT_GAME).limit(500);
+    if (error || !data) return;
+    const item = [];
+    data.forEach(function (x) {
+      const o = [x.pilihan_a, x.pilihan_b, x.pilihan_c, x.pilihan_d].map(function (v) { return v == null ? '' : String(v); });
+      const k = 'ABCD'.indexOf(String(x.jawaban_benar || '').trim().toUpperCase());
+      if (k < 0 || o.some(function (v) { return !v; })) return;
+      item.push({ p: String(x.pertanyaan), o: o, b: o[k], skor: String(x.pertanyaan).length + Math.max.apply(null, o.map(function (v) { return v.length; })) });
+    });
+    if (item.length < 30) return; // bank terlalu sedikit: pakai soal bawaan
+    item.sort(function (a, b) { return a.skor - b.skor; });
+    const t = Math.floor(item.length / 3);
+    bankDb = { mudah: item.slice(0, t), sedang: item.slice(t, 2 * t), sulit: item.slice(2 * t) };
+    resetSemuaAntrian();
+  } catch (e) { console.warn('Bank soal database tidak dipakai:', e); }
+}
+function soalDariDb(t) {
+  let q, n = 0;
+  do { q = antrianDb[t].ambil(); n++; } while (pernahTampil.has(q.p) && n < 12);
+  pernahTampil.add(q.p);
+  const opsi = shuffle(q.o.slice());
+  return { pertanyaan: q.p, opsi: opsi, jawabanIndex: opsi.indexOf(q.b) };
+}
 function resetSemuaAntrian() {
+  pernahTampil = new Set();
+  antrianDb = bankDb ? { mudah: buatAntrian(bankDb.mudah), sedang: buatAntrian(bankDb.sedang), sulit: buatAntrian(bankDb.sulit) } : null;
   antrianBindoBasic = buatAntrian([...BANK_BINDO_MUDAH, ...BANK_BINDO_SEDANG]);
   antrianBindoHots = buatAntrian(BANK_BINDO_HOTS);
   antrianIpasMudah = buatAntrian(BANK_IPAS_MUDAH);
@@ -539,6 +569,7 @@ function tingkatUntukLevel(level) {
 }
 function buatSoalUntukLevel(level) {
   const t = tingkatUntukLevel(level);
+  if (antrianDb && mapelAktif !== 'matematika') return soalDariDb(t);
   if (mapelAktif === 'matematika') return t === 'mudah' ? soalMtkMudah() : t === 'sedang' ? soalMtkSedang() : soalMtkSulit();
   if (mapelAktif === 'bahasa_indonesia') return t === 'sulit' ? soalBindoHots(antrianBindoHots) : soalBindoBasic(antrianBindoBasic);
   if (mapelAktif === 'ipas') return t === 'mudah' ? soalIpasBasic(antrianIpasMudah) : t === 'sedang' ? soalIpasBasic(antrianIpasSedang) : soalIpasBasic(antrianIpasHots);
@@ -570,6 +601,7 @@ async function init() {
     if (p.role !== 'admin' && !tingkatSaya) { tampilkanPesan('Kelas kamu belum diatur. Hubungi admin.'); return; }
     TINGKAT_GAME = tingkatSaya || 3;
     namaSaya = p.nama || 'Siswa';
+    await muatBankDb();
   } catch (e) { tampilkanPesan('Gagal memuat profil: ' + (e.message || e)); }
 }
 function tampilkanPesan(teks) {
