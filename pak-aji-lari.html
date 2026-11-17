@@ -85,7 +85,7 @@
 #kSoal{font-size:56px;font-weight:800;background:#fff;color:#0B2A4A;border-radius:18px;padding:10px 34px}#kJwb{font-size:40px;font-weight:800;min-width:240px;background:#0B2A4A;border:3px solid #F5C542;border-radius:14px;padding:4px 20px}
 #kInfo{min-height:26px;font-size:18px;color:#ffe08a;font-weight:700}#kPad{display:grid;grid-template-columns:repeat(6,64px);gap:8px}.lrK{height:52px;border-radius:12px;border:3px solid #7A5A12;background:#ffd860;color:#0B2A4A;font:800 24px "Trebuchet MS",sans-serif;cursor:pointer}
 #lrCtl{display:none;position:absolute;inset:0;pointer-events:none}#lrCtl button{pointer-events:auto;position:absolute;width:86px;height:86px;border-radius:50%;border:4px solid #fff;background:rgba(11,42,74,.55);color:#fff;font-size:34px;bottom:22px;touch-action:none}
-#lKiri{left:22px}#lKanan{right:22px}#lJeda{right:20px;top:54px;bottom:auto;width:50px;height:50px;font-size:22px}
+#lKiri{left:22px}#lKanan{right:22px}#lJeda{right:8px;top:3px;bottom:auto;width:40px;height:40px;font-size:17px;border-width:3px}
 #lrPutar{display:none;position:fixed;inset:0;z-index:9;background:#0B2A4A;color:#F5C542;font:800 22px "Trebuchet MS",sans-serif;align-items:center;justify-content:center;text-align:center;padding:30px}
 #kOps{display:none;grid-template-columns:1fr 1fr;gap:10px;width:840px}.lrO{padding:12px 14px;border-radius:14px;border:3px solid #7A5A12;background:#ffd860;color:#0B2A4A;font:800 19px "Trebuchet MS",sans-serif;cursor:pointer;text-align:left}#kSoal{max-width:860px}
 #sahIsi{display:grid;grid-template-columns:repeat(4,160px);gap:10px}.lrS{padding:8px 6px;border-radius:14px;border:3px solid transparent;background:rgba(255,255,255,.14);color:#fff;font:600 14px "Trebuchet MS",sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}.lrS.pilih{border-color:#F5C542;background:rgba(245,197,66,.25)}.lrO:disabled{cursor:default}
@@ -108,14 +108,14 @@
 const SUPABASE_URL = "https://dyxmilgvaymkbzgjtvln.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5eG1pbGd2YXlta2J6Z2p0dmxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4NDI0NTAsImV4cCI6MjEwNTQxODQ1MH0.FbzeXaVS2WIhbd1U3RMoqvYxieD-_x-o7PYmS4zmrcE";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-const VW = 960, VH = 540, HZ = 232, ZP = .92, N = 12, BASE = 'aset-pak-aji-adventure/';
+const VW = 960, VH = 540, HZ = 232, ZP = .8, N = 12, BASE = 'aset-pak-aji-adventure/';
 const $ = id => document.getElementById(id);
 const R = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 const Pk = a => a[R(0, a.length - 1)];
 const BASE2 = 'aset-pak-aji-lari/';
 const IMG = {}, WARNA = ['#1e88e5', '#e53935', '#43a047'], IM = {}, CACHE = {};
 const KAR = [{ k: 'aji', n: 'Pak Aji' }, { k: 'azzam', n: 'Moh Azzam' }, { k: 'sofyan', n: 'Moh Sofyan' }, { k: 'nadia', n: 'Nadia Fathin' }];
-const MEDAN = [{ k: '1', n: 'Desa Bersalju', p: 1, a: '#9fb3d6', b: '#c9dcf8' }, { k: '2', n: 'Jalan Desa', p: 2, a: '#d98e3f', b: '#e69a45' }, { k: '3', n: 'Kota Pelari', p: 3, a: '#6f6d94', b: '#5b5981' }, { k: '4', n: 'Lintasan Kota', p: 1, a: '#6a6280', b: '#574f67' }];
+const MEDAN = [{ k: '1', n: 'Desa Bersalju', p: 1, s: ['#b0deff', '#eaf6ff'], a: '#9fb3d6', b: '#c9dcf8' }, { k: '2', n: 'Jalan Desa', p: 2, s: ['#8fd3f4', '#d9f2d0'], a: '#d98e3f', b: '#e69a45' }, { k: '3', n: 'Kota Pelari', p: 3, s: ['#8fd3f4', '#d9f2d0'], a: '#6f6d94', b: '#5b5981' }, { k: '4', n: 'Lintasan Kota', p: 1, s: ['#8fd3f4', '#d9f2d0'], a: '#6a6280', b: '#574f67' }];
 const BOX = { 1: [[.062, .463, .247, .297], [.375, .463, .247, .3], [.688, .463, .246, .297]], 2: [[.092, .416, .235, .345], [.393, .42, .235, .345], [.693, .416, .234, .349]], 3: [[.092, .422, .229, .318], [.384, .419, .228, .318], [.672, .422, .226, .314]] };
 const PAPAN_H = { 1: 283 / 800, 2: 238 / 800, 3: 277 / 800 }, GRB = [[.157, .251, .19, .135], [.407, .251, .19, .141], [.659, .251, .191, .137]], GRB_H = 439 / 700, RIN_H = 235 / 420;
 let PIL = { k: 'aji', m: '2' };
@@ -236,7 +236,7 @@ function update(dt) {
   if (!G || G.mode !== 'main') return; if (G.cd > 0) { G.cd -= dt; return; }
   const d = dt * VMUL; G.t += d; if (G.mt > 0) G.mt -= dt; if (G.shake > 0) G.shake -= dt;
   G.lx += (G.lane - G.lx) * Math.min(1, (sah('rusa') ? 14 : 10) * dt);
-  const v = Math.min(.3, .2 + G.mx * .006); G.v = v;
+  const v = Math.min(.26, .16 + G.mx * .005); G.v = v;
   G.gates.forEach(g => { g.z += v * d; if (!g.done && g.z >= ZP) { g.done = true; jawabGerbang(g); } });
   G.coins.forEach(c => { c.z += v * d; if (!c.k && c.z >= ZP) { c.k = 1; if (Math.abs(c.l - G.lane) < (sah('tupai') ? 1.5 : .5)) { G.koin++; G.skor += sah('unta') ? 10 : 5; bunyi('koin'); } } });
   G.obs.forEach(o => { o.z += v * d; if (!o.k && o.z >= ZP) { o.k = 1; if (o.l === G.lane) { G.combo = 0; G.skor = Math.max(0, G.skor - 10); G.msg = 'Aduh, menabrak rintangan! -10'; G.ok = 0; G.mt = 1.4; G.shake = .4; bunyi('salah'); } } });
@@ -244,12 +244,14 @@ function update(dt) {
   G.gates = G.gates.filter(g => g.z < 1.2); G.coins = G.coins.filter(c => c.z < 1.2);
 }
 function bungkus(t, mw) { const k = String(t).split(' '), b = []; let l = ''; k.forEach(w => { const c = l ? l + ' ' + w : w; if (cx.measureText(c).width > mw && l) { b.push(l); l = w; } else l = c; }); if (l) b.push(l); return b; }
-function teks(t, x, y, mw, ukuran, maks, mn) {
-  let u = ukuran, b; for (; u >= (mn || 13); u -= 2) { cx.font = '800 ' + u + 'px Trebuchet MS, sans-serif'; b = bungkus(t, mw); if (b.length <= maks) break; }
-  const awal = y - (b.length - 1) * (u * 1.15) / 2; b.slice(0, maks + 1).forEach((l, i) => cx.fillText(l, x, awal + i * u * 1.15)); return b.length;
+function fitU(t, mw, u0, maks, mn, mh) { let u = u0; for (; u >= mn; u -= 2) { cx.font = '800 ' + u + 'px Trebuchet MS, sans-serif'; const b = bungkus(t, mw); if (b.length <= maks && b.length * u * 1.15 <= mh) return u; } return mn; }
+function teks(t, x, y, mw, ukuran, maks, mn, mh, paksa) {
+  const u = paksa || fitU(t, mw, ukuran, maks, mn || 13, mh || 999); cx.font = '800 ' + u + 'px Trebuchet MS, sans-serif';
+  const b = bungkus(t, mw), awal = y - (b.length - 1) * (u * 1.15) / 2; b.forEach((l, i) => cx.fillText(l, x, awal + i * u * 1.15)); return b.length;
 }
 function gambar() {
   const md = MEDAN.find(m => m.k === PIL.m) || MEDAN[1];
+  const sk = cx.createLinearGradient(0, 0, 0, VH); sk.addColorStop(0, md.s[0]); sk.addColorStop(1, md.s[1]); cx.fillStyle = sk; cx.fillRect(0, 0, VW, VH);
   if (IM.bg) cx.drawImage(IM.bg, 0, 0, VW, VH); else { const g0 = cx.createLinearGradient(0, 0, 0, HZ); g0.addColorStop(0, '#8fd3f4'); g0.addColorStop(1, '#d9f2d0'); cx.fillStyle = g0; cx.fillRect(0, 0, VW, VH); cx.fillStyle = '#5fae4a'; cx.fillRect(0, HZ, VW, VH - HZ); }
   const e = z => 1.5 * 280 * (.12 + .88 * z), gr = cx.createLinearGradient(0, HZ, 0, VH); gr.addColorStop(0, md.a); gr.addColorStop(1, md.b);
   cx.fillStyle = gr; cx.beginPath(); cx.moveTo(VW / 2 - e(0), HZ); cx.lineTo(VW / 2 + e(0), HZ); cx.lineTo(VW / 2 + e(1.06), zy(1.06)); cx.lineTo(VW / 2 - e(1.06), zy(1.06)); cx.fill();
@@ -273,29 +275,30 @@ function gambar() {
       cx.globalAlpha = 1;
     } else for (let l = 0; l < 3; l++) { const x = laneX(l, it.z), w = 250 * sc, h = 170 * sc; cx.globalAlpha = it.o.done ? .5 : 1; cx.fillStyle = WARNA[l]; cx.strokeStyle = '#fff'; cx.lineWidth = Math.max(2, 5 * sc); cx.fillRect(x - w / 2, y - h, w, h); cx.strokeRect(x - w / 2, y - h, w, h); cx.fillStyle = '#fff'; cx.textAlign = 'center'; cx.font = '800 ' + Math.round(80 * sc) + 'px Trebuchet MS, sans-serif'; cx.fillText('ABC'[l], x, y - h / 2 + 28 * sc); cx.globalAlpha = 1; }
   });
-  const px = laneX(G.lx, ZP) + (G.shake > 0 ? Math.sin(G.t * 90) * 6 : 0), py = zy(ZP), im = IM.k3 || IMG.idle;
-  if (im) { const h = 190, w = h * im.width / im.height, flip = Math.floor(G.t * 6) % 2 ? -1 : 1, bob = Math.abs(Math.sin(G.t * 12)) * 7;
-    cx.fillStyle = '#0005'; cx.beginPath(); cx.ellipse(px, py + 4, w * .5, 10, 0, 0, 7); cx.fill();
-    cx.save(); cx.translate(px, py - bob); cx.rotate((G.lane - G.lx) * .18); cx.scale(flip, 1); cx.drawImage(im, -w / 2, -h, w, h); cx.restore(); }
-  else { cx.fillStyle = '#111'; cx.fillRect(px - 20, py - 90, 40, 80); }
-  if (DATA.sahabat && IMG[DATA.sahabat]) { const s = IMG[DATA.sahabat], w = 60, h = w * s.height / s.width; cx.drawImage(s, px + 62, py - h - Math.abs(Math.sin(G.t * 10)) * 5, w, h); }
   // HUD
   cx.fillStyle = '#0007'; cx.fillRect(0, 0, VW, 46); cx.textAlign = 'left'; cx.font = '800 20px Trebuchet MS, sans-serif'; cx.fillStyle = '#fff';
   for (let i = 0; i < G.hati; i++) if (IMG.hati) cx.drawImage(IMG.hati, 12 + i * 34, 8, 30, 30);
   cx.fillText('⭐ ' + G.skor, 160, 31); cx.fillText('🪙 ' + G.koin, 300, 31); cx.fillText('Soal ' + Math.min(G.qi + 1, N) + '/' + N, 410, 31); cx.fillText(G.combo > 1 ? '🔥 Combo x' + G.combo : '', 560, 31);
   const a = G.gates.find(o => !o.done);
   if (a) {
-    cx.fillStyle = '#0B2A4Ae8'; cx.fillRect(40, 50, 880, 48); cx.strokeStyle = '#F5C542'; cx.lineWidth = 3; cx.strokeRect(40, 50, 880, 48); cx.fillStyle = '#fff'; cx.textAlign = 'center'; teks(a.q, VW / 2, 75, 850, 24, 2, 14);
+    cx.fillStyle = '#0B2A4Af0'; cx.fillRect(30, 48, 900, 68); cx.strokeStyle = '#F5C542'; cx.lineWidth = 3; cx.strokeRect(30, 48, 900, 68); cx.fillStyle = '#fff'; cx.textAlign = 'center'; teks(a.q, VW / 2, 82, 860, 36, 2, 17);
     if (IM.papan) {
-      const pw = 680, ph = pw * PAPAN_H[md.p], bx = (VW - pw) / 2, by = 100; cx.drawImage(IM.papan, bx, by, pw, ph);
+      const pw = 660, ph = pw * PAPAN_H[md.p], bx = (VW - pw) / 2, by = 118; cx.drawImage(IM.papan, bx, by, pw, ph);
+      const uu = Math.min.apply(null, BOX[md.p].map((b, l) => fitU('ABC'[l] + '. ' + a.o[l], b[2] * pw - 12, 22, 5, 10, b[3] * ph - 8)));
       BOX[md.p].forEach((b, l) => { const x = bx + b[0] * pw, yy = by + b[1] * ph, w = b[2] * pw, h = b[3] * ph, ak = G.lane === l;
         if (ak) { cx.fillStyle = WARNA[l] + '40'; cx.fillRect(x, yy, w, h); }
-        cx.fillStyle = '#0B2A4A'; cx.textAlign = 'center'; teks('ABC'[l] + '. ' + a.o[l], x + w / 2, yy + h / 2, w - 12, 16, 4, 10);
+        cx.fillStyle = '#0B2A4A'; cx.textAlign = 'center'; teks('ABC'[l] + '. ' + a.o[l], x + w / 2, yy + h / 2, w - 12, 22, 5, 10, h - 8, uu);
         cx.strokeStyle = WARNA[l]; cx.lineWidth = ak ? 5 : 3; cx.strokeRect(x, yy, w, h);
         if (a.hint && sah('rubah') && a.j === l) { cx.font = '20px serif'; cx.fillText('💡', x + w - 14, yy + 18); } });
     } else for (let l = 0; l < 3; l++) { const x = 40 + l * 297, ak = G.lane === l; cx.fillStyle = WARNA[l]; cx.fillRect(x, 104, 286, 74); cx.strokeStyle = '#fff'; cx.lineWidth = ak ? 7 : 2; cx.strokeRect(x, 104, 286, 74); cx.fillStyle = '#fff'; cx.textAlign = 'center'; teks('ABC'[l] + '. ' + a.o[l], x + 143, 141, 262, 21, 2); }
   }
-  cx.textAlign = 'center'; if (G.mt > 0) { cx.fillStyle = G.ok ? '#2e7d32' : '#c62828'; cx.fillRect(160, 350, 640, 50); cx.fillStyle = '#fff'; cx.font = '800 24px Trebuchet MS, sans-serif'; cx.fillText(G.msg, VW / 2, 383); }
+  const px = laneX(G.lx, ZP) + (G.shake > 0 ? Math.sin(G.t * 90) * 6 : 0), py = zy(ZP), im = IM.k3 || IMG.idle;
+  if (im) { const h = 140, w = h * im.width / im.height, flip = Math.floor(G.t * 6) % 2 ? -1 : 1, bob = Math.abs(Math.sin(G.t * 12)) * 7;
+    cx.fillStyle = '#0005'; cx.beginPath(); cx.ellipse(px, py + 4, w * .5, 10, 0, 0, 7); cx.fill();
+    cx.save(); cx.translate(px, py - bob); cx.rotate((G.lane - G.lx) * .18); cx.scale(flip, 1); cx.drawImage(im, -w / 2, -h, w, h); cx.restore(); }
+  else { cx.fillStyle = '#111'; cx.fillRect(px - 20, py - 90, 40, 80); }
+  if (DATA.sahabat && IMG[DATA.sahabat]) { const s = IMG[DATA.sahabat], w = 50, h = w * s.height / s.width; cx.drawImage(s, px + 52, py - h - Math.abs(Math.sin(G.t * 10)) * 5, w, h); }
+  cx.textAlign = 'center'; if (G.mt > 0) { cx.fillStyle = G.ok ? '#2e7d32' : '#c62828'; cx.fillRect(130, 484, 700, 46); cx.fillStyle = '#fff'; cx.font = '800 24px Trebuchet MS, sans-serif'; cx.fillText(G.msg, VW / 2, 515); }
   if (G.cd > 0) { cx.fillStyle = '#0008'; cx.fillRect(0, 350, VW, VH - 350); cx.fillStyle = '#F5C542'; cx.font = '800 100px Trebuchet MS, sans-serif'; cx.fillText(G.cd > .2 ? Math.ceil(G.cd - .2) : 'GO!', VW / 2, 450); cx.font = '800 22px Trebuchet MS, sans-serif'; cx.fillStyle = '#fff'; cx.fillText('Geser ke gerbang jawaban yang benar!', VW / 2, 500); }
 }
 let tLalu = 0;
@@ -332,8 +335,8 @@ function simpanPilihan() { DATA.lariPilih = { k: PIL.k, m: PIL.m }; try { localS
 function bukaPilih() {
   const a = $('pilKar'), b = $('pilMed'); a.textContent = ''; b.textContent = '';
   const kartu = (par, cls, src, st, nama, fn) => { const d = document.createElement('button'); d.className = 'lrS' + (cls ? ' pilih' : ''); const im = document.createElement('img'); im.src = src; for (const q in st) im.style[q] = st[q]; d.appendChild(im); const t = document.createElement('div'); t.textContent = nama; d.appendChild(t); d.onclick = fn; par.appendChild(d); };
-  KAR.forEach(c => kartu(a, PIL.k === c.k, BASE2 + 'kar-' + c.k + '-1.webp', { height: '118px' }, c.n, async () => { PIL.k = c.k; simpanPilihan(); await siapkanPilihan(); bukaPilih(); }));
-  MEDAN.forEach(c => kartu(b, PIL.m === c.k, BASE2 + 'th-' + c.k + '.webp', { width: '170px' }, c.n, async () => { PIL.m = c.k; simpanPilihan(); await siapkanPilihan(); bukaPilih(); }));
+  KAR.forEach(c => kartu(a, PIL.k === c.k, BASE2 + 'kar-' + c.k + '-1.webp', { height: '118px' }, c.n, async () => { PIL.k = c.k; simpanPilihan(); await siapkanPilihan(); if ($('lrPilih').style.display === 'flex') bukaPilih(); }));
+  MEDAN.forEach(c => kartu(b, PIL.m === c.k, BASE2 + 'th-' + c.k + '.webp', { width: '170px' }, c.n, async () => { PIL.m = c.k; simpanPilihan(); await siapkanPilihan(); if ($('lrPilih').style.display === 'flex') bukaPilih(); }));
   tampil('lrPilih');
 }
 async function muatGambar() {
