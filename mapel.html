@@ -136,11 +136,6 @@
   #area-main .menu-item:active { transform: scale(.92); }
   #area-main .menu-item .ikon { width: 100%; height: auto; aspect-ratio: 72 / 102; margin: 0; }
   #area-main .menu-item .txt, #area-main .menu-item .arrow { display: none; }
-  #area-main #btn-cari-pasangan { background: var(--cream); border: 3px solid var(--gold-dark); aspect-ratio: 72 / 102; }
-  #area-main #btn-cari-pasangan .txt { display: block; flex: none; text-align: center; }
-  #area-main #btn-cari-pasangan .txt span { display: none; }
-  #area-main #btn-cari-pasangan .txt b { font-size: .68rem; line-height: 1.1; }
-  #area-main #btn-cari-pasangan .emoji { font-size: 3rem; line-height: 1; margin-bottom: 4px; }
   .menu-item .txt { flex: 1; }
   .menu-item .txt b { display: block; color: var(--navy); font-size: 1rem; }
   .menu-item .txt span { display: block; color: #6b6b6b; font-size: 0.78rem; margin-top: 2px; }
@@ -166,11 +161,6 @@
   #area-main .menu-item:active { transform: scale(.92); }
   #area-main .menu-item .ikon { width: 100%; height: auto; aspect-ratio: 72 / 102; margin: 0; }
   #area-main .menu-item .txt, #area-main .menu-item .arrow { display: none; }
-  #area-main #btn-cari-pasangan { background: var(--cream); border: 3px solid var(--gold-dark); aspect-ratio: 72 / 102; }
-  #area-main #btn-cari-pasangan .txt { display: block; flex: none; text-align: center; }
-  #area-main #btn-cari-pasangan .txt span { display: none; }
-  #area-main #btn-cari-pasangan .txt b { font-size: .68rem; line-height: 1.1; }
-  #area-main #btn-cari-pasangan .emoji { font-size: 3rem; line-height: 1; margin-bottom: 4px; }
   .menu-item .txt { flex: 1; }
   .menu-item .txt b { display: block; color: var(--navy); font-size: 1rem; }
   .menu-item .txt span { display: block; color: #6b6b6b; font-size: 0.78rem; margin-top: 2px; }
@@ -213,7 +203,7 @@
         <span class="arrow">&rarr;</span>
       </button>
       <button class="menu-item" id="btn-cari-pasangan">
-        <span class="emoji">🃏</span>
+        <img class="ikon" src="ikon-game/cari-pasangan.webp" alt="Cari Pasangan" title="Cari Pasangan" width="72" height="102" loading="lazy" decoding="async">
         <span class="txt"><b>Cari Pasangan</b><span id="cp-desc">Game cocokkan kartu</span></span>
         <span class="arrow" id="cp-arrow">&rarr;</span>
       </button>
@@ -333,7 +323,7 @@ function pilihKelas(k, awal) {
     if (cpAktif) {
       cpBtn.style.display = 'flex';
       cpBtn.classList.remove('disabled');
-      document.getElementById('cp-arrow').style.display = 'inline';
+      document.getElementById('cp-arrow').style.display = 'none';
       cpBtn.onclick = () => window.location.href = 'cari-pasangan.html?mapel=' + mapelAktif;
     } else {
       cpBtn.style.display = 'none';
@@ -462,6 +452,21 @@ function pilihKelas(k, awal) {
       areaMain.appendChild(contraBtn);
     }
     contraBtn.style.display = 'flex';
+    let tkaBtn = document.getElementById('btn-tka-hero');
+    if (parseInt(k, 10) === 3 || parseInt(k, 10) === 6) {
+      if (!tkaBtn) {
+        tkaBtn = document.createElement('button');
+        tkaBtn.id = 'btn-tka-hero';
+        tkaBtn.className = 'menu-item';
+        tkaBtn.style.marginTop = '12px';
+        tkaBtn.innerHTML = '<img class="ikon" src="ikon-game/tka-hero.webp" alt="TKA Hero SD 2027" title="TKA Hero SD 2027" width="72" height="102" loading="lazy" decoding="async"><span class="txt"><b>TKA Hero SD 2027</b><span>Petualangan 5 dunia, jawab soal lawan monster!</span></span><span class="arrow">&rarr;</span>';
+        tkaBtn.onclick = () => window.location.href = 'tka-hero.html?kelas=' + k;
+        areaMain.appendChild(tkaBtn);
+      }
+      tkaBtn.style.display = 'flex';
+    } else if (tkaBtn) {
+      tkaBtn.style.display = 'none';
+    }
   } else {
     areaMain.style.display = 'none';
   }
