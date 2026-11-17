@@ -129,7 +129,18 @@
   .menu-item:active { transform: scale(0.97); }
   .menu-item.disabled { opacity: 0.55; cursor: not-allowed; }
   .menu-item .emoji { font-size: 1.6rem; }
-  .menu-item .ikon { width: 72px; height: 102px; object-fit: contain; flex-shrink: 0; margin: -12px 0; filter: drop-shadow(0 3px 3px rgba(0,0,0,.28)); }
+  .menu-item .ikon { object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 3px 3px rgba(0,0,0,.35)); }
+  #area-main { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px 8px; max-width: 760px !important; padding: 0 10px; box-sizing: border-box; }
+  @media (min-width: 640px) { #area-main { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px 12px; } }
+  #area-main .menu-item { padding: 0; background: none; border: none; border-radius: 14px; margin: 0 !important; flex-direction: column; justify-content: center; align-items: center; gap: 0; -webkit-tap-highlight-color: transparent; transition: transform .12s; }
+  #area-main .menu-item:active { transform: scale(.92); }
+  #area-main .menu-item .ikon { width: 100%; height: auto; aspect-ratio: 72 / 102; margin: 0; }
+  #area-main .menu-item .txt, #area-main .menu-item .arrow { display: none; }
+  #area-main #btn-cari-pasangan { background: var(--cream); border: 3px solid var(--gold-dark); aspect-ratio: 72 / 102; }
+  #area-main #btn-cari-pasangan .txt { display: block; flex: none; text-align: center; }
+  #area-main #btn-cari-pasangan .txt span { display: none; }
+  #area-main #btn-cari-pasangan .txt b { font-size: .68rem; line-height: 1.1; }
+  #area-main #btn-cari-pasangan .emoji { font-size: 3rem; line-height: 1; margin-bottom: 4px; }
   .menu-item .txt { flex: 1; }
   .menu-item .txt b { display: block; color: var(--navy); font-size: 1rem; }
   .menu-item .txt span { display: block; color: #6b6b6b; font-size: 0.78rem; margin-top: 2px; }
@@ -148,7 +159,18 @@
   .menu-item:active { transform: scale(0.97); }
   .menu-item.disabled { opacity: 0.55; cursor: not-allowed; }
   .menu-item .emoji { font-size: 1.6rem; }
-  .menu-item .ikon { width: 72px; height: 102px; object-fit: contain; flex-shrink: 0; margin: -12px 0; filter: drop-shadow(0 3px 3px rgba(0,0,0,.28)); }
+  .menu-item .ikon { object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 3px 3px rgba(0,0,0,.35)); }
+  #area-main { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px 8px; max-width: 760px !important; padding: 0 10px; box-sizing: border-box; }
+  @media (min-width: 640px) { #area-main { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px 12px; } }
+  #area-main .menu-item { padding: 0; background: none; border: none; border-radius: 14px; margin: 0 !important; flex-direction: column; justify-content: center; align-items: center; gap: 0; -webkit-tap-highlight-color: transparent; transition: transform .12s; }
+  #area-main .menu-item:active { transform: scale(.92); }
+  #area-main .menu-item .ikon { width: 100%; height: auto; aspect-ratio: 72 / 102; margin: 0; }
+  #area-main .menu-item .txt, #area-main .menu-item .arrow { display: none; }
+  #area-main #btn-cari-pasangan { background: var(--cream); border: 3px solid var(--gold-dark); aspect-ratio: 72 / 102; }
+  #area-main #btn-cari-pasangan .txt { display: block; flex: none; text-align: center; }
+  #area-main #btn-cari-pasangan .txt span { display: none; }
+  #area-main #btn-cari-pasangan .txt b { font-size: .68rem; line-height: 1.1; }
+  #area-main #btn-cari-pasangan .emoji { font-size: 3rem; line-height: 1; margin-bottom: 4px; }
   .menu-item .txt { flex: 1; }
   .menu-item .txt b { display: block; color: var(--navy); font-size: 1rem; }
   .menu-item .txt span { display: block; color: #6b6b6b; font-size: 0.78rem; margin-top: 2px; }
@@ -185,8 +207,8 @@
     <div class="kelas-grid" id="kelas-grid"></div>
 
     <div id="area-main" style="display:none; max-width:380px; margin:18px auto 0;">
-      <button class="menu-item" id="btn-kuis" style="margin-bottom:12px;">
-        <img class="ikon" src="ikon-game/kuis.webp" alt="" width="72" height="102" loading="lazy" decoding="async">
+      <button class="menu-item" id="btn-kuis">
+        <img class="ikon" src="ikon-game/kuis.webp" alt="Kuis" title="Kuis" width="72" height="102" loading="lazy" decoding="async">
         <span class="txt"><b>Kuis</b><span>Latihan soal pilihan ganda</span></span>
         <span class="arrow">&rarr;</span>
       </button>
@@ -304,7 +326,7 @@ function pilihKelas(k, awal) {
   const areaMain = document.getElementById('area-main');
 
   if (cpAktif || paAktif || raceAktif || jutawanAktif || kuisAktif) {
-    areaMain.style.display = 'block';
+    areaMain.style.display = 'grid';
     const kuisBtn = document.getElementById('btn-kuis');
     kuisBtn.onclick = () => window.location.href = 'kuis.html?mapel=' + mapelAktif + '&kelas=' + k;
     const cpBtn = document.getElementById('btn-cari-pasangan');
@@ -327,10 +349,10 @@ function pilihKelas(k, awal) {
       }
       paBtn.style.display = 'flex';
       if (paMatematika) {
-        paBtn.innerHTML = '<img class="ikon" src="ikon-game/petualangan-pak-aji.webp" alt="" width="72" height="102" loading="lazy" decoding="async"><span class="txt"><b>Petualangan Pak Aji</b><span>Stage 1: SDN Tamberu 1</span></span><span class="arrow">&rarr;</span>';
+        paBtn.innerHTML = '<img class="ikon" src="ikon-game/petualangan-pak-aji.webp" alt="Petualangan Pak Aji" title="Petualangan Pak Aji" width="72" height="102" loading="lazy" decoding="async"><span class="txt"><b>Petualangan Pak Aji</b><span>Stage 1: SDN Tamberu 1</span></span><span class="arrow">&rarr;</span>';
         paBtn.onclick = () => window.location.href = 'petualangan.html';
       } else if (paBindo) {
-        paBtn.innerHTML = '<img class="ikon" src="ikon-game/petualangan-pak-aji.webp" alt="" width="72" height="102" loading="lazy" decoding="async"><span class="txt"><b>Petualangan Pak Aji</b><span>Stage 1: Mengenal Berbagai Perayaan</span></span><span class="arrow">&rarr;</span>';
+        paBtn.innerHTML = '<img class="ikon" src="ikon-game/petualangan-pak-aji.webp" alt="Petualangan Pak Aji" title="Petualangan Pak Aji" width="72" height="102" loading="lazy" decoding="async"><span class="txt"><b>Petualangan Pak Aji</b><span>Stage 1: Mengenal Berbagai Perayaan</span></span><span class="arrow">&rarr;</span>';
         paBtn.onclick = () => window.location.href = 'petualangan-bindo.html';
       }
     } else if (paBtn) {
@@ -343,7 +365,7 @@ function pilihKelas(k, awal) {
         raceBtn.id = 'btn-race';
         raceBtn.className = 'menu-item';
         raceBtn.style.marginTop = '12px';
-        raceBtn.innerHTML = '<img class="ikon" src="ikon-game/race-berhitung.webp" alt="" width="72" height="102" loading="lazy" decoding="async"><span class="txt"><b>Race Berhitung</b><span>Adu cepat jawab soal, 60 detik!</span></span><span class="arrow">&rarr;</span>';
+        raceBtn.innerHTML = '<img class="ikon" src="ikon-game/race-berhitung.webp" alt="Race Berhitung" title="Race Berhitung" width="72" height="102" loading="lazy" decoding="async"><span class="txt"><b>Race Berhitung</b><span>Adu cepat jawab soal, 60 detik!</span></span><span class="arrow">&rarr;</span>';
         raceBtn.onclick = () => window.location.href = 'race-berhitung.html';
         areaMain.appendChild(raceBtn);
       }
@@ -358,7 +380,7 @@ function pilihKelas(k, awal) {
         jutawanBtn.id = 'btn-jutawan';
         jutawanBtn.className = 'menu-item';
         jutawanBtn.style.marginTop = '12px';
-        jutawanBtn.innerHTML = '<img class="ikon" src="ikon-game/jutawan.webp" alt="" width="72" height="102" loading="lazy" decoding="async"><span class="txt"><b>Siapa Ingin Jadi Jutawan?</b><span>15 level, makin tinggi makin sulit</span></span><span class="arrow">&rarr;</span>';
+        jutawanBtn.innerHTML = '<img class="ikon" src="ikon-game/jutawan.webp" alt="Siapa Ingin Jadi Jutawan" title="Siapa Ingin Jadi Jutawan" width="72" height="102" loading="lazy" decoding="async"><span class="txt"><b>Siapa Ingin Jadi Jutawan?</b><span>15 level, makin tinggi makin sulit</span></span><span class="arrow">&rarr;</span>';
         jutawanBtn.onclick = () => window.location.href = 'jutawan.html?mapel=' + mapelAktif + '&kelas=' + k;
         areaMain.appendChild(jutawanBtn);
       }
@@ -373,7 +395,7 @@ function pilihKelas(k, awal) {
         perangBtn.id = 'btn-perang';
         perangBtn.className = 'menu-item';
         perangBtn.style.marginTop = '12px';
-        perangBtn.innerHTML = '<img class="ikon" src="ikon-game/perang-angka.webp" alt="" width="72" height="102" loading="lazy" decoding="async"><span class="txt"><b>Perang Angka</b><span>Duel matematika 2 pemain, serang lawanmu!</span></span><span class="arrow">&rarr;</span>';
+        perangBtn.innerHTML = '<img class="ikon" src="ikon-game/perang-angka.webp" alt="Perang Angka" title="Perang Angka" width="72" height="102" loading="lazy" decoding="async"><span class="txt"><b>Perang Angka</b><span>Duel matematika 2 pemain, serang lawanmu!</span></span><span class="arrow">&rarr;</span>';
         perangBtn.onclick = () => window.location.href = 'perang.html?mapel=matematika&kelas=' + k;
         areaMain.appendChild(perangBtn);
       }
@@ -387,7 +409,7 @@ function pilihKelas(k, awal) {
       raceCarBtn.id = 'btn-race-car';
       raceCarBtn.className = 'menu-item';
       raceCarBtn.style.marginTop = '12px';
-      raceCarBtn.innerHTML = '<img class="ikon" src="ikon-game/race-car.webp" alt="" width="72" height="102" loading="lazy" decoding="async"><span class="txt"><b>Race Car</b><span>Balapan mobil, jawab benar supaya melaju!</span></span><span class="arrow">&rarr;</span>';
+      raceCarBtn.innerHTML = '<img class="ikon" src="ikon-game/race-car.webp" alt="Race Car" title="Race Car" width="72" height="102" loading="lazy" decoding="async"><span class="txt"><b>Race Car</b><span>Balapan mobil, jawab benar supaya melaju!</span></span><span class="arrow">&rarr;</span>';
       raceCarBtn.onclick = () => window.location.href = 'race.html?mapel=' + mapelAktif + '&kelas=' + k;
       areaMain.appendChild(raceCarBtn);
     }
@@ -398,7 +420,7 @@ function pilihKelas(k, awal) {
       superBtn.id = 'btn-super-pak-aji';
       superBtn.className = 'menu-item';
       superBtn.style.marginTop = '12px';
-      superBtn.innerHTML = '<img class="ikon" src="ikon-game/super-pak-aji.webp" alt="" width="72" height="102" loading="lazy" decoding="async"><span class="txt"><b>Super Pak Aji</b><span>Lari dan lompat, jawab soal di setiap blok!</span></span><span class="arrow">&rarr;</span>';
+      superBtn.innerHTML = '<img class="ikon" src="ikon-game/super-pak-aji.webp" alt="Super Pak Aji" title="Super Pak Aji" width="72" height="102" loading="lazy" decoding="async"><span class="txt"><b>Super Pak Aji</b><span>Lari dan lompat, jawab soal di setiap blok!</span></span><span class="arrow">&rarr;</span>';
       superBtn.onclick = () => window.location.href = 'super-pak-aji.html?mapel=' + mapelAktif + '&kelas=' + k;
       areaMain.appendChild(superBtn);
     }
@@ -409,7 +431,7 @@ function pilihKelas(k, awal) {
       lariBtn.id = 'btn-pak-aji-lari';
       lariBtn.className = 'menu-item';
       lariBtn.style.marginTop = '12px';
-      lariBtn.innerHTML = '<img class="ikon" src="ikon-game/pak-aji-lari.webp" alt="" width="72" height="102" loading="lazy" decoding="async"><span class="txt"><b>Pak Aji Lari</b><span>Lari 3 lajur, pilih gerbang jawaban yang benar!</span></span><span class="arrow">&rarr;</span>';
+      lariBtn.innerHTML = '<img class="ikon" src="ikon-game/pak-aji-lari.webp" alt="Pak Aji Lari" title="Pak Aji Lari" width="72" height="102" loading="lazy" decoding="async"><span class="txt"><b>Pak Aji Lari</b><span>Lari 3 lajur, pilih gerbang jawaban yang benar!</span></span><span class="arrow">&rarr;</span>';
       lariBtn.onclick = () => window.location.href = 'pak-aji-lari.html?mapel=' + mapelAktif + '&kelas=' + k;
       areaMain.appendChild(lariBtn);
     }
@@ -421,7 +443,7 @@ function pilihKelas(k, awal) {
         adventureBtn.id = 'btn-pak-aji-adventure';
         adventureBtn.className = 'menu-item';
         adventureBtn.style.marginTop = '12px';
-        adventureBtn.innerHTML = '<img class="ikon" src="ikon-game/pak-aji-adventure.webp" alt="" width="72" height="102" loading="lazy" decoding="async"><span class="txt"><b>Pak Aji Adventure</b><span>5 stage, semua mapel, jawab soal di setiap kotak!</span></span><span class="arrow">&rarr;</span>';
+        adventureBtn.innerHTML = '<img class="ikon" src="ikon-game/pak-aji-adventure.webp" alt="Pak Aji Adventure" title="Pak Aji Adventure" width="72" height="102" loading="lazy" decoding="async"><span class="txt"><b>Pak Aji Adventure</b><span>5 stage, semua mapel, jawab soal di setiap kotak!</span></span><span class="arrow">&rarr;</span>';
         adventureBtn.onclick = () => window.location.href = 'pak-aji-adventure.html?mapel=' + mapelAktif + '&kelas=' + k;
         areaMain.appendChild(adventureBtn);
       }
@@ -435,7 +457,7 @@ function pilihKelas(k, awal) {
       contraBtn.id = 'btn-contra-pak-aji';
       contraBtn.className = 'menu-item';
       contraBtn.style.marginTop = '12px';
-      contraBtn.innerHTML = '<img class="ikon" src="ikon-game/contra-pak-aji.webp" alt="" width="72" height="102" loading="lazy" decoding="async"><span class="txt"><b>Contra Pak Aji</b><span>Tembak musuh, kalahkan boss, jawab soal di peti!</span></span><span class="arrow">&rarr;</span>';
+      contraBtn.innerHTML = '<img class="ikon" src="ikon-game/contra-pak-aji.webp" alt="Contra Pak Aji" title="Contra Pak Aji" width="72" height="102" loading="lazy" decoding="async"><span class="txt"><b>Contra Pak Aji</b><span>Tembak musuh, kalahkan boss, jawab soal di peti!</span></span><span class="arrow">&rarr;</span>';
       contraBtn.onclick = () => window.location.href = 'contra-pak-aji.html?mapel=' + mapelAktif + '&kelas=' + k;
       areaMain.appendChild(contraBtn);
     }
