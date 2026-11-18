@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Mapel - Belajar Sambil Bermain SDN Tamberu 1</title>
 <link rel="preconnect" href="https://dyxmilgvaymkbzgjtvln.supabase.co" crossorigin>
+<script src="pelacak.js"></script>
 <script>
 (function () {
   var KUNCI = 'lib_supabase_v2';
@@ -267,6 +268,7 @@ async function init() {
 
     isAdmin = profilData.role === 'admin';
     tingkatSaya = profilData.kelas ? profilData.kelas.tingkat : null;
+    if (window.Pelacak) Pelacak.mulai(sb, { id: uid, role: profilData.role, nama: profilData.nama, tingkat: tingkatSaya }, 'menu-mapel', mapelAktif);
     document.getElementById('info-kelas').textContent = isAdmin ? 'Admin' : (profilData.kelas ? profilData.kelas.nama_kelas : 'Kelas belum diatur');
 
     renderKelasGrid();
