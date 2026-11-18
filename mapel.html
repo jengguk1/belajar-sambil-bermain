@@ -190,6 +190,7 @@
     <button class="back-btn" onclick="window.location.href='papan-peringkat.html'" style="font-size:1.3rem;">🏆</button>
   </div>
   <div class="kelas-tag" id="info-kelas">Memuat...</div>
+  <div id="admin-bar" style="display:none; text-align:center; margin:4px 0 6px;"><button id="btn-pantau" onclick="window.location.href='pemantau.html'" style="all:unset; cursor:pointer; box-sizing:border-box; padding:9px 18px; font-weight:800; font-size:.95rem; color:#0B2A4A; background:linear-gradient(180deg,#FFE28A,#F5C542 55%,#C9932A); border:2px solid #7A5A12; border-radius:999px;">📊 Pantau Aktivitas Siswa</button></div>
 
   <div class="icon-wrap"><img id="icon-mapel" src="" alt=""></div>
 
@@ -267,6 +268,7 @@ async function init() {
     }
 
     isAdmin = profilData.role === 'admin';
+    document.getElementById('admin-bar').style.display = isAdmin ? 'block' : 'none';
     tingkatSaya = profilData.kelas ? profilData.kelas.tingkat : null;
     if (window.Pelacak) Pelacak.mulai(sb, { id: uid, role: profilData.role, nama: profilData.nama, tingkat: tingkatSaya }, 'menu-mapel', mapelAktif);
     document.getElementById('info-kelas').textContent = isAdmin ? 'Admin' : (profilData.kelas ? profilData.kelas.nama_kelas : 'Kelas belum diatur');
