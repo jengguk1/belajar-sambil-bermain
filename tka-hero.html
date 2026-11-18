@@ -279,10 +279,16 @@ const STAGES = [
   { id: 4, nama: 'Kuil Penalaran', bg: 'bg4', gem: 'gem4', mon: ['m-patung', 'm-penyihir-ungu', 'm-orc'], boss: { img: 'm-naga', nama: 'Naga Logika', h: 190 } },
   { id: 5, nama: 'Kastil Raja Kegelapan', bg: 'bg5', gem: 'gem5', mon: ['m-tengkorak', 'm-ksatria-gelap2', 'm-penyihir-gelap'], boss: { img: 'm-ksatria-gelap', nama: 'Raja Kegelapan', h: 235 } }
 ];
-const SUB = {
-  6: ['Bilangan, pecahan, dan persen', 'Membaca teks informasi dan cerita', 'Geometri, pengukuran, dan data', 'Pola, logika, dan penalaran', 'Tantangan campuran tingkat tinggi'],
-  3: ['Bilangan dan hitungan', 'Membaca bacaan sederhana', 'Bangun datar dan pengukuran', 'IPA dan pola bilangan', 'Tantangan campuran']
-};
+const SUB = (function () {
+  const kecil = ['Angka dan hitungan', 'Membaca kata dan kalimat', 'Bentuk, hari, dan ukuran', 'Mengenal alam dan pola', 'Tantangan campuran'];
+  return {
+    1: kecil, 2: kecil,
+    3: ['Bilangan dan hitungan', 'Membaca bacaan sederhana', 'Bangun datar dan pengukuran', 'IPA dan pola bilangan', 'Tantangan campuran'],
+    4: ['Bilangan dan pecahan', 'Membaca teks cerita dan informasi', 'Keliling, luas, dan data', 'IPA, pola, dan penalaran', 'Tantangan campuran'],
+    5: ['Bilangan, pecahan, dan persen', 'Membaca teks informasi dan cerita', 'Geometri, pengukuran, dan data', 'Pola dan penalaran', 'Tantangan campuran'],
+    6: ['Bilangan, pecahan, dan persen', 'Membaca teks informasi dan cerita', 'Geometri, pengukuran, dan data', 'Pola, logika, dan penalaran', 'Tantangan campuran tingkat tinggi']
+  };
+})();
 const NAMA_MON = { 'm-slime-biru': 'Slime Biru', 'm-slime-hijau': 'Slime Hijau', 'm-slime-ungu': 'Slime Ungu', 'm-goblin': 'Goblin', 'm-tengkorak': 'Tengkorak', 'm-penyihir-ungu': 'Penyihir Ungu', 'm-orc': 'Orc', 'm-patung': 'Patung Penjaga', 'm-ksatria-gelap2': 'Ksatria Gelap', 'm-penyihir-gelap': 'Penyihir Gelap' };
 const GEM_NAMA = ['Kristal Hutan', 'Kristal Buku', 'Kristal Gua', 'Kristal Kuil', 'Kristal Kerajaan'];
 const HERO_NAMA = { cowok: 'Pak Aji', cewek: 'Aira' };
@@ -307,9 +313,9 @@ const Au = {
   simpan() { try { const s = JSON.parse(localStorage.getItem('pengaturan_game') || '{}'); s.musik = this.set.musik; s.efek = this.set.efek; localStorage.setItem('pengaturan_game', JSON.stringify(s)); localStorage.setItem('tka_hero_vol', JSON.stringify({ vm: this.set.vm, ve: this.set.ve })); } catch (e) {} },
   init() {
     if (this.c) { if (this.c.state === 'suspended') this.c.resume(); return; }
-    try { const A = window.AudioContext || window.webkitAudioContext; if (!A) return; this.c = new A(); this.m = this.c.createGain(); this.e = this.c.createGain(); this.m.connect(this.c.destination); this.e.connect(this.c.destination); this.vol(); } catch (e) { this.c = null; }
+    try { const A = window.AudioContext || window.webkitAudioContext; if (!A) return; this.c = new A(); this.m = this.c.createGain(); this.e = this.c.createGain(); this.m.connect(this.c.destination); this.e.connect(this.c.destination); this.vol(); const n = this.minta; this.lagu = null; if (n) this.main(n); } catch (e) { this.c = null; }
   },
-  vol() { if (!this.c) return; this.m.gain.value = this.set.musik ? this.set.vm * 0.35 : 0; this.e.gain.value = this.set.efek ? this.set.ve : 0; },
+  vol() { if (!this.c) return; this.m.gain.value = this.set.musik ? this.set.vm * 0.7 : 0; this.e.gain.value = this.set.efek ? this.set.ve : 0; },
   nada(f, d, tipe, v, t0, ke) { if (!this.c) return; const o = this.c.createOscillator(), g = this.c.createGain(), t = this.c.currentTime + (t0 || 0); o.type = tipe || 'square'; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v || 0.3, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + d); o.connect(g); g.connect(ke || this.e); o.start(t); o.stop(t + d + 0.03); },
   bising(d, v) { if (!this.c) return; const n = Math.floor(this.c.sampleRate * d), b = this.c.createBuffer(1, n, this.c.sampleRate), x = b.getChannelData(0); for (let i = 0; i < n; i++) x[i] = (Math.random() * 2 - 1) * (1 - i / n); const s = this.c.createBufferSource(), g = this.c.createGain(); s.buffer = b; g.gain.value = v || 0.3; s.connect(g); g.connect(this.e); s.start(); },
   sfx(nama) {
@@ -325,13 +331,45 @@ const Au = {
     else if (nama === 'menang') { [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => this.nada(f, 0.2, 'triangle', 0.35, i * 0.13)); }
     else if (nama === 'klik') { this.nada(660, 0.05, 'square', 0.15); }
   },
-  POLA: { menu: { bpm: 96, n: [262, 0, 330, 0, 392, 0, 330, 0, 294, 0, 349, 0, 440, 0, 349, 0], tipe: 'triangle' },
-          jelajah: { bpm: 132, n: [392, 523, 659, 523, 392, 523, 659, 784, 349, 440, 523, 440, 349, 440, 523, 698], tipe: 'square' },
-          boss: { bpm: 150, n: [196, 196, 233, 196, 262, 196, 233, 262, 185, 185, 220, 185, 247, 185, 220, 247], tipe: 'sawtooth' } },
+  MOTIF: { a: '2 - 4 - 5 - 4 -', b: '4 - 5 - 3 - 2 -', c: '2 4 5 4 3 - 2 -', d: '5 - 4 2 3 - - -', e: '4 5 4 3 2 3 4 -', f: '5 4 3 4 5 - 5 -', g: '2 - 3 4 5 4 3 -', h: '3 - 4 5 4 3 2 -', i: '5 4 5 4 3 2 3 -', j: '0 2 4 2 0 2 4 5', k: '5 - 5 4 5 - 3 -', l: '3 4 5 - 5 4 3 2' },
+  BAS: { pump: '0 - 0 0 - 0 2 -', drive: '0 0 0 0 0 0 0 0', walk: '0 - 2 - 3 - 2 -', gal: '0 - 0 - 2 - 3 2' },
+  DRUM: { santai: 'k.h.s.h.', riang: 'khshkhsh', maju: 'khskhshs', keras: 'kkskkhsk', gempur: 'kksksksk' },
+  SKALA: { mayor: [0, 2, 4, 5, 7, 9, 11], minor: [0, 2, 3, 5, 7, 8, 10], dorian: [0, 2, 3, 5, 7, 9, 10], frigi: [0, 1, 3, 5, 7, 8, 10] },
+  LAGU: {
+    menu: { r: 60, s: 'mayor', bpm: 112, w: 'square', bw: 'triangle', ch: [1, 5, 6, 4, 1, 5, 4, 5], m: 'abcaadbc', b: 'pump', d: 'riang', arp: 1, lv: 0.09 },
+    s1: { r: 62, s: 'mayor', bpm: 132, w: 'square', bw: 'triangle', ch: [1, 5, 6, 4, 1, 5, 4, 5], m: 'cebfcegd', b: 'pump', d: 'riang', lv: 0.1 },
+    s2: { r: 62, s: 'dorian', bpm: 120, w: 'triangle', bw: 'triangle', ch: [1, 4, 1, 7, 1, 4, 5, 1], m: 'gbgehcbd', b: 'pump', d: 'riang', arp: 1, lv: 0.16 },
+    s3: { r: 57, s: 'minor', bpm: 126, w: 'square', bw: 'sawtooth', ch: [1, 6, 3, 7, 1, 6, 4, 5], m: 'jejeckcd', b: 'drive', d: 'maju', lv: 0.095 },
+    s4: { r: 64, s: 'frigi', bpm: 128, w: 'square', bw: 'sawtooth', ch: [1, 2, 1, 2, 6, 5, 2, 1], m: 'fkflilkd', b: 'gal', d: 'maju', arp: 1, lv: 0.095 },
+    s5: { r: 59, s: 'minor', bpm: 140, w: 'sawtooth', bw: 'sawtooth', ch: [1, 6, 4, 5, 1, 6, 7, 5], m: 'ijijkjid', b: 'drive', d: 'keras', lv: 0.085 },
+    bertarung: { r: 57, s: 'minor', bpm: 150, w: 'square', bw: 'sawtooth', ch: [1, 1, 6, 7, 1, 1, 4, 5], m: 'iijeijkd', b: 'drive', d: 'keras', lv: 0.095 },
+    boss: { r: 55, s: 'minor', bpm: 160, w: 'sawtooth', bw: 'sawtooth', ch: [1, 7, 6, 5, 1, 7, 6, 5], m: 'ijijlilj', b: 'drive', d: 'gempur', arp: 1, lv: 0.085 },
+    boss5: { r: 52, s: 'minor', bpm: 168, w: 'sawtooth', bw: 'sawtooth', ch: [1, 6, 7, 5, 1, 6, 7, 5], m: 'jiljjilk', b: 'drive', d: 'gempur', arp: 1, lv: 0.085 }
+  },
+  hz(m) { return 440 * Math.pow(2, (m - 69) / 12); },
+  nadaDi(c, dest, f, d, tipe, v, t) { const o = c.createOscillator(), g = c.createGain(); o.type = tipe; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + d); o.connect(g); g.connect(dest); o.start(t); o.stop(t + d + 0.03); },
+  drumDi(c, dest, jenis, t) {
+    if (jenis === 'k') { const o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(160, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.13); g.gain.setValueAtTime(0.85, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16); o.connect(g); g.connect(dest); o.start(t); o.stop(t + 0.18); return; }
+    if (!c._nb) { const n = Math.floor(c.sampleRate * 0.4), b = c.createBuffer(1, n, c.sampleRate), x = b.getChannelData(0); for (let i = 0; i < n; i++) x[i] = Math.random() * 2 - 1; c._nb = b; }
+    const s = c.createBufferSource(), g = c.createGain(), f = c.createBiquadFilter(); s.buffer = c._nb; f.type = 'highpass'; f.frequency.value = jenis === 'h' ? 7000 : 1800; s.connect(f); f.connect(g); g.connect(dest);
+    const dur = jenis === 'h' ? 0.045 : 0.13; g.gain.setValueAtTime(jenis === 'h' ? 0.22 : 0.55, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); s.start(t); s.stop(t + dur + 0.02);
+    if (jenis === 's') { const o = c.createOscillator(), g2 = c.createGain(); o.type = 'triangle'; o.frequency.setValueAtTime(200, t); o.frequency.exponentialRampToValueAtTime(120, t + 0.1); g2.gain.setValueAtTime(0.32, t); g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.12); o.connect(g2); g2.connect(dest); o.start(t); o.stop(t + 0.14); }
+  },
+  jadwal(c, dest, L, langkah, t, dur) {
+    const bar = Math.floor(langkah / 8) % L.ch.length, i = langkah % 8, d = L.ch[bar], sk = this.SKALA[L.s];
+    const semi = (deg) => { const o = Math.floor((deg - 1) / 7), k = (((deg - 1) % 7) + 7) % 7; return sk[k] + 12 * o; };
+    const nada = (idx, oct) => L.r + semi([d, d + 2, d + 4][idx % 3] + 7 * Math.floor(idx / 3)) + (oct || 0);
+    const lead = this.MOTIF[L.m[bar]].split(' '), lt = lead[i];
+    if (lt !== '-') { const panjang = lead[(i + 1) % 8] === '-' ? 1.75 : 0.9; const lv = (L.lv || 0.1) * 1.8; this.nadaDi(c, dest, this.hz(nada(+lt, 0)), dur * panjang, L.w, lv, t); this.nadaDi(c, dest, this.hz(nada(+lt, 0)) * 1.006, dur * panjang, L.w, lv * 0.5, t); }
+    const bs = this.BAS[L.b].split(' ')[i]; if (bs !== '-') { const fb = this.hz(nada(+bs, -12)); this.nadaDi(c, dest, fb, dur * 0.92, L.bw, L.bw === 'sawtooth' ? 0.22 : 0.42, t); this.nadaDi(c, dest, fb * 2, dur * 0.7, 'triangle', 0.16, t); }
+    if (L.arp) this.nadaDi(c, dest, this.hz(nada([0, 1, 2, 3, 2, 1, 2, 1][i], 0)), dur * 0.6, 'triangle', 0.08, t);
+    const dr = this.DRUM[L.d][i]; if (dr !== '.') this.drumDi(c, dest, dr, t);
+  },
   main(nama) {
-    if (this.lagu === nama) return; this.lagu = nama; clearInterval(this.timer); this.timer = null; if (!nama || !this.c) return;
-    const p = this.POLA[nama], dt = 60000 / p.bpm / 2; this.langkah = 0;
-    this.timer = setInterval(() => { if (!this.set.musik || document.hidden) return; const f = p.n[this.langkah % p.n.length]; if (f) { this.nada(f, dt / 1000 * 0.9, p.tipe, 0.22, 0, this.m); if (this.langkah % 4 === 0) this.nada(f / 2, dt / 1000 * 1.6, 'triangle', 0.2, 0, this.m); } this.langkah++; }, dt);
+    this.minta = nama; if (this.lagu === nama && this.timer) return; this.lagu = nama; clearInterval(this.timer); this.timer = null; if (!nama || !this.c || !this.LAGU[nama]) return;
+    const L = this.LAGU[nama], dur = 30 / L.bpm; this.langkah = 0; this.tNext = this.c.currentTime + 0.08;
+    this.timer = setInterval(() => { const c = this.c; if (!c || c.state !== 'running') return; if (this.tNext < c.currentTime) this.tNext = c.currentTime + 0.05;
+      while (this.tNext < c.currentTime + 0.25) { if (this.set.musik && !document.hidden) this.jadwal(c, this.m, L, this.langkah, this.tNext, dur); this.langkah++; this.tNext += dur; } }, 60);
   }
 };
 
@@ -358,7 +396,7 @@ function renderMenu() {
   document.querySelectorAll('.kartu-hero').forEach((b) => { b.onclick = () => { G.hero = b.dataset.h; Au.sfx('klik'); simpanProg(); renderMenu(); }; });
   const lanjut = [1, 2, 3, 4, 5].find((i) => terbuka(i) && !(p.stages[i] && p.stages[i].selesai)); G.lanjut = lanjut || 1;
   $('m-main').textContent = jumlahSelesai() === 0 ? '▶ Mulai Petualangan' : (lanjut ? '▶ Lanjut: ' + STAGES[lanjut - 1].nama : '▶ Main Lagi');
-  $('m-info').textContent = G.grade === 6 ? 'Soal Kelas 6 berbentuk latihan gaya TKA SD (Matematika dan Bahasa Indonesia), empat pilihan jawaban.' : 'Soal Kelas 3 berupa latihan umum, tiga pilihan jawaban.';
+  $('m-info').textContent = ({ 1: 'Soal Kelas 1: latihan dasar, tiga pilihan jawaban.', 2: 'Soal Kelas 2: latihan dasar, tiga pilihan jawaban.', 3: 'Soal Kelas 3: latihan umum, tiga pilihan jawaban.', 4: 'Soal Kelas 4: latihan umum, empat pilihan jawaban.', 5: 'Soal Kelas 5: latihan menuju TKA, empat pilihan jawaban.', 6: 'Soal Kelas 6: latihan gaya TKA SD (Matematika dan Bahasa Indonesia), empat pilihan jawaban.' })[G.grade];
 }
 function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 function bintangTeks(n) { return '★'.repeat(n) + '☆'.repeat(3 - n); }
@@ -392,7 +430,7 @@ function buatDunia(st) {
   w.hias.push({ x: 60, img: 'papan', h: 90 }); [500, 1400, 2400, 3400, 4450].forEach((x) => w.hias.push({ x, img: 'jamur', h: 44 }));
   return w;
 }
-function poolStage(st) { return st.id === 5 ? G.bank.filter((q) => q.difficulty !== 'mudah') : G.bank.filter((q) => q.stage === st.id); }
+function poolStage(st) { if (st.id === 5) { const p = G.bank.filter((q) => q.difficulty !== 'mudah'); return p.length >= 20 ? p : G.bank.slice(); } const p = G.bank.filter((q) => q.stage === st.id); return p.length >= 6 ? p : G.bank.slice(); }
 function buatPemilih(idx) {
   const R = G.run, T = (R.st.id === 5 ? TARGET.campur : TARGET.biasa)[idx], grup = R.st.id === 2; let antrian = [];
   const ambilGrup = () => { const kunci = {}; R.pool.forEach((q) => { (kunci[q.passage || q.question_id] = kunci[q.passage || q.question_id] || []).push(q); });
@@ -413,7 +451,7 @@ async function mulaiStage(id) {
   for (let i = 0; i < 4; i++) G.run.pemilih.push(buatPemilih(i));
   tampil('stage'); G.mode = 'jelajah'; fit(); hudUpdate(); $('h-nama').textContent = 'Stage ' + id + ' · ' + st.nama; $('h-sub').textContent = SUB[G.grade][id - 1];
   $('quiz').hidden = true; $('ov-hasil').hidden = true; $('ov-jeda').hidden = true; $('toast').hidden = true; $('combo').hidden = true;
-  Au.main('jelajah'); if (!G.prog.intro) tampilIntro(); else { G.run.jalan = true; }
+  laguStage('jelajah'); if (!G.prog.intro) tampilIntro(); else { G.run.jalan = true; }
   lastT = performance.now(); if (!loopJalan) { loopJalan = true; requestAnimationFrame(loop); }
 }
 function tampilIntro() {
@@ -486,7 +524,7 @@ function perbarui(dt) {
 // ===================== PERTARUNGAN =====================
 function mulaiBattle(m) {
   const R = G.run; R.mon = m; G.mode = 'battle'; R.mode = 'battle'; R.hero.vx = 0; KEY.kiri = KEY.kanan = false; R.camYTarget = -215; R.idxEnc = R.w.monster.indexOf(m);
-  R.enc = { ambil: R.pemilih[R.idxEnc] ? R.pemilih[R.idxEnc] : buatPemilih(3), no: 0 }; Au.main(m.boss ? 'boss' : 'jelajah');
+  R.enc = { ambil: R.pemilih[R.idxEnc] ? R.pemilih[R.idxEnc] : buatPemilih(3), no: 0 }; laguStage(m.boss ? 'boss' : 'bertarung');
   toast(m.boss ? '⚔ BOS: ' + m.nama + '!' : '⚔ ' + m.nama + ' menghadang!', 1300); setTimeout(() => { if (G.mode === 'battle') tampilSoal(); }, 650);
 }
 function tampilSoal() {
@@ -530,11 +568,11 @@ function monsterBalas() {
 }
 function kalahHero() {
   const R = G.run; toast('😵 Pahlawan kelelahan! Kembali ke checkpoint', 1800); R.mon.hp = R.mon.max; R.hati = 3; R.combo = 0; R.camYTarget = 0; G.mode = 'jelajah'; R.mode = 'jelajah'; R.mon = null; R.hero.x = R.cp; R.hero.y = GROUND; R.hero.pose = 'diam';
-  R.pemilih[R.idxEnc] = buatPemilih(R.idxEnc); Au.main('jelajah'); hudUpdate();
+  R.pemilih[R.idxEnc] = buatPemilih(R.idxEnc); laguStage('jelajah'); hudUpdate();
 }
 function kalahkanMonster(m) {
   const R = G.run; m.hidup = false; m.mati = 0; Au.sfx('mati'); const bonus = m.boss ? 15 : 5; R.koin += bonus; R.poin += m.boss ? 40 : 15; ledakan(m.x, GROUND - 70, 26); teksMelayang(m.x, GROUND - 130, '+' + bonus + ' koin', '#ffd84d'); hudUpdate();
-  R.mon = null; R.camYTarget = 0; G.mode = 'jelajah'; R.mode = 'jelajah'; R.sedang = null; Au.main('jelajah');
+  R.mon = null; R.camYTarget = 0; G.mode = 'jelajah'; R.mode = 'jelajah'; R.sedang = null; laguStage('jelajah');
   if (m.boss) { R.hero.menang = 1; G.mode = 'anim'; R.camYTarget = 0; Au.sfx('menang'); toast('💎 ' + GEM_NAMA[R.st.id - 1] + ' kembali!', 2200); setTimeout(selesaiStage, 2400); } else toast('🏆 ' + m.nama + ' kalah!', 1100);
 }
 function selesaiStage() {
@@ -608,6 +646,7 @@ $('m-kembali').onclick = () => { window.location.href = 'mapel.html'; };
 $('m-main').onclick = () => { Au.init(); mulaiStage(G.lanjut || 1); }; $('m-peta').onclick = () => { Au.init(); Au.sfx('klik'); tampil('peta'); }; $('m-koleksi').onclick = () => { Au.init(); Au.sfx('klik'); tampil('koleksi'); };
 $('p-kembali').onclick = () => tampil('menu'); $('k-kembali').onclick = () => tampil('menu');
 document.addEventListener('pointerdown', () => Au.init(), { once: true });
+function laguStage(jenis) { const id = G.run ? G.run.st.id : 1; Au.main(jenis === 'jelajah' ? 's' + id : (jenis === 'boss' && id === 5 ? 'boss5' : jenis)); }
 function pesanFatal(t) { $('mem-isi').hidden = false; $('mem-teks').textContent = t; document.querySelector('#mem-bar').hidden = true; const b = document.createElement('button'); b.className = 'btn-emas'; b.textContent = 'Kembali'; b.onclick = () => { window.location.href = 'mapel.html'; }; $('mem-isi').appendChild(b); }
 
 // ===================== INISIALISASI =====================
@@ -621,7 +660,7 @@ async function init() {
   if (!G.admin && prof.status !== 'approved') { pesanFatal('Akunmu belum disetujui admin.'); return; }
   const kp = parseInt(PARAM.get('kelas'), 10), ts = prof.kelas && prof.kelas.tingkat ? parseInt(prof.kelas.tingkat, 10) : 0;
   G.kelas = G.admin ? (kp >= 1 && kp <= 6 ? kp : (ts || 3)) : ts; if (!G.kelas) { pesanFatal('Kelasmu belum diatur. Hubungi admin.'); return; }
-  G.grade = G.kelas >= 5 ? 6 : 3; G.nama = String(prof.nama || 'Siswa').replace(/[<>]/g, '').slice(0, 40) || 'Siswa';
+  G.grade = G.kelas; G.nama = String(prof.nama || 'Siswa').replace(/[<>]/g, '').slice(0, 40) || 'Siswa';
   muatProg();
   try { const r = await fetch(BASE + 'bank-k' + G.grade + '.json'); if (!r.ok) throw new Error('HTTP ' + r.status); G.bank = await r.json(); }
   catch (e) { pesanFatal('Gagal memuat bank soal. Periksa koneksi lalu coba lagi.'); return; }

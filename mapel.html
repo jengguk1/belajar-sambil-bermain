@@ -453,20 +453,16 @@ function pilihKelas(k, awal) {
     }
     contraBtn.style.display = 'flex';
     let tkaBtn = document.getElementById('btn-tka-hero');
-    if (parseInt(k, 10) === 3 || parseInt(k, 10) === 6) {
-      if (!tkaBtn) {
-        tkaBtn = document.createElement('button');
-        tkaBtn.id = 'btn-tka-hero';
-        tkaBtn.className = 'menu-item';
-        tkaBtn.style.marginTop = '12px';
-        tkaBtn.innerHTML = '<img class="ikon" src="ikon-game/tka-hero.webp" alt="TKA Hero SD 2027" title="TKA Hero SD 2027" width="72" height="102" loading="lazy" decoding="async"><span class="txt"><b>TKA Hero SD 2027</b><span>Petualangan 5 dunia, jawab soal lawan monster!</span></span><span class="arrow">&rarr;</span>';
-        tkaBtn.onclick = () => window.location.href = 'tka-hero.html?kelas=' + k;
-        areaMain.appendChild(tkaBtn);
-      }
-      tkaBtn.style.display = 'flex';
-    } else if (tkaBtn) {
-      tkaBtn.style.display = 'none';
+    if (!tkaBtn) {
+      tkaBtn = document.createElement('button');
+      tkaBtn.id = 'btn-tka-hero';
+      tkaBtn.className = 'menu-item';
+      tkaBtn.style.marginTop = '12px';
+      tkaBtn.innerHTML = '<img class="ikon" src="ikon-game/tka-hero.webp" alt="TKA Hero SD 2027" title="TKA Hero SD 2027" width="72" height="102" loading="lazy" decoding="async"><span class="txt"><b>TKA Hero SD 2027</b><span>Petualangan 5 dunia, jawab soal lawan monster!</span></span><span class="arrow">&rarr;</span>';
+      tkaBtn.onclick = () => window.location.href = 'tka-hero.html?kelas=' + k;
+      areaMain.appendChild(tkaBtn);
     }
+    tkaBtn.style.display = 'flex';
   } else {
     areaMain.style.display = 'none';
   }
