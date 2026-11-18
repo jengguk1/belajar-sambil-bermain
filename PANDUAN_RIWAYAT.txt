@@ -1,0 +1,42 @@
+RIWAYAT AKTIVITAS SISWA - PANDUAN PEMASANGAN
+=============================================
+
+LANGKAH 1 - Database (sekali saja)
+  Supabase > SQL Editor > tempel isi SQL_aktivitas.sql > Run.
+  Hanya MENAMBAH satu tabel baru bernama "aktivitas". Tabel lama tidak disentuh.
+
+LANGKAH 2 - Unggah ke GitHub (folder utama, sejajar index.html)
+  pelacak.js        (baru)
+  pemantau.html     (baru, halaman khusus admin/guru)
+  mapel.html        (menimpa; sudah ada tombol Contra + pelacak menu)
+  super-pak-aji.html (menimpa; sudah ada pelacak)
+  contra-pak-aji.html (menimpa; sudah ada pelacak)
+  Folder aset-contra-pak-aji dan aset-super-pak-aji TIDAK berubah.
+
+LANGKAH 3 - Buka halaman pemantau (login sebagai admin)
+  alamat-situs/pemantau.html
+  Tampil: siapa online sekarang, riwayat sesi, total waktu main per siswa,
+  grafik per hari, filter kelas/game/nama, dan tombol Unduh CSV (bisa dibuka di Excel).
+
+ARTI "ONLINE"
+  Siswa dianggap online bila halamannya masih terbuka dan aktif dalam 90 detik terakhir.
+  Lama main dihitung hanya saat halaman terlihat (layar mati / pindah aplikasi tidak dihitung).
+
+YANG DICATAT
+  nama, kelas, nama game, mapel, jenis perangkat (HP/Tablet/Komputer, sistem, browser,
+  ukuran layar), jam mulai, jam terakhir aktif, lama main.
+YANG TIDAK DICATAT
+  email, kata sandi, alamat IP, lokasi. Admin (guru) tidak dicatat.
+  Siswa hanya bisa membaca catatan miliknya sendiri; guru (admin) bisa membaca semuanya.
+
+MENAMBAHKAN PELACAK KE GAME LAIN (kuis, jutawan, race, perang, dll.)
+  1) Di <head>, SEBELUM tag <script> pemuat, tambahkan satu baris:
+       <script src="pelacak.js"></script>
+  2) Di kode aplikasi, tepat setelah profil siswa berhasil dimuat, tambahkan satu baris:
+       if (window.Pelacak) Pelacak.mulai(sb, { id: uid, role: prof.role, nama: prof.nama, tingkat: tingkatKelas }, 'nama-game', mapel);
+     (sesuaikan nama variabel: uid = id pengguna, prof = data profil, tingkatKelas = angka 1-6)
+  Bila ada kesalahan/tabel belum dibuat, game tetap berjalan normal.
+  Kirim file terbaru game itu ke saya bila ingin dipasangkan langsung.
+
+MEMBERSIHKAN DATA LAMA (opsional, jalankan manual di SQL Editor)
+  delete from public.aktivitas where mulai_at < now() - interval '120 days';
